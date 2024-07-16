@@ -1,0 +1,71 @@
+:root {
+  --visuAspectRatio: 16/9;
+  --visuMaxWidth: 100vw;
+  --visuWidth: min(var(--visuMaxWidth), calc(100vh * var(--visuAspectRatio)));
+
+  --iconSize: .1;
+
+  --darkestGrey: hsl(249, 10%, 13%);
+  --darkerGrey: hsl(247, 10%, 18%);
+  /*
+  */
+}
+
+* {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background-color: var(--darkerGrey);
+  display: grid;
+  justify-items: center;
+  /*
+  align-items: center;
+  */
+}
+
+.visu {
+  /*
+  overflow: hidden;
+  */
+  background-color: var(--darkestGrey);
+  width: var(--visuWidth);
+  aspect-ratio: var(--visuAspectRatio);
+}
+
+.pool {
+  background-color: gray;
+  width: var(--visuWidth);
+  /*
+  aspect-ratio: var(--visuAspectRatio);
+  */
+}
+
+.visuItem {
+  background-color: green;
+  width: fit-content;
+  height: fit-content;
+  /*
+  aspect-ratio: var(--visuAspectRatio);
+  width: 10%;
+  height: calc(.1 * var(--visuWidth));
+  width: 10%;
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  */
+}
+
+.visuItem[rotation= ".25"] {
+  rotate: .25turn;
+}
+
+.item {
+  background-color: yellow;
+  width: calc(var(--iconSize) * var(--visuWidth));
+  aspect-ratio: 1;
+  /*
+  height: var(--iconSize);
+  */
+}
