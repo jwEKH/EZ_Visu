@@ -5,85 +5,10 @@ attributes.push({'rotation': `0`, 'val1': `AAUS(27)`, 'val2': `AA(7)`});
 
 //Vanilla DocReady
 window.addEventListener('load', function () {
-  const draggableItems = document.querySelectorAll(`[draggable]`);
-  draggableItems.forEach(draggableItem => {
-    //Cursor Appearance
-    draggableItem.addEventListener(`mousedown`, () => {
-      draggableItem.setAttribute(`dragging`,`true`);
-    });
-    draggableItem.addEventListener(`mouseup`, () => {
-      draggableItem.removeAttribute(`dragging`);
-    });
-    draggableItem.addEventListener(`dragend`, () => {
-      draggableItem.removeAttribute(`dragging`);
-    });
-    draggableItem.addEventListener(`dragstart`, (ev) => {
-      console.log(ev);
-      //const box = ev.target.getBoundingClientRect();
-      //console.log(box);
-      const parentOfTarget = ev.target.parentElement;
-      const originIsDivPool = parentOfTarget.classList.contains(`divPool`);
-      const offsetX = (originIsDivPool) ? ev.layerX - parentOfTarget.offsetLeft : ev.layerX;
-      const offsetY = (originIsDivPool) ? ev.layerY - parentOfTarget.offsetTop : ev.layerY;
-      ev.dataTransfer.setData(`offsetX`, offsetX);
-      ev.dataTransfer.setData(`offsetY`, offsetY);
-    });
-  });
-
-  const dropAllowedAreas = document.querySelectorAll(`.divVisu`);
-  dropAllowedAreas.forEach(dropAllowedArea => {
-    dropAllowedArea.addEventListener(`dragover`, (ev) => {
-      ev.preventDefault();
-      const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
-      ev.dataTransfer.dropEffect = (ev.ctrlKey | draggingItem.parentElement.classList.contains(`divPool`)) ? `copy` : `move`;
-    });
-    dropAllowedArea.addEventListener(`drop`, (ev) => {
-      //console.log(ev);
-      ev.preventDefault();
-      const {dataTransfer, layerX, layerY, target} = ev;
-      //console.log(target);
-      //console.log(dataTransfer);
-      //const draggingItem = dataTransfer.getData(`item`);
-      const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
-      //console.log(dataTransfer.dropEffect);
-      if (dataTransfer.dropEffect === `copy`) {
-        //dropAllowedArea.appendChild(structuredClone(draggingItem));
-        dropAllowedArea.appendChild(draggingItem);
-      }
-      else {
-        dropAllowedArea.appendChild(draggingItem);
-      }
-
-      const offsetX = dataTransfer.getData(`offsetX`);
-      const offsetY = dataTransfer.getData(`offsetY`);
-      //console.log(offsetX, offsetY);
-      draggingItem.style.position = `absolute`;
-      draggingItem.style.left = `${layerX - offsetX}px`;
-      draggingItem.style.top = `${layerY - offsetY}px`;
-    });
-  });
+  window.reloadLiveDataIntervalId = setInterval(getLiveData, 1000, window.visuLiveData, window.projectNo);
   
+  enterVisuEditor(); 
   
-  
-  
-  
-  /*
-  const divPool = document.querySelector(`.pool`);
-  divPool.appendChild(createVisuItem(attributes));
-
-  Array.from(document.querySelector(`svg`).children).forEach(el => {
-    el.draggable = `true`;
-    el.addEventListener(`click`, (ev) => ev.target.toggleAttribute(`selected`));
-    el.addEventListener(`mousedown`, (ev) => {
-      console.log(ev);
-    });//.target.setAttribute(`dragging`));
-    
-    /*el.addEventListener(`mousemove`, (ev) => {
-      const {target} = ev;
-      console.log(ev);
-    });
-  });
-  */
 }, false);
 
 function createVisuItem(_attributes) {
@@ -121,4 +46,91 @@ function createVisuItem(_attributes) {
   //*/
 
   return visuItem
+}
+/*********************EditorFunctions*********************/
+function visuItemEventHandler(ev) {
+  const {type, target, buttons, layerX, layerY} = ev;
+  if (type.match(/(mousedown)/) && buttons === 1) {
+    //Cursor Appearance
+    ev.target.setAttribute(`dragging`, `true`)
+  }
+  if (type.match(/(mouseup|dragend)/)) {
+    //Cursor Appearance
+    target.removeAttribute(`dragging`);
+  }
+  if (type.match(/(dragstart)/)) {
+    const parentOfTarget = target.parentElement;
+    const originIsDivPool = parentOfTarget.classList.contains(`divPool`);
+    const offsetX = (originIsDivPool) ? layerX - parentOfTarget.offsetLeft : layerX;
+    const offsetY = (originIsDivPool) ? layerY - parentOfTarget.offsetTop : layerY;
+    ev.dataTransfer.setData(`offsetX`, offsetX);
+    ev.dataTransfer.setData(`offsetY`, offsetY);
+  }
+  
+  console.log(ev);
+  //el.toggleAttribute(`dragging`)
+}
+
+function dropAreaEventHandler(ev) {
+  ev.preventDefault();
+  const {type, target, dataTransfer, layerX, layerY} = ev;
+  if (type.match(/(dragover)/)) {
+    const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
+    dataTransfer.dropEffect = (ev.ctrlKey | draggingItem.parentElement.classList.contains(`divPool`)) ? `copy` : `move`;
+  }
+  if (type.match(/(drop)/)) {
+    ev.preventDefault();
+    const {dataTransfer, layerX, layerY, target} = ev;
+    const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
+    if (dataTransfer.dropEffect === `copy`) {
+      //dropAllowedArea.appendChild(structuredClone(draggingItem));
+      this.appendChild(draggingItem);
+    }
+    else {
+      //dropAllowedArea.appendChild(draggingItem);
+      this.appendChild(draggingItem);
+    }
+
+    const offsetX = dataTransfer.getData(`offsetX`);
+    const offsetY = dataTransfer.getData(`offsetY`);
+    //console.log(offsetX, offsetY);
+    draggingItem.style.position = `absolute`;
+    draggingItem.style.left = `${layerX - offsetX}px`;
+    draggingItem.style.top = `${layerY - offsetY}px`;
+  }
+}
+
+function enterVisuEditor() {
+  const draggableItems = document.querySelectorAll(`[draggable]`);
+  draggableItems.forEach(draggableItem => {
+    draggableItem.addEventListener(`mousedown`, visuItemEventHandler);
+    draggableItem.addEventListener(`mouseup`, visuItemEventHandler);
+    draggableItem.addEventListener(`dragend`, visuItemEventHandler);
+    draggableItem.addEventListener(`dragstart`, visuItemEventHandler);
+  });
+
+  const dropAllowedAreas = document.querySelectorAll(`.divVisu`);
+  dropAllowedAreas.forEach(dropAllowedArea => {
+    dropAllowedArea.addEventListener(`dragover`, dropAreaEventHandler);
+    dropAllowedArea.addEventListener(`drop`, dropAreaEventHandler);
+  });
+}
+
+
+
+
+
+
+/*********************ComFunctions*********************/
+function getLiveData(visuLiveData, projectNo) {
+  visuLiveData = (!projectNo) ? undefined : fetchData();
+  console.log(`getLiveData: ${visuLiveData}`);
+  if (!visuLiveData) {
+    console.log(`stopped reloadLiveDataInterval!`);
+    clearInterval(window.reloadLiveDataIntervalId);
+  }
+}
+
+function fetchData() {
+  console.log(`fetchData`);
 }
