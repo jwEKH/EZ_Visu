@@ -16,6 +16,14 @@
   margin: 0;
 }
 
+[draggable] {
+  cursor: grab;
+}
+[dragging] {
+  cursor: grabbing;
+}
+
+
 body {
   background-color: var(--darkerGrey);
   display: grid;
@@ -25,16 +33,17 @@ body {
   */
 }
 
-.visu {
+.divVisu {
   /*
   overflow: hidden;
   */
   background-color: var(--darkestGrey);
   width: var(--visuWidth);
   aspect-ratio: var(--visuAspectRatio);
+  position: relative;
 }
 
-.pool {
+.divPool {
   background-color: gray;
   width: var(--visuWidth);
   /*
@@ -44,9 +53,11 @@ body {
 
 .visuItem {
   background-color: green;
-  width: fit-content;
+  width: calc(var(--iconSize) * var(--visuWidth));
+  aspect-ratio: 1;
   height: fit-content;
   /*
+  width: fit-content;
   aspect-ratio: var(--visuAspectRatio);
   width: 10%;
   height: calc(.1 * var(--visuWidth));
@@ -57,15 +68,6 @@ body {
   */
 }
 
-.visuItem[rotation= ".25"] {
+[rotation= ".25"] {
   rotate: .25turn;
-}
-
-.item {
-  background-color: yellow;
-  width: calc(var(--iconSize) * var(--visuWidth));
-  aspect-ratio: 1;
-  /*
-  height: var(--iconSize);
-  */
 }
