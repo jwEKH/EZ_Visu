@@ -6,7 +6,12 @@
   --iconSize: .1;
 
   --darkestGrey: hsl(249, 10%, 13%);
-  --darkerGrey: hsl(247, 10%, 18%);
+  --darkerGrey: hsl(249, 10%, 18%);
+  --darkGrey: hsl(249, 10%, 23%);
+  --grey: hsl(249, 10%, 28%);
+  --lightGrey: hsl(249, 10%, 33%);
+  --lighterGrey: hsl(249, 10%, 38%);
+  --lightestGrey: hsl(249, 10%, 43%);
   /*
   */
 }
@@ -16,21 +21,42 @@
   margin: 0;
 }
 
-[draggable] {
-  cursor: grab;
-}
-[dragging] {
-  cursor: grabbing;
-}
-
-
 body {
   background-color: var(--darkerGrey);
+  color: white;
   display: grid;
   justify-items: center;
   /*
   align-items: center;
   */
+}
+
+.signalTable {
+  position: fixed;
+  left: 0;
+  background-color: var(--grey);
+  max-height: 100vh;
+  overflow-y: auto;
+  writing-mode: sideways-rl;
+}
+.signalTable[open] {
+  writing-mode: initial;
+}
+.signalGroup {
+  display: grid;
+  grid-template-columns: repeat(1fr);
+}
+
+.visuItemPool {
+  position: fixed;
+  right: 0;
+  background-color: var(--grey);
+  overflow-y: auto;
+  writing-mode: sideways-lr;
+}
+.visuItemPool[open] {
+  writing-mode: initial;
+  height: 100vh;
 }
 
 .divVisu {
@@ -43,21 +69,20 @@ body {
   position: relative;
 }
 
-.divPool {
-  background-color: gray;
-  width: var(--visuWidth);
-  /*
-  aspect-ratio: var(--visuAspectRatio);
-  */
-}
-
 .visuItem {
+  cursor: pointer;
   background-color: green;
+  display: grid;
+	grid-template-areas: 
+	'icon values';
+	grid-template-columns: min-content min-content;
+  width: fit-content;
+  min-width: 2ch;
+  min-height: 2ch;
+  /*
   width: calc(var(--iconSize) * var(--visuWidth));
   aspect-ratio: 1;
   height: fit-content;
-  /*
-  width: fit-content;
   aspect-ratio: var(--visuAspectRatio);
   width: 10%;
   height: calc(.1 * var(--visuWidth));
@@ -67,7 +92,53 @@ body {
   left: 10%;
   */
 }
+[iconPosition = "right"] {
+	grid-template-areas:
+	'values icon';
+}
+[iconPosition = "right"] input {
+  text-align: end;
+}
+[iconPosition = "top"] {
+	grid-template-areas: 
+	'icon'
+	'values';
+}
+[iconPosition = "bottom"] {
+	grid-template-areas: 
+	'values'
+	'icon';
+}
+
+.divIcon {
+  background-color: yellow;
+  grid-area: icon;
+  width: calc(var(--iconSize) * var(--visuWidth));
+  aspect-ratio: 1;
+}
+
+.divSignals {
+  background-color: violet;
+  grid-area: values;
+}
 
 [rotation= ".25"] {
   rotate: .25turn;
+}
+/*********************GenericAttributes*********************/
+[cloaked] {
+  display: none;
+}
+
+/*********************CursorStylez*********************/
+[draggable] {
+  cursor: grab;
+}
+[dragging] {
+  cursor: grabbing;
+}
+summary,
+input[type="radio"],
+label[for] {
+  cursor: pointer;
 }
