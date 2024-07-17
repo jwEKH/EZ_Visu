@@ -1,7 +1,7 @@
 /*********************Konstanten*********************/
 const SVG_NS = `http://www.w3.org/2000/svg`;
 //Testbench
-const ATTRIBUTES = {icon: `triangle`};//, iconPosition: `right`, signals: `AI1, AI17`};
+const ATTRIBUTES = {icon: `pumpe`};//, iconPosition: `right`, signals: `AI1, AI17`};
 
 /*********************VanillaDocReady*********************/
 window.addEventListener('load', function () {
@@ -9,17 +9,38 @@ window.addEventListener('load', function () {
   
   document.body.addEventListener(`mousedown`, mouseDownEventHandler);
   document.body.addEventListener(`mouseup`, mouseUpEventHandler);
+  document.body.addEventListener(`input`, inputEventHandler);
   enterVisuEditor(true);
   
 }, false);
 /*********************GenericFunctions*********************/
-function createSvgElement(symbole) {
-  if (symbole === `triangle`) {
-    const el = document.createElementNS(SVG_NS, `polygon`);
-    el.setAttributeNS(null,`points`, `10,90 50,10 90,90`);
-    el.setAttributeNS(null,`stroke`, `red`);
-    el.setAttributeNS(null,`fill`, `none`);
-    return el;
+function createSvg(symbole) {
+  if (symbole) {
+    const svg = document.createElementNS(SVG_NS, `svg`);
+    svg.setAttributeNS(null, `viewBox`, `0 0 100 100`);
+    if (symbole === `triangle`) {
+      const el = document.createElementNS(SVG_NS, `polygon`);
+      el.setAttributeNS(null,`stroke`, `red`);
+      el.setAttributeNS(null,`fill`, `none`);
+      el.setAttributeNS(null,`points`, `10,90 50,10 90,90`);
+      svg.appendChild(el);
+    }
+    if (symbole === `pumpe`) {
+      let el = document.createElementNS(SVG_NS, `circle`);
+      el.setAttributeNS(null,`stroke`, `red`);
+      el.setAttributeNS(null,`fill`, `none`);
+      el.setAttributeNS(null, `cx`, `50`);
+      el.setAttributeNS(null, `cy`, `50`);
+      el.setAttributeNS(null, `r`, `40`);
+      svg.appendChild(el);
+      
+      el = document.createElementNS(SVG_NS, `polyline`);
+      el.setAttributeNS(null,`stroke`, `red`);
+      el.setAttributeNS(null,`fill`, `none`);
+      el.setAttributeNS(null,`points`, `10,50 50,10 90,50`);
+      svg.appendChild(el);
+    }
+    return svg;
   }
 }
 
@@ -28,7 +49,14 @@ function createVisuItem(...attributes) {
   const visuItem = document.createElement(`div`);
   visuItem.classList.add(`visuItem`);
   
+  const divIcon = document.createElement(`div`);
+  divIcon.classList.add(`divIcon`);
+  visuItem.appendChild(divIcon);
   
+  const divSignals = document.createElement(`div`);
+  divSignals.classList.add(`divSignals`);
+  visuItem.appendChild(divSignals);
+
   attributes.forEach(attribute => {
     Object.entries(attribute).forEach(([key, value]) => {
       //console.log(`${key} ${value}`);
@@ -37,25 +65,13 @@ function createVisuItem(...attributes) {
       visuItem.setAttribute(key, value);
       
       if (key.toLowerCase() === `icon`) {
-        const divIcon = document.createElement(`div`);
-        divIcon.classList.add(`divIcon`);
-        visuItem.appendChild(divIcon);
-        
-        const svg = document.createElementNS(SVG_NS, `svg`);
-        svg.setAttributeNS(null, `viewBox`, `0 0 100 100`);
-        svg.appendChild(createSvgElement(value));
-        divIcon.appendChild(svg);        
+        divIcon.appendChild(createSvg(value));        
       }
 
       if (key.toLowerCase() === `signals`) {
-        const divSignals = document.createElement(`div`);
-        divSignals.classList.add(`divSignals`);
-        visuItem.appendChild(divSignals); 
-
         value.split(`,`).forEach(signal => {
           //console.log(signal);
           const inpSignal = document.querySelector(`.${signal.trim()}`);
-          
           const clonedSignal = inpSignal.cloneNode();
           divSignals.appendChild(clonedSignal);
           /*
@@ -103,7 +119,7 @@ function createSignalTable(visuLiveData) {
       const inpSignals = document.querySelectorAll(`.signalTable input[type='text']`);
       //console.log(inpSignals);
       inpSignals.forEach(el => {
-        el.toggleAttribute(`disabled`);//, (ev.target.value === `drag`)));
+        //el.toggleAttribute(`disabled`);//, (ev.target.value === `drag`)));
         el.toggleAttribute(`draggable`);//, (ev.target.value === `drag`)));
       });
     });
@@ -137,7 +153,7 @@ function createSignalTable(visuLiveData) {
         const entry = document.createElement(`input`);
         entry.type = `text`;
         entry.classList.add(`${signalGroup}${i}`);
-        entry.setAttribute(`disabled`, `true`);
+        //entry.setAttribute(`disabled`, `true`);
         entry.setAttribute(`draggable`, `true`);
         entry.value = `${signalGroup}${i}`;
         details.appendChild(entry);
@@ -179,96 +195,72 @@ function leaveVisuEditor() {
 }
 /*********************EventHandlers*********************/
 function mouseDownEventHandler(ev) {
-  const visuItem = ev.target.closest(`.visuItem`);
-  if (visuItem && ev.buttons === 1)
-    visuItem.setAttribute(`dragging`, `true`)
+  if (ev.buttons === 1) {
+    const target = (ev.target.type === `text`) ? ev.target : ev.target.closest(`.visuItem`);
+    if (target)
+      target.setAttribute(`dragging`, `true`);
+  }
 }
 
 function mouseUpEventHandler(ev) {
-  const visuItem = ev.target.closest(`.visuItem`);
-  if (visuItem)
-    visuItem.removeAttribute(`dragging`);
+  document.querySelectorAll(`[dragging]`).forEach(el => el.removeAttribute(`dragging`));
 }
 
 function dragStartEventHandler(ev) {
-  const visuItem = ev.target.closest(`.visuItem`);
-  if (visuItem) {
-    const visuItemBox = visuItem.getBoundingClientRect();
-    const offsetX = ev.x - visuItemBox.x;
-    const offsetY = ev.y - visuItemBox.y;
+  //console.log(ev);
+  const target = (ev.target.type === `text`) ? ev.target : ev.target.closest(`.visuItem`);
+  if (target) {
+    target.setAttribute(`dragging`, `true`);
+    const targetBox = target.getBoundingClientRect();
+    const offsetX = ev.x - targetBox.x;
+    const offsetY = ev.y - targetBox.y;
     ev.dataTransfer.setData(`offsetX`, offsetX);
     ev.dataTransfer.setData(`offsetY`, offsetY);
   }
 }
 
 function dragOverEventHandler(ev) {
-  ev.preventDefault();
   const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
-  if (draggingItem)
-    ev.dataTransfer.dropEffect = (ev.ctrlKey || draggingItem.closest(`.visuItemPool`)) ? `copy` : `move`;
+  if (draggingItem) {
+    if (ev.target.closest(`.divVisu`) && draggingItem.classList.contains(`visuItem`) ||
+        !ev.target.closest(`.visuEditElement`) && ev.target.closest(`.visuItem`) && draggingItem.type === `text`) {
+      console.log(ev.target);
+      ev.preventDefault();
+      ev.dataTransfer.dropEffect = (ev.ctrlKey || draggingItem.closest(`.visuEditElement`)) ? `copy` : `move`;
+    }
+  }
 }
 
 function dragEndEventHandler(ev) {
-  const visuItem = ev.target.closest(`.visuItem`);
-  if (visuItem)
-    visuItem.removeAttribute(`dragging`);
+  document.querySelectorAll(`[dragging]`).forEach(el => el.removeAttribute(`dragging`));
 }
 
 function dropEventHandler(ev) {
-  ev.preventDefault();
-  const divVisu = ev.target.closest(`.divVisu`);
+  //ev.preventDefault();
   const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
-  
-  if (divVisu && draggingItem) {
+  const target = (draggingItem.type === `text`) ? ev.target.closest(`.visuItem`).querySelector(`.divSignals`) : ev.target.closest(`.divVisu`);
+  if (target && draggingItem) {
     const dropItem = (ev.dataTransfer.dropEffect === `copy`) ? draggingItem.cloneNode(true) : draggingItem;
-    dropItem.removeAttribute(`dragging`);
-    divVisu.appendChild(dropItem);
+    target.appendChild(dropItem);
     
-    const divVisuBox = divVisu.getBoundingClientRect();
-    const offsetX = ev.dataTransfer.getData(`offsetX`);
-    const offsetY = ev.dataTransfer.getData(`offsetY`);
-    
-    dropItem.style.position = `absolute`;
-    dropItem.style.left = `${ev.x - divVisuBox.x - offsetX}px`;
-    dropItem.style.top = `${ev.y - divVisuBox.y - offsetY}px`;
+    if (target.classList.contains(`divVisu`)) {
+      const targetBox = target.getBoundingClientRect();
+      const offsetX = ev.dataTransfer.getData(`offsetX`);
+      const offsetY = ev.dataTransfer.getData(`offsetY`);
+      
+      dropItem.style.position = `absolute`;
+      dropItem.style.left = `${ev.x - targetBox.x - offsetX}px`;
+      dropItem.style.top = `${ev.y - targetBox.y - offsetY}px`;
+    }
   }
+
+  document.querySelectorAll(`[dragging]`).forEach(el => el.removeAttribute(`dragging`));
 }
 
-function visuItemEventHandler(ev) {
-  //console.log(ev);
-  const visuItem = ev.target.closest(`.visuItem`);
-  
-  //console.log(visuItem);
-  if (ev.type.match(/(mousedown)/) && ev.buttons === 1) {
-    //Cursor Appearance
-    visuItem.setAttribute(`dragging`, `true`)
-  }
-  if (ev.type.match(/(mouseup|dragend)/)) {
-    //Cursor Appearance
-    visuItem.removeAttribute(`dragging`);
-  }
-  
-}
-
-function dropAreaEventHandler(ev) {
-  ev.preventDefault();
-  //console.log(ev);
-  const divVisu = ev.target.closest(`.divVisu`);
-  const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
-  if (ev.type.match(/(dragover)/)) {
-    ev.dataTransfer.dropEffect = (ev.ctrlKey || draggingItem.closest(`.visuItemPool`)) ? `copy` : `move`;
-  }
-  if (ev.type.match(/(drop)/)) {
-    const dropItem = (ev.dataTransfer.dropEffect === `copy`) ? draggingItem.cloneNode(true) : draggingItem;
-    divVisu.appendChild(dropItem);
-    
-    const divVisuBox = divVisu.getBoundingClientRect();
-    const offsetX = ev.dataTransfer.getData(`offsetX`);
-    const offsetY = ev.dataTransfer.getData(`offsetY`);
-    //console.log(offsetX, offsetY);
-    dropItem.style.position = `absolute`;
-    dropItem.style.left = `${ev.x - divVisuBox.x - offsetX}px`;
-    dropItem.style.top = `${ev.y - divVisuBox.y - offsetY}px`;
+function inputEventHandler(ev) {
+  if (ev.target.type === `text`) {
+    //document.querySelectorAll(`.${ev.target.className.replace(` `, `.`)}`).forEach(el => el.)
+    console.log(ev.target);
   }
 }
 

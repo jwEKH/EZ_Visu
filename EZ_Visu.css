@@ -5,6 +5,8 @@
 
   --iconSize: .1;
 
+  --scrollbarWidth: 17px;
+
   --darkestGrey: hsl(249, 10%, 13%);
   --darkerGrey: hsl(249, 10%, 18%);
   --darkGrey: hsl(249, 10%, 23%);
@@ -41,6 +43,7 @@ body {
 }
 .signalTable[open] {
   writing-mode: initial;
+  padding-right: var(--scrollbarWidth);
 }
 .signalGroup {
   display: grid;
@@ -57,6 +60,7 @@ body {
 .visuItemPool[open] {
   writing-mode: initial;
   height: 100vh;
+  padding-left: var(--scrollbarWidth);
 }
 
 .divVisu {
