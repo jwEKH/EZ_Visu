@@ -214,6 +214,7 @@ function dragStartEventHandler(ev) {
     const targetBox = target.getBoundingClientRect();
     const offsetX = ev.x - targetBox.x;
     const offsetY = ev.y - targetBox.y;
+    ev.dataTransfer.clearData();
     ev.dataTransfer.setData(`offsetX`, offsetX);
     ev.dataTransfer.setData(`offsetY`, offsetY);
   }
@@ -222,10 +223,9 @@ function dragStartEventHandler(ev) {
 function dragOverEventHandler(ev) {
   const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
   if (draggingItem) {
-    if (ev.target.closest(`.divVisu`) && draggingItem.classList.contains(`visuItem`) ||
-        !ev.target.closest(`.visuEditElement`) && ev.target.closest(`.visuItem`) && draggingItem.type === `text`) {
-      console.log(ev.target);
+    if ((ev.target.closest(`.divVisu`) && draggingItem.classList.contains(`visuItem`)) || (!ev.target.closest(`.visuEditElement`) && ev.target.closest(`.visuItem`) && draggingItem.type === `text`)) {
       ev.preventDefault();
+      //console.log(ev.target);
       ev.dataTransfer.dropEffect = (ev.ctrlKey || draggingItem.closest(`.visuEditElement`)) ? `copy` : `move`;
     }
   }
