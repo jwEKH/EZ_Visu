@@ -238,10 +238,9 @@ function dragEndEventHandler(ev) {
 function dropEventHandler(ev) {
   //ev.preventDefault();
   const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
-  const target = (draggingItem.type === `text`) ? ev.target.closest(`.visuItem`).querySelector(`.divSignals`) : ev.target.closest(`.divVisu`);
+  const target = (draggingItem.type === `text`) ? ev.target/*.closest(`.visuItem`)/*.querySelector(`.divSignals`)*/ : ev.target.closest(`.divVisu`);
   if (target && draggingItem) {
     const dropItem = (ev.dataTransfer.dropEffect === `copy`) ? draggingItem.cloneNode(true) : draggingItem;
-    target.appendChild(dropItem);
     
     if (target.classList.contains(`divVisu`)) {
       const targetBox = target.getBoundingClientRect();
@@ -251,6 +250,32 @@ function dropEventHandler(ev) {
       dropItem.style.position = `absolute`;
       dropItem.style.left = `${ev.x - targetBox.x - offsetX}px`;
       dropItem.style.top = `${ev.y - targetBox.y - offsetY}px`;
+      target.appendChild(dropItem);
+    }
+    else {
+      console.log(target);
+      const visuItem = target.closest(`.visuItem`);
+      if (visuItem) {
+        const divIcon = target.closest(`.divIcon`);
+        if (divIcon) {
+          const divIconBox = divIcon.getBoundingClientRect();
+          divIconBox.xCenter = divIconBox.x + divIconBox.width/2;
+          divIconBox.yCenter = divIconBox.y + divIconBox.height/2;
+          const deltaX = ev.x - divIconBox.xCenter;
+          const deltaY = ev.y - divIconBox.yCenter;
+          const maxDelta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
+          const iconPosition =  (maxDelta === deltaX) ? `left` :
+          (maxDelta === -deltaX) ? `right` :
+          (maxDelta === deltaY) ? `top` :
+          `bottom`;
+          //console.log(divIconBox);
+          visuItem.setAttribute(`iconPosition`, iconPosition);        
+        }
+
+        const divSignals = visuItem.querySelector(`.divSignals`);
+        const insertBeforeNode = (target.closest(`.divSignals`)) ? target : divSignals.firstElementChild;
+        divSignals.appendChild(dropItem);
+      }
     }
   }
 
