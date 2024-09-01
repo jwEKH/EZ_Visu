@@ -1,20 +1,29 @@
 /*********************Konstanten*********************/
 const SVG_NS = `http://www.w3.org/2000/svg`;
+
+const GRIDSIZE_AS_PARTS_FROM_WIDTH = 32; //Gesamtbreite in 32 Teile
+const ASPECT_RATIO = 16/9;
+
 //Testbench
 const ATTRIBUTES = {icon: `pumpe`};//, iconPosition: `right`, signals: `AI1, AI17`};
 
 /*********************VanillaDocReady*********************/
 window.addEventListener('load', function () {
+  document.querySelector(`.divVisu`).appendChild(createBackgroundSVG(1));
   window.reloadLiveDataIntervalId = setInterval(getLiveData, 1000, window.visuLiveData, window.projectNo);
   
-  document.body.addEventListener(`mousedown`, mouseDownEventHandler);
-  document.body.addEventListener(`mouseup`, mouseUpEventHandler);
-  document.body.addEventListener(`input`, inputEventHandler);
   enterVisuEditor(true);
   
 }, false);
 /*********************GenericFunctions*********************/
-function createSvg(symbole) {
+function createBackgroundSVG(idx) {
+  const svg = document.createElementNS(SVG_NS, `svg`);
+  svg.setAttributeNS(null, `viewBox`, `0 0 1600 900`);
+  svg.classList.add(`bgSVG`, `bgSVG_${idx}`);
+  return svg;
+}
+
+function createIconSVG(symbole) {
   if (symbole) {
     const svg = document.createElementNS(SVG_NS, `svg`);
     svg.setAttributeNS(null, `viewBox`, `0 0 100 100`);
@@ -76,7 +85,7 @@ function createVisuItem(...attributes) {
       visuItem.setAttribute(key, value);
       
       if (key.toLowerCase() === `icon`) {
-        divIcon.appendChild(createSvg(value));        
+        divIcon.appendChild(createIconSVG(value));        
       }
       
       if (key.toLowerCase() === `signals`) {
@@ -114,7 +123,11 @@ function createVisuItem(...attributes) {
                   return visuItem
                 }
 /*********************EditorFunctions*********************/
-function addDragDropEventHandler() {
+function addEditorEventHandler() {
+  document.body.addEventListener(`contextmenu`, contextMenuEventHandler);
+  document.body.addEventListener(`mousemove`, mouseMoveEventHandler);
+  document.body.addEventListener(`mousedown`, mouseDownEventHandler);
+  document.body.addEventListener(`mouseup`, mouseUpEventHandler);
   document.body.addEventListener(`dragstart`, dragStartEventHandler);
   document.body.addEventListener(`dragenter`, dragEnterEventHandler);
   document.body.addEventListener(`dragleave`, dragLeaveEventHandler);
@@ -122,9 +135,15 @@ function addDragDropEventHandler() {
   document.body.addEventListener(`dragend`, dragEndEventHandler);
   document.body.addEventListener(`drop`, dropEventHandler);
   document.body.addEventListener(`dblclick`, dblClickEventHandler);
+
+  document.body.addEventListener(`input`, inputEventHandler);
 }
 
-function removeDragDropEventHandler() { 
+function removeEditorEventHandler() {
+  document.body.removeEventListener(`contextmenu`, contextMenuEventHandler);
+  document.body.removeEventListener(`mousemove`, mouseMoveEventHandler);
+  document.body.removeEventListener(`mousedown`, mouseDownEventHandler);
+  document.body.removeEventListener(`mouseup`, mouseUpEventHandler);
   document.body.removeEventListener(`dragstart`, dragStartEventHandler);
   document.body.removeEventListener(`dragenter`, dragEnterEventHandler);
   document.body.removeEventListener(`dragleave`, dragLeaveEventHandler);
@@ -132,12 +151,14 @@ function removeDragDropEventHandler() {
   document.body.removeEventListener(`dragend`, dragEndEventHandler);
   document.body.removeEventListener(`drop`, dropEventHandler);
   document.body.removeEventListener(`dblclick`, dblClickEventHandler);
+
+  document.body.removeEventListener(`input`, inputEventHandler);
 }
 
 function createSignalTable(visuLiveData) {
   const signalTable = document.createElement(`details`);
   signalTable.classList.add(`signalTable`, `visuEditElement`);
-  signalTable.setAttribute(`open`, `true`);
+  //signalTable.setAttribute(`open`, `true`);
   [`Drag`, `Edit`].forEach(option => {
     const radioBtn = document.createElement(`input`);
     radioBtn.type = `radio`;
@@ -199,7 +220,7 @@ function createSignalTable(visuLiveData) {
 function createVisuItemPool() {
   const visuItemPool = document.createElement(`details`);
   visuItemPool.classList.add(`visuItemPool`, `visuEditElement`);
-  visuItemPool.setAttribute(`open`, `true`);
+  //visuItemPool.setAttribute(`open`, `true`);
   const summary = document.createElement(`summary`);
   summary.innerText = `visuItems`;
   visuItemPool.appendChild(summary);
@@ -217,20 +238,95 @@ function enterVisuEditor(initialCall) {
   }
 
   document.querySelectorAll(`.visuItem`).forEach(el => el.setAttribute(`draggable`, `true`));
-  addDragDropEventHandler();
+  addEditorEventHandler();
 }
 
 function leaveVisuEditor() {
   document.querySelectorAll(`.visuEditElement`).forEach(el => el.setAttribute(`cloaked`, `true`));
   document.querySelectorAll(`[draggable]`).forEach(el => el.removeAttribute(`draggable`));
-  removeDragDropEventHandler();
+  removeEditorEventHandler();
 }
 /*********************EventHandlers*********************/
+function contextMenuEventHandler(ev) {
+  ev.preventDefault();
+}
+
+function mouseMoveEventHandler(ev) {
+  //console.log(ev.target);
+  const divVisu = ev.target.closest(`.divVisu`);
+  if (divVisu) {
+    const divVisuBox = divVisu.getBoundingClientRect();
+    const xRel = Math.round(GRIDSIZE_AS_PARTS_FROM_WIDTH * (ev.x - divVisuBox.x) / divVisuBox.width) / GRIDSIZE_AS_PARTS_FROM_WIDTH;
+    const yRel = Math.round((GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * (ev.y - divVisuBox.y) / divVisuBox.height) / (GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO);
+    const activeSVG = divVisu.querySelector(`svg`); //choose active SVG
+    const xSvg = xRel * activeSVG.viewBox.baseVal.width;
+    const ySvg = yRel * activeSVG.viewBox.baseVal.height;
+    
+    //console.log(`${xRel}, ${yRel}`);
+
+    let hoverMarker = activeSVG.querySelector(`.hoverMarker`);
+    if (!hoverMarker) {
+      hoverMarker = document.createElementNS(SVG_NS, `circle`);
+      activeSVG.appendChild(hoverMarker);
+      hoverMarker.classList.add(`hoverMarker`);
+      //hoverMarker.setAttributeNS(null,`stroke`, `red`);
+      hoverMarker.setAttributeNS(null,`fill`, `red`);
+      hoverMarker.setAttributeNS(null, `r`, `5`);
+    }
+    
+    hoverMarker.setAttributeNS(null, `cx`, `${xSvg}`);
+    hoverMarker.setAttributeNS(null, `cy`, `${ySvg}`);
+
+  }
+}
+
 function mouseDownEventHandler(ev) {
   if (ev.buttons === 1) {
     const target = (ev.target.type === `text`) ? ev.target : ev.target.closest(`.visuItem`);
-    if (target && target.draggable)
+    if (target) {
+     if (target.draggable)
       target.setAttribute(`dragging`, `true`);
+    }
+    else if (ev.target.closest(`.divVisu`)) {
+      const activeSVG = document.querySelector(`.divVisu svg`);
+      const activePath = activeSVG.querySelector(`.activePath`);
+      const hoverMarker = activeSVG.querySelector(`.hoverMarker`);
+      const startPoint = activeSVG.querySelector(`.startPoint`);
+      if (activePath) {
+        const pathString = `${activePath.attributes.d.value} L ${hoverMarker.attributes.cx.value}, ${hoverMarker.attributes.cy.value}`;
+        activePath.setAttributeNS(null, `d`, pathString);
+      }
+      else {
+        if (startPoint) {
+          const pathString = `M ${startPoint.attributes.cx.value}, ${startPoint.attributes.cy.value} L ${hoverMarker.attributes.cx.value}, ${hoverMarker.attributes.cy.value}`
+
+          const activePath = document.createElementNS(SVG_NS, `path`);
+          activeSVG.appendChild(activePath);
+          activePath.classList.add(`activePath`);
+          activePath.setAttributeNS(null,`stroke`, `red`);
+          activePath.setAttributeNS(null,`fill`, `none`);
+          activePath.setAttributeNS(null, `d`, pathString);
+
+        }
+      }
+      
+        if (startPoint)
+          startPoint.remove();
+        const newStartPoint = document.querySelector(`.hoverMarker`).cloneNode();
+        activeSVG.appendChild(newStartPoint);
+        newStartPoint.classList.replace(`hoverMarker`, `startPoint`);
+      
+      
+
+    }
+  }
+  else {
+    const startPoint = document.querySelector(`.startPoint`);
+    if (startPoint)
+      startPoint.remove();
+    const activePath = document.querySelector(`.activePath`);
+    if (activePath)
+      activePath.classList.remove(`activePath`);
   }
 }
 
