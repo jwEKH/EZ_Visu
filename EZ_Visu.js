@@ -40,6 +40,17 @@ function createSvg(symbole) {
       el.setAttributeNS(null,`points`, `10,50 50,10 90,50`);
       svg.appendChild(el);
     }
+    if (symbole === `path`) {
+      let el = document.createElementNS(SVG_NS, `path`);
+      el.setAttributeNS(null,`stroke`, `red`);
+      el.setAttributeNS(null,`fill`, `none`);
+      el.setAttributeNS(null, `d`, `M 10,30
+      A 20,20 0,0,1 50,30
+      A 20,20 0,0,1 90,30
+      Q 90,60 50,90
+      Q 10,60 10,30 z`);
+      svg.appendChild(el);
+    }
     return svg;
   }
 }
@@ -50,24 +61,24 @@ function createVisuItem(...attributes) {
   visuItem.classList.add(`visuItem`);
   
   const divIcon = document.createElement(`div`);
-  divIcon.classList.add(`divIcon`);
   visuItem.appendChild(divIcon);
+  divIcon.classList.add(`divIcon`);
   
   const divSignals = document.createElement(`div`);
-  divSignals.classList.add(`divSignals`);
   visuItem.appendChild(divSignals);
-
+  divSignals.classList.add(`divSignals`);
+  
   attributes.forEach(attribute => {
     Object.entries(attribute).forEach(([key, value]) => {
       //console.log(`${key} ${value}`);
-
+      
       //Save everything as attribute for .visu.txt file!
       visuItem.setAttribute(key, value);
       
       if (key.toLowerCase() === `icon`) {
         divIcon.appendChild(createSvg(value));        
       }
-
+      
       if (key.toLowerCase() === `signals`) {
         value.split(`,`).forEach(signal => {
           //console.log(signal);
@@ -87,21 +98,40 @@ function createVisuItem(...attributes) {
     });    
   });
 
-  return visuItem
-}
+  [`Error`, `Freigabe`, `Betriebsart`, `Absenkung`, `Betrieb`].forEach(signal => {
+    const div = document.createElement(`div`);
+    divIcon.appendChild(div);
+    div.classList.add(`div${signal}`);
+    div.setAttribute(`NA`, true);
+    div.innerText = (signal === `Error`)        ? `⚠`  :
+                    (signal === `Freigabe`)     ? `⏺` :
+                    (signal === `Betriebsart`)  ? `✋`  :
+                    (signal === `Absenkung`)    ? `🌜`  :
+                    ``;
+                  });
+                  
+
+                  return visuItem
+                }
 /*********************EditorFunctions*********************/
 function addDragDropEventHandler() {
   document.body.addEventListener(`dragstart`, dragStartEventHandler);
+  document.body.addEventListener(`dragenter`, dragEnterEventHandler);
+  document.body.addEventListener(`dragleave`, dragLeaveEventHandler);
   document.body.addEventListener(`dragover`, dragOverEventHandler);
   document.body.addEventListener(`dragend`, dragEndEventHandler);
   document.body.addEventListener(`drop`, dropEventHandler);
+  document.body.addEventListener(`dblclick`, dblClickEventHandler);
 }
 
 function removeDragDropEventHandler() { 
   document.body.removeEventListener(`dragstart`, dragStartEventHandler);
+  document.body.removeEventListener(`dragenter`, dragEnterEventHandler);
+  document.body.removeEventListener(`dragleave`, dragLeaveEventHandler);
   document.body.removeEventListener(`dragover`, dragOverEventHandler);
   document.body.removeEventListener(`dragend`, dragEndEventHandler);
   document.body.removeEventListener(`drop`, dropEventHandler);
+  document.body.removeEventListener(`dblclick`, dblClickEventHandler);
 }
 
 function createSignalTable(visuLiveData) {
@@ -116,11 +146,12 @@ function createSignalTable(visuLiveData) {
     radioBtn.value = option.toLowerCase();
     radioBtn.checked = (option === `Drag`);
     radioBtn.addEventListener(`change`, (ev) => {
+      console.log(ev.target.value);
       const inpSignals = document.querySelectorAll(`.signalTable input[type='text']`);
       //console.log(inpSignals);
       inpSignals.forEach(el => {
-        //el.toggleAttribute(`disabled`);//, (ev.target.value === `drag`)));
-        el.toggleAttribute(`draggable`);//, (ev.target.value === `drag`)));
+        el.readOnly = !el.readOnly;//, (ev.target.value === `drag`)));
+        el.draggable = !el.draggable;//, (ev.target.value === `drag`)));
       });
     });
     const lbl = document.createElement(`label`);
@@ -151,12 +182,13 @@ function createSignalTable(visuLiveData) {
                         32;
       for (let i=1; i<=channels; i++) {
         const entry = document.createElement(`input`);
+        details.appendChild(entry);
         entry.type = `text`;
         entry.classList.add(`${signalGroup}${i}`);
-        //entry.setAttribute(`disabled`, `true`);
-        entry.setAttribute(`draggable`, `true`);
+        entry.readOnly = true;
+        entry.draggable = true;
         entry.value = `${signalGroup}${i}`;
-        details.appendChild(entry);
+        entry.toggleAttribute(`isBool`, signalGroup.match(/(DI)|(DO)/));
       }
       signalTable.appendChild(details);
     });
@@ -197,7 +229,7 @@ function leaveVisuEditor() {
 function mouseDownEventHandler(ev) {
   if (ev.buttons === 1) {
     const target = (ev.target.type === `text`) ? ev.target : ev.target.closest(`.visuItem`);
-    if (target)
+    if (target && target.draggable)
       target.setAttribute(`dragging`, `true`);
   }
 }
@@ -220,10 +252,28 @@ function dragStartEventHandler(ev) {
   }
 }
 
+function dragEnterEventHandler(ev) {
+  const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
+  if (draggingItem.matches(`[isBool]`) && ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
+    console.log(ev.target)
+    ev.target.removeAttribute(`NA`);
+  }
+}
+
+function dragLeaveEventHandler(ev) {
+  if (!ev.target.matches(`[signal]`) && ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
+    ev.target.setAttribute(`NA`, true);
+  }
+
+}
+
 function dragOverEventHandler(ev) {
   const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
   if (draggingItem) {
-    if ((ev.target.closest(`.divVisu`) && draggingItem.classList.contains(`visuItem`)) || (!ev.target.closest(`.visuEditElement`) && ev.target.closest(`.visuItem`) && draggingItem.type === `text`)) {
+    const visuItemToDivVisu = (ev.target.closest(`.divVisu`) && draggingItem.matches(`.visuItem`));
+    const analogSignalToVisuItem = draggingItem.type === `text` && !draggingItem.matches(`[isBool]`) && ev.target.closest(`.visuItem`) && !ev.target.closest(`.visuEditElement`);
+    const digitalSignalToVisuItem = draggingItem.matches(`[isBool]`) && ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`) && !ev.target.closest(`.visuEditElement`);
+    if (visuItemToDivVisu || analogSignalToVisuItem || digitalSignalToVisuItem) {
       ev.preventDefault();
       //console.log(ev.target);
       ev.dataTransfer.dropEffect = (ev.ctrlKey || draggingItem.closest(`.visuEditElement`)) ? `copy` : `move`;
@@ -242,18 +292,24 @@ function dropEventHandler(ev) {
   if (target && draggingItem) {
     const dropItem = (ev.dataTransfer.dropEffect === `copy`) ? draggingItem.cloneNode(true) : draggingItem;
     
-    if (target.classList.contains(`divVisu`)) {
+    if (target.matches(`.divVisu`)) {
       const targetBox = target.getBoundingClientRect();
       const offsetX = ev.dataTransfer.getData(`offsetX`);
       const offsetY = ev.dataTransfer.getData(`offsetY`);
       
       dropItem.style.position = `absolute`;
-      dropItem.style.left = `${ev.x - targetBox.x - offsetX}px`;
-      dropItem.style.top = `${ev.y - targetBox.y - offsetY}px`;
+      //toDo: gridSnap...
+      dropItem.style.left = `${Math.round((ev.x - targetBox.x - offsetX)/targetBox.width*100)}%`;
+      dropItem.style.top = `${Math.round((ev.y - targetBox.y - offsetY)/targetBox.height*100)}%`;
       target.appendChild(dropItem);
     }
     else {
-      console.log(target);
+      if (draggingItem.matches(`[isBool]`)) {
+        console.log(target);
+        target.setAttribute(`signal`, draggingItem.value);
+        target.title = `${draggingItem.value} (DoubleClick to remove Signal)`;
+      }
+      else {
       const visuItem = target.closest(`.visuItem`);
       if (visuItem) {
         const divIcon = target.closest(`.divIcon`);
@@ -269,17 +325,26 @@ function dropEventHandler(ev) {
           (maxDelta === deltaY) ? `top` :
           `bottom`;
           //console.log(divIconBox);
-          visuItem.setAttribute(`iconPosition`, iconPosition);        
+          visuItem.setAttribute(`iconPosition`, iconPosition);
         }
+      }
 
         const divSignals = visuItem.querySelector(`.divSignals`);
-        const insertBeforeNode = (target.closest(`.divSignals`)) ? target : divSignals.firstElementChild;
+        //const insertBeforeNode = (target.closest(`.divSignals`)) ? target : divSignals.firstElementChild;
         divSignals.appendChild(dropItem);
       }
     }
   }
 
   document.querySelectorAll(`[dragging]`).forEach(el => el.removeAttribute(`dragging`));
+}
+
+function dblClickEventHandler(ev) {
+  if (ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
+    ev.target.removeAttribute(`signal`);
+    ev.target.title = ``;
+    ev.target.setAttribute(`NA`, true);
+  }
 }
 
 function inputEventHandler(ev) {

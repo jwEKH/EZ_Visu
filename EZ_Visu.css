@@ -3,10 +3,13 @@
   --visuMaxWidth: 100vw;
   --visuWidth: min(var(--visuMaxWidth), calc(100vh * var(--visuAspectRatio)));
 
-  --iconSize: .1;
+  --iconSize: .05;
 
   --scrollbarWidth: 17px;
 
+  /*Colors*/
+  --cyan: hsl(194, 74%, 44%);
+  --magenta: hsl(334, 74%, 44%);
   --darkestGrey: hsl(249, 10%, 13%);
   --darkerGrey: hsl(249, 10%, 18%);
   --darkGrey: hsl(249, 10%, 23%);
@@ -119,6 +122,43 @@ body {
   grid-area: icon;
   width: calc(var(--iconSize) * var(--visuWidth));
   aspect-ratio: 1;
+  display: grid;
+  grid-template-areas: 
+  'Error        .       Freigabe  '
+  '.            Betrieb .         '
+  'Betriebsart  .       Absenkung ';
+  grid-auto-columns: 1fr;
+  grid-auto-rows: 1fr;
+}
+
+.divIcon svg {
+  grid-area: Error-start / Error-start / Absenkung-end / Absenkung-end;
+}
+
+.divError {
+  grid-area: Error;
+  color: var(--magenta);
+}
+
+.divFreigabe {
+  grid-area: Freigabe;
+  color: var(--cyan);
+}
+
+.divBetriebsart {
+  grid-area: Betriebsart;
+}
+
+.divAbsenkung {
+  grid-area: Absenkung;
+}
+
+.divBetrieb {
+  grid-area: Betrieb;
+}
+
+.divIcon div[signal] {
+  cursor: pointer;
 }
 
 .divSignals {
@@ -133,9 +173,11 @@ body {
 [cloaked] {
   display: none;
 }
-
+[NA] {
+  opacity: 0;
+}
 /*********************CursorStylez*********************/
-[draggable] {
+[draggable = "true"] {
   cursor: grab;
 }
 [dragging] {
