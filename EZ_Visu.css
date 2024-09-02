@@ -8,8 +8,10 @@
   --scrollbarWidth: 17px;
 
   /*Colors*/
-  --cyan: hsl(194, 74%, 44%);
   --magenta: hsl(334, 74%, 44%);
+  --cyan: hsl(194, 74%, 44%);
+  --purple: hsl(264, 74%, 44%);
+  --yellow: hsl(50, 74%, 44%);
   --darkestGrey: hsl(249, 10%, 13%);
   --darkerGrey: hsl(249, 10%, 18%);
   --darkGrey: hsl(249, 10%, 23%);

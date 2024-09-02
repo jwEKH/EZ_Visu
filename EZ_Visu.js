@@ -4,7 +4,26 @@ const SVG_NS = `http://www.w3.org/2000/svg`;
 const GRIDSIZE_AS_PARTS_FROM_WIDTH = 32; //Gesamtbreite in 32 Teile
 const ASPECT_RATIO = 16/9;
 
+//Colors here in rgb, because style.color will return rgb-format
+const MAGENTA_HSL = `hsl(334, 74%, 44%)`;
+const MAGENTA_HEX = `#c31d65`;
+const MAGENTA_RGB = `rgb(195, 29, 101)`;
+const CYAN_HSL = `hsl(194, 74%, 44%)`;
+const CYAN_HEX = `#1d9cc3`;
+const CYAN_RGB = `rgb(29, 156, 195)`;
+const PURPLE_HSL = `hsl(264, 74%, 44%)`;
+const PURPLE_HEX = `#601dc3`;
+const PURPLE_RGB = `rgb(96, 29, 195)`;
+const YELLOW_HSL = `hsl(50, 74%, 44%)`;
+const YELLOW_HEX = `#c3a81d`;
+const YELLOW_RGB = `rgb(195, 168, 29)`;
+const COLORS_HEX = [MAGENTA_HEX, CYAN_HEX, PURPLE_HEX, YELLOW_HEX];
+
 //Testbench
+const COLOR = MAGENTA_HEX;
+const ORTHO_MODE = false;
+const GRIDSNAP = false;
+
 const ATTRIBUTES = {icon: `pumpe`};//, iconPosition: `right`, signals: `AI1, AI17`};
 
 /*********************VanillaDocReady*********************/
@@ -155,6 +174,34 @@ function removeEditorEventHandler() {
   document.body.removeEventListener(`input`, inputEventHandler);
 }
 
+function createEditorTools() {
+  const editorToolsContainer = document.createElement(`div`);
+  const colorPicker = document.createElement(`input`);
+  editorToolsContainer.appendChild(colorPicker);
+  colorPicker.classList.add(`colorPicker`);
+  colorPicker.type = `color`;
+  colorPicker.value = MAGENTA_HEX;
+  colorPicker.setAttribute(`list`, `presetColors`);
+  const presetColors = document.createElement(`datalist`);
+  colorPicker.appendChild(presetColors);
+  presetColors.id = `presetColors`;
+  COLORS_HEX.forEach(color => {
+    const option = document.createElement(`option`);
+    presetColors.appendChild(option);
+    option.value = color;
+  });
+  const strokeWidth = document.createElement(`input`);
+  editorToolsContainer.appendChild(strokeWidth);
+  strokeWidth.classList.add(`strokeWidth`);
+  strokeWidth.type = `number`;
+  strokeWidth.value = 1;
+  strokeWidth.min = 1;
+
+
+
+  return editorToolsContainer;
+}
+
 function createSignalTable(visuLiveData) {
   const signalTable = document.createElement(`details`);
   signalTable.classList.add(`signalTable`, `visuEditElement`);
@@ -232,6 +279,7 @@ function enterVisuEditor(initialCall) {
   if (initialCall) {
     document.body.appendChild(createSignalTable());
     document.body.appendChild(createVisuItemPool());
+    document.body.appendChild(createEditorTools());
   }
   else {
     document.querySelectorAll(`.visuEditElement`).forEach(el => el.removeAttribute(`cloaked`));
@@ -256,12 +304,23 @@ function mouseMoveEventHandler(ev) {
   const divVisu = ev.target.closest(`.divVisu`);
   if (divVisu) {
     const divVisuBox = divVisu.getBoundingClientRect();
-    const xRel = Math.round(GRIDSIZE_AS_PARTS_FROM_WIDTH * (ev.x - divVisuBox.x) / divVisuBox.width) / GRIDSIZE_AS_PARTS_FROM_WIDTH;
-    const yRel = Math.round((GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * (ev.y - divVisuBox.y) / divVisuBox.height) / (GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO);
+    //const xRel = Math.round(GRIDSIZE_AS_PARTS_FROM_WIDTH * (ev.x - divVisuBox.x) / divVisuBox.width) / GRIDSIZE_AS_PARTS_FROM_WIDTH;
+    //const yRel = Math.round((GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * (ev.y - divVisuBox.y) / divVisuBox.height) / (GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO);
     const activeSVG = divVisu.querySelector(`svg`); //choose active SVG
-    const xSvg = xRel * activeSVG.viewBox.baseVal.width;
-    const ySvg = yRel * activeSVG.viewBox.baseVal.height;
-    
+    let xSvg = (ev.x - divVisuBox.x) / divVisuBox.width * activeSVG.viewBox.baseVal.width;
+    let ySvg = (ev.y - divVisuBox.y) / divVisuBox.height *  activeSVG.viewBox.baseVal.height;
+    const hoverPath = activeSVG.querySelector(`.hoverPath`);
+    if (ORTHO_MODE && hoverPath) {
+      const dX = Math.abs(xSvg - hoverPath.startX);
+      const dY = Math.abs(ySvg - hoverPath.startY);
+      (dY === Math.max(dX, dY)) ? xSvg = hoverPath.startX : ySvg = hoverPath.startY;
+    }
+    if (GRIDSNAP) {
+      xSvg = Math.round(GRIDSIZE_AS_PARTS_FROM_WIDTH * (xSvg / activeSVG.viewBox.baseVal.width)) / GRIDSIZE_AS_PARTS_FROM_WIDTH * activeSVG.viewBox.baseVal.width;
+      ySvg = Math.round((GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * (ySvg / activeSVG.viewBox.baseVal.height)) / (GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * activeSVG.viewBox.baseVal.height;
+    }
+
+
     //console.log(`${xRel}, ${yRel}`);
 
     let hoverMarker = activeSVG.querySelector(`.hoverMarker`);
@@ -269,13 +328,22 @@ function mouseMoveEventHandler(ev) {
       hoverMarker = document.createElementNS(SVG_NS, `circle`);
       activeSVG.appendChild(hoverMarker);
       hoverMarker.classList.add(`hoverMarker`);
-      //hoverMarker.setAttributeNS(null,`stroke`, `red`);
-      hoverMarker.setAttributeNS(null,`fill`, `red`);
       hoverMarker.setAttributeNS(null, `r`, `5`);
     }
     
+    const color = document.querySelector(`.colorPicker`).value;
+    hoverMarker.setAttributeNS(null,`stroke`, color);
+    hoverMarker.setAttributeNS(null,`fill`, color);
     hoverMarker.setAttributeNS(null, `cx`, `${xSvg}`);
     hoverMarker.setAttributeNS(null, `cy`, `${ySvg}`);
+    
+    if (hoverPath) {
+      const pathString = `M ${hoverPath.startX}, ${hoverPath.startY} L ${hoverMarker.attributes.cx.value}, ${hoverMarker.attributes.cy.value}`
+      hoverPath.setAttributeNS(null, `d`, pathString);
+      hoverPath.setAttributeNS(null,`stroke`, color);
+      const strokeWidth = document.querySelector(`.strokeWidth`).value;
+      hoverPath.setAttributeNS(null,`stroke-width`, strokeWidth);
+    }
 
   }
 }
@@ -289,41 +357,44 @@ function mouseDownEventHandler(ev) {
     }
     else if (ev.target.closest(`.divVisu`)) {
       const activeSVG = document.querySelector(`.divVisu svg`);
-      const activePath = activeSVG.querySelector(`.activePath`);
-      const hoverMarker = activeSVG.querySelector(`.hoverMarker`);
-      const startPoint = activeSVG.querySelector(`.startPoint`);
-      if (activePath) {
-        const pathString = `${activePath.attributes.d.value} L ${hoverMarker.attributes.cx.value}, ${hoverMarker.attributes.cy.value}`;
-        activePath.setAttributeNS(null, `d`, pathString);
+      let hoverPath = activeSVG.querySelector(`.hoverPath`);
+      let activePath = activeSVG.querySelector(`.activePath`);
+      if (hoverPath) {
+        if (!activePath) {
+          activePath = hoverPath.cloneNode();
+          activeSVG.appendChild(activePath);
+          //activePath.setAttributeNS(null,`stroke`, color);
+          activePath.removeAttributeNS(null,`opacity`);
+          activePath.classList.replace(`hoverPath`, `activePath`);
+        }
+        else {
+          const pathString = `${activePath.attributes.d.value} ${hoverPath.attributes.d.value}`;
+          activePath.setAttributeNS(null, `d`, pathString);
+        }
+        //hoverPath.remove();
       }
       else {
-        if (startPoint) {
-          const pathString = `M ${startPoint.attributes.cx.value}, ${startPoint.attributes.cy.value} L ${hoverMarker.attributes.cx.value}, ${hoverMarker.attributes.cy.value}`
-
-          const activePath = document.createElementNS(SVG_NS, `path`);
-          activeSVG.appendChild(activePath);
-          activePath.classList.add(`activePath`);
-          activePath.setAttributeNS(null,`stroke`, `red`);
-          activePath.setAttributeNS(null,`fill`, `none`);
-          activePath.setAttributeNS(null, `d`, pathString);
-
-        }
+        hoverPath = document.createElementNS(SVG_NS, `path`);
+        activeSVG.appendChild(hoverPath);
+        hoverPath.classList.add(`hoverPath`);
+        hoverPath.setAttributeNS(null,`opacity`, `0.4`);
+        hoverPath.setAttributeNS(null,`fill`, `none`);
       }
-      
-        if (startPoint)
-          startPoint.remove();
-        const newStartPoint = document.querySelector(`.hoverMarker`).cloneNode();
-        activeSVG.appendChild(newStartPoint);
-        newStartPoint.classList.replace(`hoverMarker`, `startPoint`);
-      
-      
-
+      const color = document.querySelector(`.colorPicker`).value;
+      hoverPath.setAttributeNS(null,`stroke`, color);
+      const strokeWidth = document.querySelector(`.strokeWidth`).value;
+      hoverPath.setAttributeNS(null,`stroke-width`, strokeWidth);
+      activePath.setAttributeNS(null,`stroke-width`, strokeWidth);
+      const hoverMarker = activeSVG.querySelector(`.hoverMarker`);
+      hoverPath.startX = hoverMarker.attributes.cx.value;
+      hoverPath.startY = hoverMarker.attributes.cy.value;
+      hoverPath.setAttributeNS(null, `d`, `M ${hoverPath.startX}, ${hoverPath.startY}`);
     }
   }
   else {
-    const startPoint = document.querySelector(`.startPoint`);
-    if (startPoint)
-      startPoint.remove();
+    const hoverPath = document.querySelector(`.hoverPath`);
+    if (hoverPath)
+      hoverPath.remove();
     const activePath = document.querySelector(`.activePath`);
     if (activePath)
       activePath.classList.remove(`activePath`);
