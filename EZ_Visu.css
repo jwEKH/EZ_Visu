@@ -4,6 +4,7 @@
   --visuWidth: min(var(--visuMaxWidth), calc(100vh * var(--visuAspectRatio)));
 
   --iconSize: .05;
+  --GRIDSIZE_AS_PARTS_FROM_WIDTH: 32;
 
   --scrollbarWidth: 17px;
 
@@ -77,6 +78,14 @@ body {
   aspect-ratio: var(--visuAspectRatio);
   position: relative;
 }
+.divVisu[mode="draw"] {
+  cursor: crosshair;
+}
+/*
+.divVisu[mode="select"] path {
+  cursor: pointer;
+}
+*/
 
 .visuItem {
   cursor: pointer;
@@ -122,7 +131,7 @@ body {
 .divIcon {
   background-color: yellow;
   grid-area: icon;
-  width: calc(var(--iconSize) * var(--visuWidth));
+  width: calc( var(--visuWidth) / var(--GRIDSIZE_AS_PARTS_FROM_WIDTH) );
   aspect-ratio: 1;
   display: grid;
   grid-template-areas: 
@@ -186,7 +195,7 @@ body {
   cursor: grabbing;
 }
 summary,
-input[type="radio"],
+input:not([type="text"]):not([type="number"]),
 label[for] {
   cursor: pointer;
 }

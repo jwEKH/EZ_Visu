@@ -1,7 +1,7 @@
 /*********************Konstanten*********************/
 const SVG_NS = `http://www.w3.org/2000/svg`;
 
-const GRIDSIZE_AS_PARTS_FROM_WIDTH = 32; //Gesamtbreite in 32 Teile
+const GRIDSIZE_AS_PARTS_FROM_WIDTH = 64; //Gesamtbreite in 32 Teile
 const ASPECT_RATIO = 16/9;
 
 //Colors here in rgb, because style.color will return rgb-format
@@ -20,10 +20,6 @@ const YELLOW_RGB = `rgb(195, 168, 29)`;
 const COLORS_HEX = [MAGENTA_HEX, CYAN_HEX, PURPLE_HEX, YELLOW_HEX];
 
 //Testbench
-const COLOR = MAGENTA_HEX;
-const ORTHO_MODE = false;
-const GRIDSNAP = false;
-
 const ATTRIBUTES = {icon: `pumpe`};//, iconPosition: `right`, signals: `AI1, AI17`};
 
 /*********************VanillaDocReady*********************/
@@ -143,7 +139,6 @@ function createVisuItem(...attributes) {
                 }
 /*********************EditorFunctions*********************/
 function addEditorEventHandler() {
-  document.body.addEventListener(`contextmenu`, contextMenuEventHandler);
   document.body.addEventListener(`mousemove`, mouseMoveEventHandler);
   document.body.addEventListener(`mousedown`, mouseDownEventHandler);
   document.body.addEventListener(`mouseup`, mouseUpEventHandler);
@@ -153,13 +148,14 @@ function addEditorEventHandler() {
   document.body.addEventListener(`dragover`, dragOverEventHandler);
   document.body.addEventListener(`dragend`, dragEndEventHandler);
   document.body.addEventListener(`drop`, dropEventHandler);
+  document.body.addEventListener(`click`, clickEventHandler);
   document.body.addEventListener(`dblclick`, dblClickEventHandler);
+  document.body.addEventListener(`contextmenu`, contextMenuEventHandler);
 
   document.body.addEventListener(`input`, inputEventHandler);
 }
 
 function removeEditorEventHandler() {
-  document.body.removeEventListener(`contextmenu`, contextMenuEventHandler);
   document.body.removeEventListener(`mousemove`, mouseMoveEventHandler);
   document.body.removeEventListener(`mousedown`, mouseDownEventHandler);
   document.body.removeEventListener(`mouseup`, mouseUpEventHandler);
@@ -169,7 +165,9 @@ function removeEditorEventHandler() {
   document.body.removeEventListener(`dragover`, dragOverEventHandler);
   document.body.removeEventListener(`dragend`, dragEndEventHandler);
   document.body.removeEventListener(`drop`, dropEventHandler);
+  document.body.removeEventListener(`click`, clickEventHandler);
   document.body.removeEventListener(`dblclick`, dblClickEventHandler);
+  document.body.removeEventListener(`contextmenu`, contextMenuEventHandler);
 
   document.body.removeEventListener(`input`, inputEventHandler);
 }
@@ -197,7 +195,36 @@ function createEditorTools() {
   strokeWidth.value = 1;
   strokeWidth.min = 1;
 
+  [`OrthoMode`, `GridSnap`].forEach(option => {
+    const cb = document.createElement(`input`);
+    editorToolsContainer.appendChild(cb);
+    cb.type = `checkbox`;
+    cb.checked = true;
+    cb.id = `cb${option}`;
+    const lbl = document.createElement(`label`);
+    editorToolsContainer.appendChild(lbl);
+    lbl.setAttribute(`for`, cb.id);
+    lbl.innerText = option;
 
+  });
+
+  [`Draw`, `Select`].forEach(option => {
+    const rb = document.createElement(`input`);
+    editorToolsContainer.appendChild(rb);
+    rb.type = `radio`;
+    //rb.checked = (option === `Draw`);
+    rb.value = option.toLowerCase();
+    rb.id = `rb${option}`;
+    rb.name = `rgMode`;
+    rb.addEventListener(`input`, inputEventHandler);
+    const lbl = document.createElement(`label`);
+    editorToolsContainer.appendChild(lbl);
+    lbl.setAttribute(`for`, rb.id);
+    lbl.innerText = option;
+
+    if (option === `Draw`)
+      rb.click(); //init
+  });
 
   return editorToolsContainer;
 }
@@ -280,6 +307,7 @@ function enterVisuEditor(initialCall) {
     document.body.appendChild(createSignalTable());
     document.body.appendChild(createVisuItemPool());
     document.body.appendChild(createEditorTools());
+    document.querySelector(`#rbDraw`).click();
   }
   else {
     document.querySelectorAll(`.visuEditElement`).forEach(el => el.removeAttribute(`cloaked`));
@@ -297,31 +325,32 @@ function leaveVisuEditor() {
 /*********************EventHandlers*********************/
 function contextMenuEventHandler(ev) {
   ev.preventDefault();
+  cancelCurrentDrawing();
 }
 
 function mouseMoveEventHandler(ev) {
-  //console.log(ev.target);
-  const divVisu = ev.target.closest(`.divVisu`);
-  if (divVisu) {
+  const divVisu = document.querySelector(`.divVisu`);
+  if (ev.target.matches(`.divVisu[mode="select"] svg *`)) {
+    //console.log(ev.target);
+    ev.target.setAttributeNS(null, `stroke-width`, 10);
+  }
+
+  
+  if (ev.target.closest(`.divVisu[mode=draw]`)) {
     const divVisuBox = divVisu.getBoundingClientRect();
-    //const xRel = Math.round(GRIDSIZE_AS_PARTS_FROM_WIDTH * (ev.x - divVisuBox.x) / divVisuBox.width) / GRIDSIZE_AS_PARTS_FROM_WIDTH;
-    //const yRel = Math.round((GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * (ev.y - divVisuBox.y) / divVisuBox.height) / (GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO);
     const activeSVG = divVisu.querySelector(`svg`); //choose active SVG
     let xSvg = (ev.x - divVisuBox.x) / divVisuBox.width * activeSVG.viewBox.baseVal.width;
     let ySvg = (ev.y - divVisuBox.y) / divVisuBox.height *  activeSVG.viewBox.baseVal.height;
     const hoverPath = activeSVG.querySelector(`.hoverPath`);
-    if (ORTHO_MODE && hoverPath) {
+    if (hoverPath && document.querySelector(`#cbOrthoMode`).checked) {
       const dX = Math.abs(xSvg - hoverPath.startX);
       const dY = Math.abs(ySvg - hoverPath.startY);
-      (dY === Math.max(dX, dY)) ? xSvg = hoverPath.startX : ySvg = hoverPath.startY;
+    (dY === Math.max(dX, dY)) ? xSvg = hoverPath.startX : ySvg = hoverPath.startY;
     }
-    if (GRIDSNAP) {
+    if (document.querySelector(`#cbGridSnap`).checked) {
       xSvg = Math.round(GRIDSIZE_AS_PARTS_FROM_WIDTH * (xSvg / activeSVG.viewBox.baseVal.width)) / GRIDSIZE_AS_PARTS_FROM_WIDTH * activeSVG.viewBox.baseVal.width;
       ySvg = Math.round((GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * (ySvg / activeSVG.viewBox.baseVal.height)) / (GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * activeSVG.viewBox.baseVal.height;
     }
-
-
-    //console.log(`${xRel}, ${yRel}`);
 
     let hoverMarker = activeSVG.querySelector(`.hoverMarker`);
     if (!hoverMarker) {
@@ -344,33 +373,43 @@ function mouseMoveEventHandler(ev) {
       const strokeWidth = document.querySelector(`.strokeWidth`).value;
       hoverPath.setAttributeNS(null,`stroke-width`, strokeWidth);
     }
-
   }
 }
 
 function mouseDownEventHandler(ev) {
   if (ev.buttons === 1) {
-    const target = (ev.target.type === `text`) ? ev.target : ev.target.closest(`.visuItem`);
+    const target = (ev.target.matches(`[type="text"], svg *`)) ? ev.target : ev.target.closest(`.visuItem`);
     if (target) {
-     if (target.draggable)
+     if (target.matches(`[draggable]`))
       target.setAttribute(`dragging`, `true`);
     }
-    else if (ev.target.closest(`.divVisu`)) {
+  }
+}
+
+function clickEventHandler(ev) {
+  //console.log(ev);
+  if (ev.target.closest(`.divVisu`)) {
+    if (document.querySelector(`#rbDraw`).checked) {
       const activeSVG = document.querySelector(`.divVisu svg`);
       let hoverPath = activeSVG.querySelector(`.hoverPath`);
       let activePath = activeSVG.querySelector(`.activePath`);
+      const strokeWidth = document.querySelector(`.strokeWidth`).value;
+      const color = document.querySelector(`.colorPicker`).value;
       if (hoverPath) {
         if (!activePath) {
           activePath = hoverPath.cloneNode();
           activeSVG.appendChild(activePath);
-          //activePath.setAttributeNS(null,`stroke`, color);
           activePath.removeAttributeNS(null,`opacity`);
           activePath.classList.replace(`hoverPath`, `activePath`);
         }
         else {
-          const pathString = `${activePath.attributes.d.value} ${hoverPath.attributes.d.value}`;
+          const hoverMarker = activeSVG.querySelector(`.hoverMarker`);
+          //toDo: prevent duplicate x,y points...
+          const pathString = `${activePath.attributes.d.value} L ${hoverMarker.attributes.cx.value}, ${hoverMarker.attributes.cy.value}`;
           activePath.setAttributeNS(null, `d`, pathString);
         }
+        activePath.setAttributeNS(null,`stroke`, color);
+        activePath.setAttributeNS(null,`stroke-width`, strokeWidth);
         //hoverPath.remove();
       }
       else {
@@ -380,25 +419,26 @@ function mouseDownEventHandler(ev) {
         hoverPath.setAttributeNS(null,`opacity`, `0.4`);
         hoverPath.setAttributeNS(null,`fill`, `none`);
       }
-      const color = document.querySelector(`.colorPicker`).value;
-      hoverPath.setAttributeNS(null,`stroke`, color);
-      const strokeWidth = document.querySelector(`.strokeWidth`).value;
       hoverPath.setAttributeNS(null,`stroke-width`, strokeWidth);
-      activePath.setAttributeNS(null,`stroke-width`, strokeWidth);
+      hoverPath.setAttributeNS(null,`stroke`, color);
       const hoverMarker = activeSVG.querySelector(`.hoverMarker`);
       hoverPath.startX = hoverMarker.attributes.cx.value;
       hoverPath.startY = hoverMarker.attributes.cy.value;
       hoverPath.setAttributeNS(null, `d`, `M ${hoverPath.startX}, ${hoverPath.startY}`);
     }
   }
-  else {
-    const hoverPath = document.querySelector(`.hoverPath`);
-    if (hoverPath)
-      hoverPath.remove();
-    const activePath = document.querySelector(`.activePath`);
-    if (activePath)
-      activePath.classList.remove(`activePath`);
-  }
+}
+
+function cancelCurrentDrawing() {
+  const hoverMarker = document.querySelector(`.hoverMarker`);
+  if (hoverMarker)
+    hoverMarker.remove();
+  const hoverPath = document.querySelector(`.hoverPath`);
+  if (hoverPath)
+    hoverPath.remove();
+  const activePath = document.querySelector(`.activePath`);
+  if (activePath)
+    activePath.classList.remove(`activePath`);
 }
 
 function mouseUpEventHandler(ev) {
@@ -406,7 +446,7 @@ function mouseUpEventHandler(ev) {
 }
 
 function dragStartEventHandler(ev) {
-  //console.log(ev);
+  console.log(ev);
   const target = (ev.target.type === `text`) ? ev.target : ev.target.closest(`.visuItem`);
   if (target) {
     target.setAttribute(`dragging`, `true`);
@@ -465,9 +505,11 @@ function dropEventHandler(ev) {
       const offsetY = ev.dataTransfer.getData(`offsetY`);
       
       dropItem.style.position = `absolute`;
-      //toDo: gridSnap...
-      dropItem.style.left = `${Math.round((ev.x - targetBox.x - offsetX)/targetBox.width*100)}%`;
-      dropItem.style.top = `${Math.round((ev.y - targetBox.y - offsetY)/targetBox.height*100)}%`;
+      const xRel = (ev.x - targetBox.x - offsetX)/targetBox.width;
+      const yRel = (ev.y - targetBox.y - offsetY)/targetBox.height;
+      const gridSnapActive = document.querySelector(`#cbGridSnap`).checked;
+      dropItem.style.left = (gridSnapActive) ? `${Math.round(GRIDSIZE_AS_PARTS_FROM_WIDTH * xRel) / GRIDSIZE_AS_PARTS_FROM_WIDTH * 100}%` : `${xRel*100}%`;
+      dropItem.style.top = (gridSnapActive) ? `${Math.round((GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * yRel) / (GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * 100}%` : `${yRel*100}%`;
       target.appendChild(dropItem);
     }
     else {
@@ -507,17 +549,31 @@ function dropEventHandler(ev) {
 }
 
 function dblClickEventHandler(ev) {
+  console.log(ev);
   if (ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
     ev.target.removeAttribute(`signal`);
     ev.target.title = ``;
     ev.target.setAttribute(`NA`, true);
+  }
+  else {
+    const activePath = document.querySelector(`.activePath`);
+    if (activePath) {
+      const pathString = `${activePath.attributes.d.value} z`;  //close Path on
+      activePath.setAttributeNS(null, `d`, pathString);
+      cancelCurrentDrawing();
+    }
   }
 }
 
 function inputEventHandler(ev) {
   if (ev.target.type === `text`) {
     //document.querySelectorAll(`.${ev.target.className.replace(` `, `.`)}`).forEach(el => el.)
-    console.log(ev.target);
+  }
+  if (ev.target.type === `radio`) { //triggers twice; dunno y...
+    console.log(`triggers twice for id=${ev.target.id} dunno y...`);
+    cancelCurrentDrawing();
+    document.querySelector(`.divVisu`).setAttribute(`mode`, `${ev.target.value}`);
+    document.querySelectorAll(`svg *`).forEach(el => el.setAttribute(`draggable`, `${ev.target.value === 'select'}`));
   }
 }
 
