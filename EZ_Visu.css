@@ -187,6 +187,9 @@ body {
 [NA] {
   opacity: 0;
 }
+[selected] {
+  outline: 1px solid green;
+}
 /*********************CursorStylez*********************/
 [draggable = "true"] {
   cursor: grab;

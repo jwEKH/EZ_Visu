@@ -176,40 +176,62 @@ function removeEditorEventHandler() {
 
   document.body.removeEventListener(`input`, inputEventHandler);
 }
+
 function calcSvgCoordinates(ev) {
   const divVisu = ev.target.closest(`.divVisu`);
   if (divVisu) {
-    const divVisuBox = divVisu.getBoundingClientRect();
-    const activeSVG = divVisu.querySelector(`svg[active]`);
-    let xSvg = (ev.x - divVisuBox.x) / divVisuBox.width * activeSVG.viewBox.baseVal.width;
-    let ySvg = (ev.y - divVisuBox.y) / divVisuBox.height *  activeSVG.viewBox.baseVal.height;
+    const activeSvg = divVisu.querySelector(`svg[active]`);
+    const activeSvgBox = activeSvg.getBoundingClientRect();
+    let xSvg = (ev.x - activeSvgBox.x) / activeSvgBox.width * activeSvg.viewBox.baseVal.width;
+    let ySvg = (ev.y - activeSvgBox.y) / activeSvgBox.height *  activeSvg.viewBox.baseVal.height;
 
     if (divVisu.matches(`[mode=draw]`)) {
-      const hoverLine = activeSVG.querySelector(`.hoverLine`);
+      const hoverLine = activeSvg.querySelector(`.hoverLine`);
       if (hoverLine && document.querySelector(`#cbOrthoMode`).checked) {
         const dX = Math.abs(xSvg - hoverLine.getAttribute(`x1`));
         const dY = Math.abs(ySvg - hoverLine.getAttribute(`y1`));
         (dY === Math.max(dX, dY)) ? xSvg = hoverLine.getAttribute(`x1`) : ySvg = hoverLine.getAttribute(`y1`);
       }
       if (document.querySelector(`#cbGridSnap`).checked) {
-        xSvg = Math.round(GRIDSIZE_AS_PARTS_FROM_WIDTH * (xSvg / activeSVG.viewBox.baseVal.width)) / GRIDSIZE_AS_PARTS_FROM_WIDTH * activeSVG.viewBox.baseVal.width;
-        ySvg = Math.round((GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * (ySvg / activeSVG.viewBox.baseVal.height)) / (GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * activeSVG.viewBox.baseVal.height;
+        xSvg = Math.round(GRIDSIZE_AS_PARTS_FROM_WIDTH * (xSvg / activeSvg.viewBox.baseVal.width)) / GRIDSIZE_AS_PARTS_FROM_WIDTH * activeSvg.viewBox.baseVal.width;
+        ySvg = Math.round((GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * (ySvg / activeSvg.viewBox.baseVal.height)) / (GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * activeSvg.viewBox.baseVal.height;
       }
     }
 
     return {xSvg: xSvg, ySvg: ySvg}
   }
 }
+
+function selectionAreaHandler() {
+  const divVisu = document.querySelector(`.divVisu[mode=select]`);
+  if (divVisu) {
+    const selectionArea = divVisu.querySelector(`.selectionArea`);
+    const selectionAreaBox = selectionArea.getBoundingClientRect();
+    const {x, y, width, height} = selectionAreaBox;
+    divVisu.querySelectorAll(`line`).forEach(el => {
+      elBox = el.getBoundingClientRect();
+
+      const match = (selectionArea.partialSelection) ? 
+                    (x <= elBox.x) && (width+x >= elBox.width+elBox.x) && (y <= elBox.y) && (height+y >= elBox.height+elBox.y) : //todo!
+                    (x <= elBox.x) && (width+x >= elBox.width+elBox.x) && (y <= elBox.y) && (height+y >= elBox.height+elBox.y);
+      el.toggleAttribute(`selected`, match);
+      
+
+      
+    });
+  }
+}
+
 function drawModeHoverEventHandler(ev) {
   const divVisu = ev.target.closest(`.divVisu[mode=draw]`);
   if (divVisu) {
     const svgCoordinates = calcSvgCoordinates(ev);
 
-    const activeSVG = divVisu.querySelector(`svg[active]`);
-    let hoverMarker = activeSVG.querySelector(`.hoverMarker`);
+    const activeSvg = divVisu.querySelector(`svg[active]`);
+    let hoverMarker = activeSvg.querySelector(`.hoverMarker`);
     if (!hoverMarker) {
       hoverMarker = document.createElementNS(SVG_NS, `circle`);
-      activeSVG.appendChild(hoverMarker);
+      activeSvg.appendChild(hoverMarker);
       hoverMarker.classList.add(`hoverMarker`);
       hoverMarker.setAttributeNS(null, `r`, `5`);
     }
@@ -220,7 +242,7 @@ function drawModeHoverEventHandler(ev) {
     hoverMarker.setAttributeNS(null, `cx`, `${svgCoordinates.xSvg}`);
     hoverMarker.setAttributeNS(null, `cy`, `${svgCoordinates.ySvg}`);
     
-    const hoverLine = activeSVG.querySelector(`.hoverLine`);
+    const hoverLine = activeSvg.querySelector(`.hoverLine`);
     if (hoverLine) {
       hoverLine.setAttributeNS(null, `x2`, `${svgCoordinates.xSvg}`);
       hoverLine.setAttributeNS(null, `y2`, `${svgCoordinates.ySvg}`);
@@ -234,19 +256,17 @@ function drawModeHoverEventHandler(ev) {
 function selectModeHoverEventHandler(ev) {
   const divVisu = ev.target.closest(`.divVisu[mode=select]`);
   if (divVisu) {
-    const selectionArea = divVisu.querySelector(`.selectionArea`);
+    const activeSvg = divVisu.querySelector(`svg[active]`);
+    const svgCoordinates = calcSvgCoordinates(ev);
+    const selectionArea = activeSvg.querySelector(`.selectionArea`);
     if (selectionArea) {
-      const selectionAreaBox = selectionArea.getBoundingClientRect();
+      const points = `${selectionArea.svgCoordinates.xSvg},${selectionArea.svgCoordinates.ySvg} ${selectionArea.svgCoordinates.xSvg},${svgCoordinates.ySvg} ${svgCoordinates.xSvg},${svgCoordinates.ySvg} ${svgCoordinates.xSvg},${selectionArea.svgCoordinates.ySvg}`;
+      selectionArea.setAttributeNS(null,`points`, points);
+      selectionArea.partialSelection = (svgCoordinates.xSvg >= selectionArea.svgCoordinates.xSvg && svgCoordinates.ySvg >= selectionArea.svgCoordinates.ySvg) ? false : true;
+      const color = (selectionArea.partialSelection) ? YELLOW_HEX : CYAN_HEX;
+      selectionArea.setAttributeNS(null,`fill`, color);
 
-      const dx = ev.x - selectionAreaBox.x;
-      const dy = ev.y - selectionAreaBox.y;
-      
-      selectionArea.style.width = `${Math.abs(dx)}px`;
-      selectionArea.style.height = `${Math.abs(dy)}px`;
-
-      if (dx < 0)
-        selectionArea.style.left = `${ev.x}px`;
-
+      selectionAreaHandler();
     }
   }
 }
@@ -254,12 +274,12 @@ function selectModeHoverEventHandler(ev) {
 function drawModeClickEventHandler(ev) {
   const divVisu = ev.target.closest(`.divVisu[mode=draw]`);
   if (divVisu) {
-    const activeSVG = divVisu.querySelector(`svg[active]`);
-    const hoverLine = activeSVG.querySelector(`.hoverLine`);
+    const activeSvg = divVisu.querySelector(`svg[active]`);
+    const hoverLine = activeSvg.querySelector(`.hoverLine`);
     if (hoverLine) {
       if (!(hoverLine.getAttribute(`x1`) === hoverLine.getAttribute(`x2`) && hoverLine.getAttribute(`y1`) === hoverLine.getAttribute(`y2`))) {  
         const newLine = hoverLine.cloneNode();
-        activeSVG.appendChild(newLine);
+        activeSvg.appendChild(newLine);
         newLine.removeAttributeNS(null,`opacity`);
         newLine.classList.remove(`hoverLine`);
         newLine.addEventListener(`mouseenter`, mouseEnterEventHandler);
@@ -270,9 +290,9 @@ function drawModeClickEventHandler(ev) {
       }
     }
     else {
-      const hoverMarker = activeSVG.querySelector(`.hoverMarker`);
+      const hoverMarker = activeSvg.querySelector(`.hoverMarker`);
       const hoverLine = document.createElementNS(SVG_NS, `line`);
-      activeSVG.appendChild(hoverLine);
+      activeSvg.appendChild(hoverLine);
       hoverLine.classList.add(`hoverLine`);
       hoverLine.setAttributeNS(null,`opacity`, `0.4`);
       hoverLine.setAttributeNS(null,`x1`, hoverMarker.getAttribute(`cx`));
@@ -284,27 +304,22 @@ function drawModeClickEventHandler(ev) {
 function selectModeClickEventHandler(ev) {
   const divVisu = ev.target.closest(`.divVisu[mode=select]`);
   if (divVisu) {
-    const selectionArea = divVisu.querySelector(`.selectionArea`);
+    const activeSvg = divVisu.querySelector(`svg[active]`);
+    const svgCoordinates = calcSvgCoordinates(ev);
+    const selectionArea = activeSvg.querySelector(`.selectionArea`);
     if (selectionArea) {
-
-
+      //selectionArea.setAttributeNS(null,`width`, 100);
+      //selectionArea.setAttributeNS(null,`height`, 100);
+      selectionArea.remove();
     }
     else {
-      const selectionArea = document.createElement(`div`);
-      divVisu.appendChild(selectionArea);
+      const selectionArea = document.createElementNS(SVG_NS, `polygon`);
+      activeSvg.appendChild(selectionArea);
       selectionArea.classList.add(`selectionArea`);
-      selectionArea.style.position = `absolute`;
-      selectionArea.style.left = `${ev.x}px`;
-      selectionArea.style.top = `${ev.y}px`;
-      selectionArea.style.backgroundColor = `red`;
-      //selectionArea.style.width = `100px`;
-      //selectionArea.style.height = `100px`;
-
+      selectionArea.setAttributeNS(null,`opacity`, `0.1`);
+      selectionArea.svgCoordinates = svgCoordinates;
+      //selectionArea.setAttributeNS(null,`points`, `${svgCoordinates.xSvg},${svgCoordinates.ySvg}`);
     }
-    //const svgCoordinates = calcSvgCoordinates(ev);
-
-
-
   }
 }
 
@@ -461,6 +476,7 @@ function leaveVisuEditor() {
 function contextMenuEventHandler(ev) {
   ev.preventDefault();
   cancelCurrentDrawing();
+  cancelCurrentSelection();
 }
 
 function mouseEnterEventHandler(ev) {
@@ -505,6 +521,13 @@ function cancelCurrentDrawing() {
   const hoverLine = document.querySelector(`.hoverLine`);
   if (hoverLine)
     hoverLine.remove();
+}
+
+function cancelCurrentSelection(){
+  const selectionArea = document.querySelector(`.selectionArea`);
+  if (selectionArea)
+    selectionArea.remove();
+  document.querySelectorAll(`[selected]`).forEach(el => el.removeAttribute(`selected`));
 }
 
 function mouseUpEventHandler(ev) {
@@ -622,12 +645,7 @@ function dblClickEventHandler(ev) {
     ev.target.setAttribute(`NA`, true);
   }
   else {
-    const activePath = document.querySelector(`.activePath`);
-    if (activePath) {
-      const pathString = `${activePath.attributes.d.value} z`;  //close Path on
-      activePath.setAttributeNS(null, `d`, pathString);
-      cancelCurrentDrawing();
-    }
+    
   }
 }
 
@@ -638,6 +656,7 @@ function inputEventHandler(ev) {
   if (ev.target.type === `radio`) { //triggers twice; dunno y...
     console.log(`triggers twice for id=${ev.target.id} dunno y...`);
     cancelCurrentDrawing();
+    cancelCurrentSelection();
     document.querySelector(`.divVisu`).setAttribute(`mode`, `${ev.target.value}`);
     document.querySelectorAll(`svg *`).forEach(el => el.setAttribute(`draggable`, `${ev.target.value === 'select'}`));
   }
