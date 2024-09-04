@@ -155,6 +155,8 @@ function addEditorEventHandler() {
   document.body.addEventListener(`dblclick`, dblClickEventHandler);
   document.body.addEventListener(`contextmenu`, contextMenuEventHandler);
 
+  document.body.addEventListener(`keydown`, keyDownEventHandler);
+  
   document.body.addEventListener(`input`, inputEventHandler);
 }
 
@@ -174,6 +176,8 @@ function removeEditorEventHandler() {
   document.body.removeEventListener(`dblclick`, dblClickEventHandler);
   document.body.removeEventListener(`contextmenu`, contextMenuEventHandler);
 
+  document.body.addEventListener(`keydown`, keyDownEventHandler);
+  
   document.body.removeEventListener(`input`, inputEventHandler);
 }
 
@@ -208,11 +212,11 @@ function selectionAreaHandler() {
     const selectionArea = divVisu.querySelector(`.selectionArea`);
     const selectionAreaBox = selectionArea.getBoundingClientRect();
     const {x, y, width, height} = selectionAreaBox;
-    divVisu.querySelectorAll(`line`).forEach(el => {
+    divVisu.querySelectorAll(`line, .visuItem`).forEach(el => {
       elBox = el.getBoundingClientRect();
 
       const match = (selectionArea.partialSelection) ? 
-                    (x <= elBox.x) && (width+x >= elBox.width+elBox.x) && (y <= elBox.y) && (height+y >= elBox.height+elBox.y) : //todo!
+                    (x <= elBox.x) && (width+x >= elBox.width+elBox.x) && elBox.height+elBox.y >= y || (y <= elBox.y) && (height+y >= elBox.height+elBox.y) && elBox.width+elBox.x >= x :
                     (x <= elBox.x) && (width+x >= elBox.width+elBox.x) && (y <= elBox.y) && (height+y >= elBox.height+elBox.y);
       el.toggleAttribute(`selected`, match);
       
@@ -287,6 +291,10 @@ function drawModeClickEventHandler(ev) {
         
         hoverLine.setAttributeNS(null,`x1`, hoverLine.getAttribute(`x2`));
         hoverLine.setAttributeNS(null,`y1`, hoverLine.getAttribute(`y2`));
+
+        const {unDoReDoStack} = divVisu;
+        unDoReDoStack.idx++;
+        unDoReDoStack.stack.push(newLine);
       }
     }
     else {
@@ -324,12 +332,47 @@ function selectModeClickEventHandler(ev) {
 }
 
 function createEditorTools() {
-  const editorToolsContainer = document.createElement(`div`);
+  const fsEditorTools = document.createElement(`fieldset`);
+  const legendTools = document.createElement(`legend`);
+  fsEditorTools.appendChild(legendTools);
+  legendTools.innerText = `Editor Tools`;
+
+  const inputFile = document.createElement(`input`);
+  fsEditorTools.appendChild(inputFile);
+  inputFile.type = `file`;
+  inputFile.classList.add(`inputFile`);
+  inputFile.accept = `.txt`;
+  inputFile.addEventListener(`input`, openLocalFileEventHandler);
+    
+
+  [`Save`, `Open`].forEach(el => {
+    const btn = document.createElement(`input`);
+    fsEditorTools.appendChild(btn);
+    btn.type = `button`;
+    btn.classList.add(`btn${el}`);
+    btn.value = el;
+    btn.title = (el === `Save`) ? `[Strg + s]` : `[Strg + o]`;
+    btn.addEventListener(`click`, saveOpenEventHandler);
+  });
+
+  document.querySelector(`.divVisu`).unDoReDoStack = {idx: -1, stack: []};
+  [`UnDo`, `ReDo`].forEach(el => {
+    const btn = document.createElement(`input`);
+    fsEditorTools.appendChild(btn);
+    btn.type = `button`;
+    btn.classList.add(`btn${el}`);
+    btn.value = (el === `UnDo`) ? `↶` : `↷`;
+    btn.title = (el === `UnDo`) ? `[Strg + z]` : `[Strg + y]`;
+    btn.addEventListener(`click`, unDoReDoEventListener);
+  });
+
+
   const colorPicker = document.createElement(`input`);
-  editorToolsContainer.appendChild(colorPicker);
+  fsEditorTools.appendChild(colorPicker);
   colorPicker.classList.add(`colorPicker`);
   colorPicker.type = `color`;
   colorPicker.value = MAGENTA_HEX;
+  colorPicker.title = `[c]`;
   colorPicker.setAttribute(`list`, `presetColors`);
   const presetColors = document.createElement(`datalist`);
   colorPicker.appendChild(presetColors);
@@ -340,7 +383,7 @@ function createEditorTools() {
     option.value = color;
   });
   const strokeWidth = document.createElement(`input`);
-  editorToolsContainer.appendChild(strokeWidth);
+  fsEditorTools.appendChild(strokeWidth);
   strokeWidth.classList.add(`strokeWidth`);
   strokeWidth.type = `number`;
   strokeWidth.value = 1;
@@ -348,36 +391,44 @@ function createEditorTools() {
 
   [`OrthoMode`, `GridSnap`].forEach(option => {
     const cb = document.createElement(`input`);
-    editorToolsContainer.appendChild(cb);
+    fsEditorTools.appendChild(cb);
     cb.type = `checkbox`;
     cb.checked = true;
     cb.id = `cb${option}`;
+    cb.title = (option === `OrthoMode`) ? `[o]` : `[g]`;
     const lbl = document.createElement(`label`);
-    editorToolsContainer.appendChild(lbl);
+    fsEditorTools.appendChild(lbl);
     lbl.setAttribute(`for`, cb.id);
     lbl.innerText = option;
-
+    lbl.title = (option === `OrthoMode`) ? `[o]` : `[g]`;
   });
 
+  const fsMode = document.createElement(`fieldset`);
+  fsEditorTools.appendChild(fsMode);
+  const legendMode = document.createElement(`legend`);
+  fsMode.appendChild(legendMode);
+  legendMode.innerText = `Editor Mode`;
   [`Draw`, `Select`].forEach(option => {
     const rb = document.createElement(`input`);
-    editorToolsContainer.appendChild(rb);
+    fsMode.appendChild(rb);
     rb.type = `radio`;
     //rb.checked = (option === `Draw`);
     rb.value = option.toLowerCase();
     rb.id = `rb${option}`;
     rb.name = `rgMode`;
+    rb.title = (option === `Draw`) ? `[d]` : `[s]`;
     rb.addEventListener(`input`, inputEventHandler);
     const lbl = document.createElement(`label`);
-    editorToolsContainer.appendChild(lbl);
+    fsMode.appendChild(lbl);
     lbl.setAttribute(`for`, rb.id);
     lbl.innerText = option;
+    lbl.title = (option === `Draw`) ? `[d]` : `[s]`;
 
     if (option === `Draw`)
       rb.click(); //init
   });
 
-  return editorToolsContainer;
+  return fsEditorTools;
 }
 
 function createSignalTable(visuLiveData) {
@@ -480,7 +531,7 @@ function contextMenuEventHandler(ev) {
 }
 
 function mouseEnterEventHandler(ev) {
-  console.log(ev.target);
+  //console.log(ev.target);
   if (ev.target.matches(`.divVisu[mode="select"] svg *`)) {
     ev.target.setAttributeNS(null, `stroke-width`, 10 * ev.target.getAttribute(`stroke-width`));
   }
@@ -649,6 +700,68 @@ function dblClickEventHandler(ev) {
   }
 }
 
+function keyDownEventHandler(ev) {
+  //console.log(ev);
+  const divVisu = document.querySelector(`.divVisu[mode]`);
+  if (divVisu) {
+    const key = ev.key.toLowerCase();
+    const auxKeys = ev.altKey | ev.ctrlKey | ev.shiftKey;
+    if (!auxKeys) {
+      if (key === `c`)
+        document.querySelector(`.colorPicker`).click();
+      if (key === `d`)
+        document.querySelector(`#rbDraw`).click();
+      if (key === `g`)
+        document.querySelector(`#cbGridSnap`).click();
+      if (key === `o`)
+        document.querySelector(`#cbOrthoMode`).click();
+      if (key === `s`)
+        document.querySelector(`#rbSelect`).click();
+      if (key === `escape`) {
+        cancelCurrentDrawing();
+        cancelCurrentSelection();
+      }
+    }
+    else if (ev.ctrlKey) {
+      if (key === `y`)
+        document.querySelector(`.btnReDo`).click();
+      if (key === `z`)
+        document.querySelector(`.btnUnDo`).click();
+    }
+
+
+
+
+
+
+    const activeSvg = document.querySelector(`.divVisu[mode=select] svg[active]`);
+    if (activeSvg) {
+      if (key.startsWith(`arrow`)) {
+        ev.preventDefault();
+        const stepWidth = (document.querySelector(`#cbGridSnap`).checked) ? activeSvg.viewBox.baseVal.width / GRIDSIZE_AS_PARTS_FROM_WIDTH : 10; //todo...
+        const dx =  (key.includes(`left`)) ? -stepWidth :
+        (key.includes(`right`)) ? stepWidth :
+        0;
+        const dy =  (key.includes(`up`)) ? -stepWidth :
+        (key.includes(`down`)) ? stepWidth :
+        0;
+
+        document.querySelectorAll(`[selected]`).forEach(el => {
+          if (dx) {
+            el.setAttribute(`x1`, dx + parseFloat(el.getAttribute(`x1`)));
+            el.setAttribute(`x2`, dx + parseFloat(el.getAttribute(`x2`)));
+          }
+          if (dy) {
+            el.setAttribute(`y1`, dy + parseFloat(el.getAttribute(`y1`)));
+            el.setAttribute(`y2`, dy + parseFloat(el.getAttribute(`y2`)));
+          }
+
+        });
+      }
+    }
+  }
+}
+
 function inputEventHandler(ev) {
   if (ev.target.type === `text`) {
     //document.querySelectorAll(`.${ev.target.className.replace(` `, `.`)}`).forEach(el => el.)
@@ -660,6 +773,79 @@ function inputEventHandler(ev) {
     document.querySelector(`.divVisu`).setAttribute(`mode`, `${ev.target.value}`);
     document.querySelectorAll(`svg *`).forEach(el => el.setAttribute(`draggable`, `${ev.target.value === 'select'}`));
   }
+}
+
+function unDoReDoEventListener(ev) {
+  const divVisu = document.querySelector(`.divVisu[mode]`);
+  if (divVisu) {
+    const {unDoReDoStack} = divVisu; 
+    if (ev.target.matches(`.btnUnDo`)) {
+      unDoReDoStack.idx = Math.max(-1, unDoReDoStack.idx - 1);
+      unDoReDoStack.stack.at(unDoReDoStack.idx).remove(); //todo...
+    }
+    else {
+      unDoReDoStack.idx = Math.min(unDoReDoStack.stack.length - 1, unDoReDoStack.idx + 1);
+    }
+    console.log(unDoReDoStack.stack.at(unDoReDoStack.idx));
+  }
+
+}
+
+function openLocalFileEventHandler(ev) {
+  const reader = new FileReader();
+  reader.readAsText(ev.target.files[0]);
+  reader.addEventListener(`load`, () => {
+    document.querySelector(`.divVisu`).innerHTML = reader.result;
+    //console.log(reader.result);
+  });
+}
+
+function saveOpenEventHandler(ev) {
+  if (ev.target.matches(`.btnSave`)) {
+    cancelCurrentSelection();
+    cancelCurrentDrawing();
+    //saveSvg(document.querySelector(`svg`), `test.svg`);
+    saveVisu();
+  }
+  else {
+    console.log(`open; todo...`);
+    const exampleSVG = `<?xml version="1.0" standalone="no"?>
+    <svg viewBox="0 0 1600 900" class="bgSVG bgSVG_1" active="true" xmlns="http://www.w3.org/2000/svg"><line class="" x1="950" y1="175" x2="950" y2="750" stroke="#c31d65" stroke-width="1"></line><line class="" x1="950" y1="750" x2="475" y2="750" stroke="#c31d65" stroke-width="1"></line><line class="" x1="475" y1="750" x2="475" y2="200" stroke="#c31d65" stroke-width="1"></line><line class="" x1="475" y1="200" x2="950" y2="200" stroke="#c31d65" stroke-width="1"></line></svg>`
+    document.querySelector(`.divVisu`).innerHTML = exampleSVG;
+    
+  }
+
+}
+
+function saveVisu() {
+  const data = document.querySelector(`.divVisu`).innerHTML;
+  
+  console.log(data);
+
+  
+  
+  const blob = new Blob([data], {type:"text/html;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const downloadLink = document.createElement("a");
+  document.body.appendChild(downloadLink);
+  downloadLink.href = url;
+  downloadLink.download = `test.txt`;
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+}
+
+function saveSvg(svgEl, name) {
+  svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  const svgData = svgEl.outerHTML;
+  const preface = '<?xml version="1.0" standalone="no"?>\r\n';
+  const svgBlob = new Blob([preface, svgData], {type:"image/svg+xml;charset=utf-8"});
+  const svgUrl = URL.createObjectURL(svgBlob);
+  const downloadLink = document.createElement("a");
+  downloadLink.href = svgUrl;
+  downloadLink.download = name;
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
 }
 
 
@@ -681,4 +867,9 @@ function getLiveData(visuLiveData, projectNo) {
 
 function fetchData() {
   console.log(`fetchData`);
+}
+
+/*********************AuxFunctions*********************/
+function constrain(val, min, max) {
+  return Math.min(max, Math.max(min, val));
 }
