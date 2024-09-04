@@ -292,9 +292,7 @@ function drawModeClickEventHandler(ev) {
         hoverLine.setAttributeNS(null,`x1`, hoverLine.getAttribute(`x2`));
         hoverLine.setAttributeNS(null,`y1`, hoverLine.getAttribute(`y2`));
 
-        const {unDoReDoStack} = divVisu;
-        unDoReDoStack.idx++;
-        unDoReDoStack.stack.push(newLine);
+        updateUnDoReDoStack();
       }
     }
     else {
@@ -355,7 +353,9 @@ function createEditorTools() {
     btn.addEventListener(`click`, saveOpenEventHandler);
   });
 
-  document.querySelector(`.divVisu`).unDoReDoStack = {idx: -1, stack: []};
+
+  const divVisu = document.querySelector(`.divVisu`);
+  updateUnDoReDoStack(true);
   [`UnDo`, `ReDo`].forEach(el => {
     const btn = document.createElement(`input`);
     fsEditorTools.appendChild(btn);
@@ -523,6 +523,20 @@ function leaveVisuEditor() {
   document.querySelectorAll(`[draggable]`).forEach(el => el.removeAttribute(`draggable`));
   removeEditorEventHandler();
 }
+
+function updateUnDoReDoStack(reset) {
+  //cancelCurrentDrawing();
+  //cancelCurrentSelection();
+  const divVisu = document.querySelector(`.divVisu`);
+  if (reset) {
+    divVisu.unDoReDoStack = {idx: 0, stack: [divVisu.innerHTML]};
+  }
+  else {
+    const {unDoReDoStack} = divVisu;
+    unDoReDoStack.stack.length = ++unDoReDoStack.idx;
+    unDoReDoStack.stack.push(divVisu.innerHTML);
+  }
+}
 /*********************EventHandlers*********************/
 function contextMenuEventHandler(ev) {
   ev.preventDefault();
@@ -683,6 +697,7 @@ function dropEventHandler(ev) {
         divSignals.appendChild(dropItem);
       }
     }
+    updateUnDoReDoStack();
   }
 
   document.querySelectorAll(`[dragging]`).forEach(el => el.removeAttribute(`dragging`));
@@ -778,17 +793,16 @@ function inputEventHandler(ev) {
 function unDoReDoEventListener(ev) {
   const divVisu = document.querySelector(`.divVisu[mode]`);
   if (divVisu) {
-    const {unDoReDoStack} = divVisu; 
+    const {unDoReDoStack} = divVisu;
     if (ev.target.matches(`.btnUnDo`)) {
-      unDoReDoStack.idx = Math.max(-1, unDoReDoStack.idx - 1);
-      unDoReDoStack.stack.at(unDoReDoStack.idx).remove(); //todo...
+      unDoReDoStack.idx = Math.max(0, unDoReDoStack.idx - 1);
     }
     else {
       unDoReDoStack.idx = Math.min(unDoReDoStack.stack.length - 1, unDoReDoStack.idx + 1);
     }
-    console.log(unDoReDoStack.stack.at(unDoReDoStack.idx));
+    divVisu.innerHTML = unDoReDoStack.stack.at(unDoReDoStack.idx); //todo...
+    console.log(`${unDoReDoStack.idx} of ${unDoReDoStack.stack.length - 1}`);
   }
-
 }
 
 function openLocalFileEventHandler(ev) {
@@ -796,6 +810,7 @@ function openLocalFileEventHandler(ev) {
   reader.readAsText(ev.target.files[0]);
   reader.addEventListener(`load`, () => {
     document.querySelector(`.divVisu`).innerHTML = reader.result;
+    updateUnDoReDoStack();
     //console.log(reader.result);
   });
 }
