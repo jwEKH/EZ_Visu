@@ -738,6 +738,10 @@ function keyDownEventHandler(ev) {
       }
     }
     else if (ev.ctrlKey) {
+      if (key === `a`) {
+        ev.preventDefault();
+        document.querySelectorAll(`.visuItem, svg[active] *`).forEach(el => el.setAttribute(`selected`, true));
+      }
       if (key === `y`)
         document.querySelector(`.btnReDo`).click();
       if (key === `z`)
@@ -753,24 +757,37 @@ function keyDownEventHandler(ev) {
     if (activeSvg) {
       if (key.startsWith(`arrow`)) {
         ev.preventDefault();
-        const stepWidth = (document.querySelector(`#cbGridSnap`).checked) ? activeSvg.viewBox.baseVal.width / GRIDSIZE_AS_PARTS_FROM_WIDTH : 10; //todo...
-        const dx =  (key.includes(`left`)) ? -stepWidth :
-        (key.includes(`right`)) ? stepWidth :
-        0;
-        const dy =  (key.includes(`up`)) ? -stepWidth :
-        (key.includes(`down`)) ? stepWidth :
-        0;
+        const stepWidthSvg = (document.querySelector(`#cbGridSnap`).checked) ? activeSvg.viewBox.baseVal.width / GRIDSIZE_AS_PARTS_FROM_WIDTH : 10; //todo...
+        //const stepWidthRel = stepWidthSvg / activeSvg.viewBox.baseVal.width;
+        const dxSvg = (key.includes(`left`)) ? -stepWidthSvg :
+                      (key.includes(`right`)) ? stepWidthSvg :
+                      0;
+        const dxRel = dxSvg / activeSvg.viewBox.baseVal.width;
+        const dySvg = (key.includes(`up`)) ? -stepWidthSvg :
+                      (key.includes(`down`)) ? stepWidthSvg :
+                      0;
+        const dyRel = dySvg / activeSvg.viewBox.baseVal.height;
 
         document.querySelectorAll(`[selected]`).forEach(el => {
-          if (dx) {
-            el.setAttribute(`x1`, dx + parseFloat(el.getAttribute(`x1`)));
-            el.setAttribute(`x2`, dx + parseFloat(el.getAttribute(`x2`)));
+          if (el.matches(`svg *`)) {
+            if (dxSvg) {
+              el.setAttribute(`x1`, dxSvg + parseFloat(el.getAttribute(`x1`)));
+              el.setAttribute(`x2`, dxSvg + parseFloat(el.getAttribute(`x2`)));
+            }
+            if (dySvg) {
+              el.setAttribute(`y1`, dySvg + parseFloat(el.getAttribute(`y1`)));
+              el.setAttribute(`y2`, dySvg + parseFloat(el.getAttribute(`y2`)));
+            }
           }
-          if (dy) {
-            el.setAttribute(`y1`, dy + parseFloat(el.getAttribute(`y1`)));
-            el.setAttribute(`y2`, dy + parseFloat(el.getAttribute(`y2`)));
+          else if (el.matches(`.visuItem`)) {
+            if (dxRel) {
+              console.log(`match`);
+              el.style.left = `${parseFloat(el.style.left) + 100 * dxRel}%`;
+            }
+            if (dyRel) {
+              el.style.top = `${parseFloat(el.style.top) + 100 * dyRel}%`;
+            }
           }
-
         });
       }
     }
