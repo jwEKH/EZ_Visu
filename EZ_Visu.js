@@ -207,7 +207,7 @@ function calcSvgCoordinates(ev) {
 }
 
 function selectionAreaHandler() {
-  const divVisu = document.querySelector(`.divVisu[mode=select]`);
+  const divVisu = document.querySelector(`.divVisu[mode]`);
   if (divVisu) {
     const selectionArea = divVisu.querySelector(`.selectionArea`);
     const selectionAreaBox = selectionArea.getBoundingClientRect();
@@ -219,9 +219,6 @@ function selectionAreaHandler() {
                     (x <= elBox.x) && (width+x >= elBox.width+elBox.x) && elBox.height+elBox.y >= y || (y <= elBox.y) && (height+y >= elBox.height+elBox.y) && elBox.width+elBox.x >= x :
                     (x <= elBox.x) && (width+x >= elBox.width+elBox.x) && (y <= elBox.y) && (height+y >= elBox.height+elBox.y);
       el.toggleAttribute(`selected`, match);
-      
-
-      
     });
   }
 }
@@ -251,6 +248,8 @@ function drawModeHoverEventHandler(ev) {
       hoverLine.setAttributeNS(null, `x2`, `${svgCoordinates.xSvg}`);
       hoverLine.setAttributeNS(null, `y2`, `${svgCoordinates.ySvg}`);
       hoverLine.setAttributeNS(null,`stroke`, color);
+      const StrokeDasharray = document.querySelector(`#selStrokeDasharray`).value;
+      hoverLine.setAttributeNS(null, `stroke-dasharray`, StrokeDasharray);
       const strokeWidth = document.querySelector(`.strokeWidth`).value;
       hoverLine.setAttributeNS(null,`stroke-width`, strokeWidth);
     }
@@ -258,7 +257,7 @@ function drawModeHoverEventHandler(ev) {
 }
 
 function selectModeHoverEventHandler(ev) {
-  const divVisu = ev.target.closest(`.divVisu[mode=select]`);
+  const divVisu = ev.target.closest(`.divVisu[mode]`);
   if (divVisu) {
     const activeSvg = divVisu.querySelector(`svg[active]`);
     const svgCoordinates = calcSvgCoordinates(ev);
@@ -308,7 +307,7 @@ function drawModeClickEventHandler(ev) {
 }
 
 function selectModeClickEventHandler(ev) {
-  const divVisu = ev.target.closest(`.divVisu[mode=select]`);
+  const divVisu = ev.target.closest(`.divVisu[mode]`);
   if (divVisu) {
     const activeSvg = divVisu.querySelector(`svg[active]`);
     const svgCoordinates = calcSvgCoordinates(ev);
@@ -353,9 +352,6 @@ function createEditorTools() {
     btn.addEventListener(`click`, saveOpenEventHandler);
   });
 
-
-  const divVisu = document.querySelector(`.divVisu`);
-  updateUnDoReDoStack(true);
   [`UnDo`, `ReDo`].forEach(el => {
     const btn = document.createElement(`input`);
     fsEditorTools.appendChild(btn);
@@ -365,7 +361,7 @@ function createEditorTools() {
     btn.title = (el === `UnDo`) ? `[Strg + z]` : `[Strg + y]`;
     btn.addEventListener(`click`, unDoReDoEventListener);
   });
-
+  updateUnDoReDoStack(true);
 
   const colorPicker = document.createElement(`input`);
   fsEditorTools.appendChild(colorPicker);
@@ -382,6 +378,21 @@ function createEditorTools() {
     presetColors.appendChild(option);
     option.value = color;
   });
+
+  const lblStrokeDasharray = document.createElement(`label`);
+  fsEditorTools.appendChild(lblStrokeDasharray);
+  lblStrokeDasharray.setAttribute(`for`, `selStrokeDasharray`);
+  lblStrokeDasharray.innerText = `strokeDasharray:`;
+  const selStrokeDasharray = document.createElement(`select`);
+  fsEditorTools.appendChild(selStrokeDasharray);
+  selStrokeDasharray.id = `selStrokeDasharray`;
+  [0, 5].forEach(value => {
+    const option = document.createElement(`option`);
+    selStrokeDasharray.appendChild(option);
+    option.value = value;
+    option.innerText = (value) ? `⚋` : `⚊`;
+  });
+
   const strokeWidth = document.createElement(`input`);
   fsEditorTools.appendChild(strokeWidth);
   strokeWidth.classList.add(`strokeWidth`);
@@ -540,8 +551,9 @@ function updateUnDoReDoStack(reset) {
 /*********************EventHandlers*********************/
 function contextMenuEventHandler(ev) {
   ev.preventDefault();
-  cancelCurrentDrawing();
-  cancelCurrentSelection();
+  //cancelCurrentSelection();
+  if (!cancelCurrentDrawing()) 
+    selectModeClickEventHandler(ev);  //selection only starts when no drawing was active
 }
 
 function mouseEnterEventHandler(ev) {
@@ -576,7 +588,7 @@ function mouseDownEventHandler(ev) {
 function clickEventHandler(ev) {
   //console.log(ev);
   drawModeClickEventHandler(ev);
-  selectModeClickEventHandler(ev);
+  //selectModeClickEventHandler(ev);
 }
 
 function cancelCurrentDrawing() {
@@ -584,8 +596,11 @@ function cancelCurrentDrawing() {
   if (hoverMarker)
     hoverMarker.remove();
   const hoverLine = document.querySelector(`.hoverLine`);
-  if (hoverLine)
+  if (hoverLine) {
     hoverLine.remove();
+    return true; //feedback that drawing was active
+  }
+  return false; //feedback that drawing was NOT active
 }
 
 function cancelCurrentSelection(){
@@ -716,7 +731,7 @@ function dblClickEventHandler(ev) {
 }
 
 function keyDownEventHandler(ev) {
-  //console.log(ev);
+  //console.log(ev.key);
   const divVisu = document.querySelector(`.divVisu[mode]`);
   if (divVisu) {
     const key = ev.key.toLowerCase();
@@ -736,6 +751,10 @@ function keyDownEventHandler(ev) {
         cancelCurrentDrawing();
         cancelCurrentSelection();
       }
+      if (key.match(/(delete)|(backspace)/)) {
+        document.querySelectorAll(`[selected]`).forEach(el => el.remove());
+        updateUnDoReDoStack();
+      }
     }
     else if (ev.ctrlKey) {
       if (key === `a`) {
@@ -753,7 +772,7 @@ function keyDownEventHandler(ev) {
 
 
 
-    const activeSvg = document.querySelector(`.divVisu[mode=select] svg[active]`);
+    const activeSvg = document.querySelector(`.divVisu[mode] svg[active]`);
     if (activeSvg) {
       if (key.startsWith(`arrow`)) {
         ev.preventDefault();
@@ -840,10 +859,6 @@ function saveOpenEventHandler(ev) {
     saveVisu();
   }
   else {
-    console.log(`open; todo...`);
-    const exampleSVG = `<?xml version="1.0" standalone="no"?>
-    <svg viewBox="0 0 1600 900" class="bgSVG bgSVG_1" active="true" xmlns="http://www.w3.org/2000/svg"><line class="" x1="950" y1="175" x2="950" y2="750" stroke="#c31d65" stroke-width="1"></line><line class="" x1="950" y1="750" x2="475" y2="750" stroke="#c31d65" stroke-width="1"></line><line class="" x1="475" y1="750" x2="475" y2="200" stroke="#c31d65" stroke-width="1"></line><line class="" x1="475" y1="200" x2="950" y2="200" stroke="#c31d65" stroke-width="1"></line></svg>`
-    document.querySelector(`.divVisu`).innerHTML = exampleSVG;
     
   }
 

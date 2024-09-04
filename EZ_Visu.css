@@ -7,13 +7,14 @@
   --iconSize: calc(var(--visuWidth) / var(--GRIDSIZE_AS_PARTS_FROM_WIDTH));
   --fontSizeIconSignals: calc(var(--iconSize) / 3);
 
-  --scrollbarWidth: 17px;
+  --controlsWidthOffset: 18px; /*such as scrollbar or input[type=number] controls*/
 
   /*Colors*/
   --magenta: hsl(334, 74%, 44%);
   --cyan: hsl(194, 74%, 44%);
   --purple: hsl(264, 74%, 44%);
   --yellow: hsl(50, 74%, 44%);
+  --green: hsl(120, 74%, 44%);
   --darkestGrey: hsl(249, 10%, 13%);
   --darkerGrey: hsl(249, 10%, 18%);
   --darkGrey: hsl(249, 10%, 23%);
@@ -50,7 +51,7 @@ body {
 }
 .signalTable[open] {
   writing-mode: initial;
-  padding-right: var(--scrollbarWidth);
+  padding-right: var(--controlsWidthOffset);
 }
 .signalGroup {
   display: grid;
@@ -67,7 +68,7 @@ body {
 .visuItemPool[open] {
   writing-mode: initial;
   height: 100vh;
-  padding-left: var(--scrollbarWidth);
+  padding-left: var(--controlsWidthOffset);
 }
 
 .divVisu {
@@ -185,6 +186,10 @@ body {
 [rotation= ".25"] {
   rotate: .25turn;
 }
+/*********************EditorTools*********************/
+.strokeWidth {
+  width: calc(3ch + var(--controlsWidthOffset));
+}
 /*********************GenericAttributes*********************/
 [cloaked] {
   display: none;
@@ -193,7 +198,7 @@ body {
   opacity: 0;
 }
 [selected] {
-  outline: 1px solid green;
+  outline: 1px solid var(--green);
 }
 /*********************CursorStylez*********************/
 [draggable = "true"] {
