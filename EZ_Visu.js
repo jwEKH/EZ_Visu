@@ -140,9 +140,10 @@ function createVisuItem(...attributes) {
                 }
 /*********************EditorFunctions*********************/
 function addEditorEventHandler() {
-  document.body.addEventListener(`mouseenter`, mouseEnterEventHandler);
-  document.body.addEventListener(`mouseleave`, mouseLeaveEventHandler);
-  document.body.addEventListener(`mousemove`, mouseMoveEventHandler);
+  const divVisu = document.querySelector(`.divVisu`);
+  divVisu.addEventListener(`mouseenter`, mouseEnterEventHandler);
+  divVisu.addEventListener(`mouseleave`, mouseLeaveEventHandler);
+  divVisu.addEventListener(`mousemove`, mouseMoveEventHandler);
   document.body.addEventListener(`mousedown`, mouseDownEventHandler);
   document.body.addEventListener(`mouseup`, mouseUpEventHandler);
   document.body.addEventListener(`dragstart`, dragStartEventHandler);
@@ -151,9 +152,9 @@ function addEditorEventHandler() {
   document.body.addEventListener(`dragover`, dragOverEventHandler);
   document.body.addEventListener(`dragend`, dragEndEventHandler);
   document.body.addEventListener(`drop`, dropEventHandler);
-  document.body.addEventListener(`click`, clickEventHandler);
-  document.body.addEventListener(`dblclick`, dblClickEventHandler);
-  document.body.addEventListener(`contextmenu`, contextMenuEventHandler);
+  divVisu.addEventListener(`click`, clickEventHandler);
+  divVisu.addEventListener(`dblclick`, dblClickEventHandler);
+  divVisu.addEventListener(`contextmenu`, contextMenuEventHandler);
 
   document.body.addEventListener(`keydown`, keyDownEventHandler);
   
@@ -161,9 +162,10 @@ function addEditorEventHandler() {
 }
 
 function removeEditorEventHandler() {
-  document.body.removeEventListener(`mouseenter`, mouseEnterEventHandler);
-  document.body.removeEventListener(`mouseleave`, mouseLeaveEventHandler);
-  document.body.removeEventListener(`mousemove`, mouseMoveEventHandler);
+  const divVisu = document.querySelector(`.divVisu`);
+  divVisu.removeEventListener(`mouseenter`, mouseEnterEventHandler);
+  divVisu.removeEventListener(`mouseleave`, mouseLeaveEventHandler);
+  divVisu.removeEventListener(`mousemove`, mouseMoveEventHandler);
   document.body.removeEventListener(`mousedown`, mouseDownEventHandler);
   document.body.removeEventListener(`mouseup`, mouseUpEventHandler);
   document.body.removeEventListener(`dragstart`, dragStartEventHandler);
@@ -172,9 +174,9 @@ function removeEditorEventHandler() {
   document.body.removeEventListener(`dragover`, dragOverEventHandler);
   document.body.removeEventListener(`dragend`, dragEndEventHandler);
   document.body.removeEventListener(`drop`, dropEventHandler);
-  document.body.removeEventListener(`click`, clickEventHandler);
-  document.body.removeEventListener(`dblclick`, dblClickEventHandler);
-  document.body.removeEventListener(`contextmenu`, contextMenuEventHandler);
+  divVisu.removeEventListener(`click`, clickEventHandler);
+  divVisu.removeEventListener(`dblclick`, dblClickEventHandler);
+  divVisu.removeEventListener(`contextmenu`, contextMenuEventHandler);
 
   document.body.addEventListener(`keydown`, keyDownEventHandler);
   
@@ -182,53 +184,52 @@ function removeEditorEventHandler() {
 }
 
 function calcSvgCoordinates(ev) {
-  const divVisu = ev.target.closest(`.divVisu`);
-  if (divVisu) {
-    const activeSvg = divVisu.querySelector(`svg[active]`);
-    const activeSvgBox = activeSvg.getBoundingClientRect();
-    let xSvg = (ev.x - activeSvgBox.x) / activeSvgBox.width * activeSvg.viewBox.baseVal.width;
-    let ySvg = (ev.y - activeSvgBox.y) / activeSvgBox.height *  activeSvg.viewBox.baseVal.height;
+  //console.log(ev);
+  const activeSvg = document.querySelector(`svg[active]`);
+  const activeSvgBox = activeSvg.getBoundingClientRect();
+  let xSvg = (ev.x - activeSvgBox.x) / activeSvgBox.width * activeSvg.viewBox.baseVal.width;
+  let ySvg = (ev.y - activeSvgBox.y) / activeSvgBox.height *  activeSvg.viewBox.baseVal.height;
 
-    if (divVisu.matches(`[mode=draw]`)) {
-      const hoverLine = activeSvg.querySelector(`.hoverLine`);
-      if (hoverLine && document.querySelector(`#cbOrthoMode`).checked) {
-        const dX = Math.abs(xSvg - hoverLine.getAttribute(`x1`));
-        const dY = Math.abs(ySvg - hoverLine.getAttribute(`y1`));
-        (dY === Math.max(dX, dY)) ? xSvg = hoverLine.getAttribute(`x1`) : ySvg = hoverLine.getAttribute(`y1`);
-      }
-      if (document.querySelector(`#cbGridSnap`).checked) {
-        xSvg = Math.round(GRIDSIZE_AS_PARTS_FROM_WIDTH * (xSvg / activeSvg.viewBox.baseVal.width)) / GRIDSIZE_AS_PARTS_FROM_WIDTH * activeSvg.viewBox.baseVal.width;
-        ySvg = Math.round((GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * (ySvg / activeSvg.viewBox.baseVal.height)) / (GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * activeSvg.viewBox.baseVal.height;
-      }
-    }
-
-    return {xSvg: xSvg, ySvg: ySvg}
+  
+  const hoverLine = activeSvg.querySelector(`.hoverLine`);
+  if (hoverLine && document.querySelector(`#cbOrthoMode`).checked) {
+    const dX = Math.abs(xSvg - hoverLine.getAttribute(`x1`));
+    const dY = Math.abs(ySvg - hoverLine.getAttribute(`y1`));
+    (dY === Math.max(dX, dY)) ? xSvg = hoverLine.getAttribute(`x1`) : ySvg = hoverLine.getAttribute(`y1`);
   }
+  const selectionEvent = (document.querySelector(`.selectionArea`) || ev.type === `contextmenu`)
+  if (!selectionEvent && document.querySelector(`#cbGridSnap`).checked) {
+    xSvg = Math.round(GRIDSIZE_AS_PARTS_FROM_WIDTH * (xSvg / activeSvg.viewBox.baseVal.width)) / GRIDSIZE_AS_PARTS_FROM_WIDTH * activeSvg.viewBox.baseVal.width;
+    ySvg = Math.round((GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * (ySvg / activeSvg.viewBox.baseVal.height)) / (GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * activeSvg.viewBox.baseVal.height;
+  }
+
+  return {xSvg: xSvg, ySvg: ySvg}
 }
 
 function selectionAreaHandler() {
-  const divVisu = document.querySelector(`.divVisu[mode]`);
-  if (divVisu) {
-    const selectionArea = divVisu.querySelector(`.selectionArea`);
-    const selectionAreaBox = selectionArea.getBoundingClientRect();
-    const {x, y, width, height} = selectionAreaBox;
-    divVisu.querySelectorAll(`line, .visuItem`).forEach(el => {
-      elBox = el.getBoundingClientRect();
+  //console.log(`selectionAreaHandler`);
+  const selectionArea = document.querySelector(`.selectionArea`);
+  const selectionAreaBox = selectionArea.getBoundingClientRect();
+  const {x, y, width, height} = selectionAreaBox;
+  const divVisu = document.querySelector(`.divVisu`);
+  divVisu.querySelectorAll(`line, .visuItem`).forEach(el => {
+    elBox = el.getBoundingClientRect();
+    //if (el.matches(`.visuItem`)) console.log(elBox, selectionAreaBox);
 
-      const match = (selectionArea.partialSelection) ? 
-                    (x <= elBox.x) && (width+x >= elBox.width+elBox.x) && elBox.height+elBox.y >= y || (y <= elBox.y) && (height+y >= elBox.height+elBox.y) && elBox.width+elBox.x >= x :
-                    (x <= elBox.x) && (width+x >= elBox.width+elBox.x) && (y <= elBox.y) && (height+y >= elBox.height+elBox.y);
-      el.toggleAttribute(`selected`, match);
-    });
-  }
+    const match = (selectionArea.partialSelection) ? 
+                  (!(x > elBox.x+elBox.width || y > elBox.y+elBox.height || width+x < elBox.x || height+y < elBox.y)) :
+                  (x <= elBox.x) && (width+x >= elBox.width+elBox.x) && (y <= elBox.y) && (height+y >= elBox.height+elBox.y);
+    el.toggleAttribute(`selected`, match);
+  });
 }
 
+
 function drawModeHoverEventHandler(ev) {
-  const divVisu = ev.target.closest(`.divVisu[mode=draw]`);
-  if (divVisu) {
+  const selectionArea = document.querySelector(`.selectionArea`);
+  if (!selectionArea) {
     const svgCoordinates = calcSvgCoordinates(ev);
 
-    const activeSvg = divVisu.querySelector(`svg[active]`);
+    const activeSvg = document.querySelector(`svg[active]`);
     let hoverMarker = activeSvg.querySelector(`.hoverMarker`);
     if (!hoverMarker) {
       hoverMarker = document.createElementNS(SVG_NS, `circle`);
@@ -240,6 +241,7 @@ function drawModeHoverEventHandler(ev) {
     const color = document.querySelector(`.colorPicker`).value;
     hoverMarker.setAttributeNS(null,`stroke`, color);
     hoverMarker.setAttributeNS(null,`fill`, color);
+    hoverMarker.setAttributeNS(null,`opacity`, (document.querySelector(`#cbShowMarker`).checked) ? 1 : 0);
     hoverMarker.setAttributeNS(null, `cx`, `${svgCoordinates.xSvg}`);
     hoverMarker.setAttributeNS(null, `cy`, `${svgCoordinates.ySvg}`);
     
@@ -257,74 +259,69 @@ function drawModeHoverEventHandler(ev) {
 }
 
 function selectModeHoverEventHandler(ev) {
-  const divVisu = ev.target.closest(`.divVisu[mode]`);
-  if (divVisu) {
-    const activeSvg = divVisu.querySelector(`svg[active]`);
-    const svgCoordinates = calcSvgCoordinates(ev);
-    const selectionArea = activeSvg.querySelector(`.selectionArea`);
-    if (selectionArea) {
-      const points = `${selectionArea.svgCoordinates.xSvg},${selectionArea.svgCoordinates.ySvg} ${selectionArea.svgCoordinates.xSvg},${svgCoordinates.ySvg} ${svgCoordinates.xSvg},${svgCoordinates.ySvg} ${svgCoordinates.xSvg},${selectionArea.svgCoordinates.ySvg}`;
-      selectionArea.setAttributeNS(null,`points`, points);
-      selectionArea.partialSelection = (svgCoordinates.xSvg >= selectionArea.svgCoordinates.xSvg && svgCoordinates.ySvg >= selectionArea.svgCoordinates.ySvg) ? false : true;
-      const color = (selectionArea.partialSelection) ? YELLOW_HEX : CYAN_HEX;
-      selectionArea.setAttributeNS(null,`fill`, color);
+  //console.log(`selectModeHoverEventHandler`);
+  const activeSvg = document.querySelector(`svg[active]`);
+  const svgCoordinates = calcSvgCoordinates(ev);
+  const selectionArea = activeSvg.querySelector(`.selectionArea`);
+  if (selectionArea) {
+    const points = `${selectionArea.svgCoordinates.xSvg},${selectionArea.svgCoordinates.ySvg} ${selectionArea.svgCoordinates.xSvg},${svgCoordinates.ySvg} ${svgCoordinates.xSvg},${svgCoordinates.ySvg} ${svgCoordinates.xSvg},${selectionArea.svgCoordinates.ySvg}`;
+    selectionArea.setAttributeNS(null,`points`, points);
+    selectionArea.partialSelection = (svgCoordinates.xSvg >= selectionArea.svgCoordinates.xSvg /*&& svgCoordinates.ySvg >= selectionArea.svgCoordinates.ySvg*/) ? false : true;
+    const color = (selectionArea.partialSelection) ? YELLOW_HEX : CYAN_HEX;
+    selectionArea.setAttributeNS(null,`fill`, color);
 
-      selectionAreaHandler();
-    }
+    selectionAreaHandler();
   }
 }
 
 function drawModeClickEventHandler(ev) {
-  const divVisu = ev.target.closest(`.divVisu[mode=draw]`);
-  if (divVisu) {
-    const activeSvg = divVisu.querySelector(`svg[active]`);
-    const hoverLine = activeSvg.querySelector(`.hoverLine`);
-    if (hoverLine) {
-      if (!(hoverLine.getAttribute(`x1`) === hoverLine.getAttribute(`x2`) && hoverLine.getAttribute(`y1`) === hoverLine.getAttribute(`y2`))) {  
-        const newLine = hoverLine.cloneNode();
-        activeSvg.appendChild(newLine);
-        newLine.removeAttributeNS(null,`opacity`);
-        newLine.classList.remove(`hoverLine`);
-        newLine.addEventListener(`mouseenter`, mouseEnterEventHandler);
-        newLine.addEventListener(`mouseleave`, mouseLeaveEventHandler);
-        
-        hoverLine.setAttributeNS(null,`x1`, hoverLine.getAttribute(`x2`));
-        hoverLine.setAttributeNS(null,`y1`, hoverLine.getAttribute(`y2`));
+  const activeSvg = document.querySelector(`svg[active]`);
+  const hoverLine = activeSvg.querySelector(`.hoverLine`);
+  if (hoverLine) {
+    if (!(hoverLine.getAttribute(`x1`) === hoverLine.getAttribute(`x2`) && hoverLine.getAttribute(`y1`) === hoverLine.getAttribute(`y2`))) {  
+      const newLine = hoverLine.cloneNode();
+      activeSvg.appendChild(newLine);
+      newLine.removeAttributeNS(null,`opacity`);
+      newLine.classList.remove(`hoverLine`);
+      newLine.addEventListener(`mouseenter`, mouseEnterEventHandler);
+      newLine.addEventListener(`mouseleave`, mouseLeaveEventHandler);
+      
+      hoverLine.setAttributeNS(null,`x1`, hoverLine.getAttribute(`x2`));
+      hoverLine.setAttributeNS(null,`y1`, hoverLine.getAttribute(`y2`));
 
-        updateUnDoReDoStack();
-      }
+      updateUnDoReDoStack();
     }
-    else {
-      const hoverMarker = activeSvg.querySelector(`.hoverMarker`);
-      const hoverLine = document.createElementNS(SVG_NS, `line`);
-      activeSvg.appendChild(hoverLine);
-      hoverLine.classList.add(`hoverLine`);
-      hoverLine.setAttributeNS(null,`opacity`, `0.4`);
-      hoverLine.setAttributeNS(null,`x1`, hoverMarker.getAttribute(`cx`));
-      hoverLine.setAttributeNS(null,`y1`, hoverMarker.getAttribute(`cy`));
-    }
+  }
+  else {
+    const hoverMarker = activeSvg.querySelector(`.hoverMarker`);
+    const hoverLine = document.createElementNS(SVG_NS, `line`);
+    activeSvg.appendChild(hoverLine);
+    hoverLine.classList.add(`hoverLine`);
+    hoverLine.setAttributeNS(null,`opacity`, `0.4`);
+    hoverLine.setAttributeNS(null,`x1`, hoverMarker.getAttribute(`cx`));
+    hoverLine.setAttributeNS(null,`y1`, hoverMarker.getAttribute(`cy`));
   }
 }
 
+
 function selectModeClickEventHandler(ev) {
-  const divVisu = ev.target.closest(`.divVisu[mode]`);
-  if (divVisu) {
-    const activeSvg = divVisu.querySelector(`svg[active]`);
-    const svgCoordinates = calcSvgCoordinates(ev);
-    const selectionArea = activeSvg.querySelector(`.selectionArea`);
-    if (selectionArea) {
-      //selectionArea.setAttributeNS(null,`width`, 100);
-      //selectionArea.setAttributeNS(null,`height`, 100);
-      selectionArea.remove();
-    }
-    else {
-      const selectionArea = document.createElementNS(SVG_NS, `polygon`);
-      activeSvg.appendChild(selectionArea);
-      selectionArea.classList.add(`selectionArea`);
-      selectionArea.setAttributeNS(null,`opacity`, `0.1`);
-      selectionArea.svgCoordinates = svgCoordinates;
-      //selectionArea.setAttributeNS(null,`points`, `${svgCoordinates.xSvg},${svgCoordinates.ySvg}`);
-    }
+  //console.log(ev.target);
+  const activeSvg = document.querySelector(`svg[active]`);
+  const svgCoordinates = calcSvgCoordinates(ev);
+  const selectionArea = activeSvg.querySelector(`.selectionArea`);
+  if (selectionArea) {
+    //selectionArea.setAttributeNS(null,`width`, 100);
+    //selectionArea.setAttributeNS(null,`height`, 100);
+    selectionArea.remove();
+  }
+  else {
+    //console.log(`else`);
+    const selectionArea = document.createElementNS(SVG_NS, `polygon`);
+    activeSvg.appendChild(selectionArea);
+    selectionArea.classList.add(`selectionArea`);
+    selectionArea.setAttributeNS(null,`opacity`, `0.1`);
+    selectionArea.svgCoordinates = svgCoordinates;
+    //selectionArea.setAttributeNS(null,`points`, `${svgCoordinates.xSvg},${svgCoordinates.ySvg}`);
   }
 }
 
@@ -337,8 +334,8 @@ function createEditorTools() {
   const inputFile = document.createElement(`input`);
   fsEditorTools.appendChild(inputFile);
   inputFile.type = `file`;
-  inputFile.classList.add(`inputFile`);
   inputFile.accept = `.txt`;
+  inputFile.classList.add(`inputFile`);
   inputFile.addEventListener(`input`, openLocalFileEventHandler);
     
 
@@ -369,6 +366,9 @@ function createEditorTools() {
   colorPicker.type = `color`;
   colorPicker.value = MAGENTA_HEX;
   colorPicker.title = `[c]`;
+  colorPicker.addEventListener(`input`, (ev) => {
+    document.querySelector(`#selStrokeDasharray`).style.color = ev.target.value;
+  });
   colorPicker.setAttribute(`list`, `presetColors`);
   const presetColors = document.createElement(`datalist`);
   colorPicker.appendChild(presetColors);
@@ -386,6 +386,7 @@ function createEditorTools() {
   const selStrokeDasharray = document.createElement(`select`);
   fsEditorTools.appendChild(selStrokeDasharray);
   selStrokeDasharray.id = `selStrokeDasharray`;
+  selStrokeDasharray.style.color = colorPicker.value;
   [0, 5].forEach(value => {
     const option = document.createElement(`option`);
     selStrokeDasharray.appendChild(option);
@@ -400,13 +401,15 @@ function createEditorTools() {
   strokeWidth.value = 1;
   strokeWidth.min = 1;
 
-  [`OrthoMode`, `GridSnap`].forEach(option => {
+  [`OrthoMode`, `GridSnap`, `ShowMarker`].forEach(option => {
     const cb = document.createElement(`input`);
     fsEditorTools.appendChild(cb);
     cb.type = `checkbox`;
     cb.checked = true;
     cb.id = `cb${option}`;
-    cb.title = (option === `OrthoMode`) ? `[o]` : `[g]`;
+    cb.title =  (option === `OrthoMode`) ? `[o]` :
+                (option === `GridSnap`) ? `[g]` :
+                `[m]`;
     const lbl = document.createElement(`label`);
     fsEditorTools.appendChild(lbl);
     lbl.setAttribute(`for`, cb.id);
@@ -414,6 +417,7 @@ function createEditorTools() {
     lbl.title = (option === `OrthoMode`) ? `[o]` : `[g]`;
   });
 
+  /*
   const fsMode = document.createElement(`fieldset`);
   fsEditorTools.appendChild(fsMode);
   const legendMode = document.createElement(`legend`);
@@ -438,6 +442,7 @@ function createEditorTools() {
     if (option === `Draw`)
       rb.click(); //init
   });
+  */
 
   return fsEditorTools;
 }
@@ -519,7 +524,8 @@ function enterVisuEditor(initialCall) {
   if (initialCall) {
     document.body.appendChild(createSignalTable());
     document.body.appendChild(createVisuItemPool());
-    document.body.appendChild(createEditorTools());
+    //document.body.appendChild(createEditorTools());
+    updateUnDoReDoStack(true);
   }
   else {
     document.querySelectorAll(`.visuEditElement`).forEach(el => el.removeAttribute(`cloaked`));
@@ -552,8 +558,16 @@ function updateUnDoReDoStack(reset) {
 function contextMenuEventHandler(ev) {
   ev.preventDefault();
   //cancelCurrentSelection();
-  if (!cancelCurrentDrawing()) 
-    selectModeClickEventHandler(ev);  //selection only starts when no drawing was active
+  let actionExecuted = false;
+  actionExecuted |= cancelCurrentDrawing();
+  //console.log({actionExecuted});
+  const selectionArea = document.querySelector(`.selectionArea`);
+  if (!selectionArea) {
+    actionExecuted |= removeDivIconSignal(ev);
+  }
+  if (!actionExecuted) {
+    selectModeClickEventHandler(ev);  //selection only starts when no other action was executed
+  }
 }
 
 function mouseEnterEventHandler(ev) {
@@ -587,7 +601,9 @@ function mouseDownEventHandler(ev) {
 
 function clickEventHandler(ev) {
   //console.log(ev);
-  drawModeClickEventHandler(ev);
+  if (!cancelCurrentSelection()) {
+    drawModeClickEventHandler(ev); //drawing only starts when no selection was active
+  }
   //selectModeClickEventHandler(ev);
 }
 
@@ -603,11 +619,24 @@ function cancelCurrentDrawing() {
   return false; //feedback that drawing was NOT active
 }
 
-function cancelCurrentSelection(){
-  const selectionArea = document.querySelector(`.selectionArea`);
-  if (selectionArea)
-    selectionArea.remove();
+function cancelCurrentSelection() {
   document.querySelectorAll(`[selected]`).forEach(el => el.removeAttribute(`selected`));
+  const selectionArea = document.querySelector(`.selectionArea`);
+  if (selectionArea) {
+    selectionArea.remove();
+    return true; //feedback that selection was active
+  }
+  return false; //feedback that selection was NOT active
+}
+
+function removeDivIconSignal(ev) {
+  if (ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
+    ev.target.removeAttribute(`signal`);
+    ev.target.removeAttribute(`title`);
+    ev.target.setAttribute(`NA`, true);
+    return true; //feedback that removeAction was executed
+  }
+  return false; //feedback that removeAction was NOT executed
 }
 
 function mouseUpEventHandler(ev) {
@@ -719,10 +748,10 @@ function dropEventHandler(ev) {
 }
 
 function dblClickEventHandler(ev) {
-  console.log(ev);
+  //console.log(ev);
   if (ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
     ev.target.removeAttribute(`signal`);
-    ev.target.title = ``;
+    ev.target.removeAttribute(`title`);
     ev.target.setAttribute(`NA`, true);
   }
   else {
@@ -732,83 +761,75 @@ function dblClickEventHandler(ev) {
 
 function keyDownEventHandler(ev) {
   //console.log(ev.key);
-  const divVisu = document.querySelector(`.divVisu[mode]`);
-  if (divVisu) {
-    const key = ev.key.toLowerCase();
-    const auxKeys = ev.altKey | ev.ctrlKey | ev.shiftKey;
-    if (!auxKeys) {
-      if (key === `c`)
-        document.querySelector(`.colorPicker`).click();
-      if (key === `d`)
-        document.querySelector(`#rbDraw`).click();
-      if (key === `g`)
-        document.querySelector(`#cbGridSnap`).click();
-      if (key === `o`)
-        document.querySelector(`#cbOrthoMode`).click();
-      if (key === `s`)
-        document.querySelector(`#rbSelect`).click();
-      if (key === `escape`) {
-        cancelCurrentDrawing();
-        cancelCurrentSelection();
-      }
-      if (key.match(/(delete)|(backspace)/)) {
-        document.querySelectorAll(`[selected]`).forEach(el => el.remove());
-        updateUnDoReDoStack();
-      }
+  const key = ev.key.toLowerCase();
+  const auxKeys = ev.altKey | ev.ctrlKey | ev.shiftKey;
+  if (!auxKeys) {
+    if (key === `c`)
+      document.querySelector(`.colorPicker`).click();
+    if (key === `d`)
+      document.querySelector(`#rbDraw`).click();
+    if (key === `g`)
+      document.querySelector(`#cbGridSnap`).click();
+    if (key === `o`)
+      document.querySelector(`#cbOrthoMode`).click();
+    if (key === `s`)
+      document.querySelector(`#rbSelect`).click();
+    if (key === `escape`) {
+      cancelCurrentDrawing();
+      cancelCurrentSelection();
     }
-    else if (ev.ctrlKey) {
-      if (key === `a`) {
-        ev.preventDefault();
-        document.querySelectorAll(`.visuItem, svg[active] *`).forEach(el => el.setAttribute(`selected`, true));
-      }
-      if (key === `y`)
-        document.querySelector(`.btnReDo`).click();
-      if (key === `z`)
-        document.querySelector(`.btnUnDo`).click();
+    if (key.match(/(delete)|(backspace)/)) {
+      document.querySelectorAll(`[selected]`).forEach(el => el.remove());
+      updateUnDoReDoStack();
     }
+  }
+  else if (ev.ctrlKey) {
+    if (key === `a`) {
+      ev.preventDefault();
+      document.querySelectorAll(`.visuItem, svg[active] *`).forEach(el => el.setAttribute(`selected`, true));
+    }
+    if (key === `y`)
+      document.querySelector(`.btnReDo`).click();
+    if (key === `z`)
+      document.querySelector(`.btnUnDo`).click();
+  }
 
+  const activeSvg = document.querySelector(`svg[active]`);
+  if (activeSvg) {
+    if (key.startsWith(`arrow`)) {
+      ev.preventDefault();
+      const stepWidthSvg = (document.querySelector(`#cbGridSnap`).checked) ? activeSvg.viewBox.baseVal.width / GRIDSIZE_AS_PARTS_FROM_WIDTH : 10; //todo...
+      //const stepWidthRel = stepWidthSvg / activeSvg.viewBox.baseVal.width;
+      const dxSvg = (key.includes(`left`)) ? -stepWidthSvg :
+                    (key.includes(`right`)) ? stepWidthSvg :
+                    0;
+      const dxRel = dxSvg / activeSvg.viewBox.baseVal.width;
+      const dySvg = (key.includes(`up`)) ? -stepWidthSvg :
+                    (key.includes(`down`)) ? stepWidthSvg :
+                    0;
+      const dyRel = dySvg / activeSvg.viewBox.baseVal.height;
 
-
-
-
-
-    const activeSvg = document.querySelector(`.divVisu[mode] svg[active]`);
-    if (activeSvg) {
-      if (key.startsWith(`arrow`)) {
-        ev.preventDefault();
-        const stepWidthSvg = (document.querySelector(`#cbGridSnap`).checked) ? activeSvg.viewBox.baseVal.width / GRIDSIZE_AS_PARTS_FROM_WIDTH : 10; //todo...
-        //const stepWidthRel = stepWidthSvg / activeSvg.viewBox.baseVal.width;
-        const dxSvg = (key.includes(`left`)) ? -stepWidthSvg :
-                      (key.includes(`right`)) ? stepWidthSvg :
-                      0;
-        const dxRel = dxSvg / activeSvg.viewBox.baseVal.width;
-        const dySvg = (key.includes(`up`)) ? -stepWidthSvg :
-                      (key.includes(`down`)) ? stepWidthSvg :
-                      0;
-        const dyRel = dySvg / activeSvg.viewBox.baseVal.height;
-
-        document.querySelectorAll(`[selected]`).forEach(el => {
-          if (el.matches(`svg *`)) {
-            if (dxSvg) {
-              el.setAttribute(`x1`, dxSvg + parseFloat(el.getAttribute(`x1`)));
-              el.setAttribute(`x2`, dxSvg + parseFloat(el.getAttribute(`x2`)));
-            }
-            if (dySvg) {
-              el.setAttribute(`y1`, dySvg + parseFloat(el.getAttribute(`y1`)));
-              el.setAttribute(`y2`, dySvg + parseFloat(el.getAttribute(`y2`)));
-            }
+      document.querySelectorAll(`[selected]`).forEach(el => {
+        if (el.matches(`svg *`)) {
+          if (dxSvg) {
+            el.setAttribute(`x1`, dxSvg + parseFloat(el.getAttribute(`x1`)));
+            el.setAttribute(`x2`, dxSvg + parseFloat(el.getAttribute(`x2`)));
           }
-          else if (el.matches(`.visuItem`)) {
-            if (dxRel) {
-              console.log(`match`);
-              el.style.left = `${parseFloat(el.style.left) + 100 * dxRel}%`;
-            }
-            if (dyRel) {
-              el.style.top = `${parseFloat(el.style.top) + 100 * dyRel}%`;
-            }
+          if (dySvg) {
+            el.setAttribute(`y1`, dySvg + parseFloat(el.getAttribute(`y1`)));
+            el.setAttribute(`y2`, dySvg + parseFloat(el.getAttribute(`y2`)));
           }
-        });
-      }
+        }
+        else if (el.matches(`.visuItem`)) {
+          if (dxRel) {
+            console.log(`match`);
+            el.style.left = `${parseFloat(el.style.left) + 100 * dxRel}%`;
+          }
+          if (dyRel) {
+            el.style.top = `${parseFloat(el.style.top) + 100 * dyRel}%`;
+          }
+        }
+      });
     }
   }
 }
@@ -827,7 +848,7 @@ function inputEventHandler(ev) {
 }
 
 function unDoReDoEventListener(ev) {
-  const divVisu = document.querySelector(`.divVisu[mode]`);
+  const divVisu = document.querySelector(`.divVisu`);
   if (divVisu) {
     const {unDoReDoStack} = divVisu;
     if (ev.target.matches(`.btnUnDo`)) {

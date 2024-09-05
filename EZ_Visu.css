@@ -80,7 +80,7 @@ body {
   aspect-ratio: var(--visuAspectRatio);
   position: relative;
 }
-.divVisu[mode="draw"] {
+.divVisu {
   cursor: crosshair;
 }
 /*

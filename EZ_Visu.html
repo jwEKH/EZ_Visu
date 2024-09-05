@@ -9,6 +9,36 @@
   </head>
   <body>
     <div class="divVisu"></div>
+    
+    <fieldset>
+      <legend>Editor Tools</legend>
+      <input type="file" id="openLocaleFile" accept=".txt" class="inputFile">
+      <input type="button" class="btnSave" value="Save" title="[Strg + s]">
+      <input type="button" class="btnOpen" value="Open" title="[Strg + o]">
+
+      <input type="button" class="btnUnDo" value="↶" title="[Strg + z]">
+      <input type="button" class="btnReDo" value="↷" title="[Strg + y]">
+      
+      <input class="colorPicker" type="color" title="[c]" list="presetColors">
+      <datalist id="presetColors">
+        <option>#c31d65</option>
+        <option>#1d9cc3</option>
+        <option>#601dc3</option>
+        <option>#c3a81d</option>
+      </datalist>
+      <label for="selStrokeDasharray">strokeDasharray:</label>
+      <select id="selStrokeDasharray">
+        <option value="0">⚊</option>
+        <option value="5">⚋</option>
+      </select>
+      <input class="strokeWidth" type="number" min="1" value="1">
+      <input type="checkbox" id="cbOrthoMode" title="[o]" checked>
+      <label for="cbOrthoMode" title="[o]">OrthoMode</label>
+      <input type="checkbox" id="cbGridSnap" title="[g]" checked>
+      <label for="cbGridSnap" title="[g]">GridSnap</label>
+      <input type="checkbox" id="cbShowMarker" title="[m]" checked>
+      <label for="cbShowMarker" title="[g]">ShowMarker</label>
+    </fieldset>
     <script src="EZ_Visu.js"></script>
     <!--
     -->
