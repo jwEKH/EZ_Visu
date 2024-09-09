@@ -1,7 +1,8 @@
 :root {
   --visuAspectRatio: 16/9;
   --visuMaxWidth: 100vw;
-  --visuWidth: min(var(--visuMaxWidth), calc(100vh * var(--visuAspectRatio)));
+  --visuMaxHeight: 90vh;
+  --visuWidth: min(var(--visuMaxWidth), calc(var(--visuMaxHeight) * var(--visuAspectRatio)));
 
   --GRIDSIZE_AS_PARTS_FROM_WIDTH: 32;
   --iconSize: calc(var(--visuWidth) / var(--GRIDSIZE_AS_PARTS_FROM_WIDTH));

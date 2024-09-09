@@ -1,3 +1,7 @@
+//Testbench
+const ATTRIBUTES = {icon: `pumpe`};//, iconPosition: `right`, signals: `AI1, AI17`};
+
+
 /*********************Konstanten*********************/
 const SVG_NS = `http://www.w3.org/2000/svg`;
 
@@ -19,8 +23,6 @@ const YELLOW_HEX = `#c3a81d`;
 const YELLOW_RGB = `rgb(195, 168, 29)`;
 const COLORS_HEX = [MAGENTA_HEX, CYAN_HEX, PURPLE_HEX, YELLOW_HEX];
 
-//Testbench
-const ATTRIBUTES = {icon: `pumpe`};//, iconPosition: `right`, signals: `AI1, AI17`};
 
 /*********************VanillaDocReady*********************/
 window.addEventListener('load', function () {
@@ -140,10 +142,7 @@ function createVisuItem(...attributes) {
                 }
 /*********************EditorFunctions*********************/
 function addEditorEventHandler() {
-  const divVisu = document.querySelector(`.divVisu`);
-  divVisu.addEventListener(`mouseenter`, mouseEnterEventHandler);
-  divVisu.addEventListener(`mouseleave`, mouseLeaveEventHandler);
-  divVisu.addEventListener(`mousemove`, mouseMoveEventHandler);
+  document.body.addEventListener(`mousemove`, mouseMoveEventHandler);
   document.body.addEventListener(`mousedown`, mouseDownEventHandler);
   document.body.addEventListener(`mouseup`, mouseUpEventHandler);
   document.body.addEventListener(`dragstart`, dragStartEventHandler);
@@ -152,9 +151,9 @@ function addEditorEventHandler() {
   document.body.addEventListener(`dragover`, dragOverEventHandler);
   document.body.addEventListener(`dragend`, dragEndEventHandler);
   document.body.addEventListener(`drop`, dropEventHandler);
-  divVisu.addEventListener(`click`, clickEventHandler);
-  divVisu.addEventListener(`dblclick`, dblClickEventHandler);
-  divVisu.addEventListener(`contextmenu`, contextMenuEventHandler);
+  document.body.addEventListener(`click`, clickEventHandler);
+  document.body.addEventListener(`dblclick`, dblClickEventHandler);
+  document.body.addEventListener(`contextmenu`, contextMenuEventHandler);
 
   document.body.addEventListener(`keydown`, keyDownEventHandler);
   
@@ -162,10 +161,7 @@ function addEditorEventHandler() {
 }
 
 function removeEditorEventHandler() {
-  const divVisu = document.querySelector(`.divVisu`);
-  divVisu.removeEventListener(`mouseenter`, mouseEnterEventHandler);
-  divVisu.removeEventListener(`mouseleave`, mouseLeaveEventHandler);
-  divVisu.removeEventListener(`mousemove`, mouseMoveEventHandler);
+  document.body.removeEventListener(`mousemove`, mouseMoveEventHandler);
   document.body.removeEventListener(`mousedown`, mouseDownEventHandler);
   document.body.removeEventListener(`mouseup`, mouseUpEventHandler);
   document.body.removeEventListener(`dragstart`, dragStartEventHandler);
@@ -174,11 +170,11 @@ function removeEditorEventHandler() {
   document.body.removeEventListener(`dragover`, dragOverEventHandler);
   document.body.removeEventListener(`dragend`, dragEndEventHandler);
   document.body.removeEventListener(`drop`, dropEventHandler);
-  divVisu.removeEventListener(`click`, clickEventHandler);
-  divVisu.removeEventListener(`dblclick`, dblClickEventHandler);
-  divVisu.removeEventListener(`contextmenu`, contextMenuEventHandler);
+  document.body.removeEventListener(`click`, clickEventHandler);
+  document.body.removeEventListener(`dblclick`, dblClickEventHandler);
+  document.body.removeEventListener(`contextmenu`, contextMenuEventHandler);
 
-  document.body.addEventListener(`keydown`, keyDownEventHandler);
+  document.body.removeEventListener(`keydown`, keyDownEventHandler);
   
   document.body.removeEventListener(`input`, inputEventHandler);
 }
@@ -259,11 +255,9 @@ function drawModeHoverEventHandler(ev) {
 }
 
 function selectModeHoverEventHandler(ev) {
-  //console.log(`selectModeHoverEventHandler`);
-  const activeSvg = document.querySelector(`svg[active]`);
-  const svgCoordinates = calcSvgCoordinates(ev);
-  const selectionArea = activeSvg.querySelector(`.selectionArea`);
+  const selectionArea = document.querySelector(`.selectionArea`);
   if (selectionArea) {
+    const svgCoordinates = calcSvgCoordinates(ev);
     const points = `${selectionArea.svgCoordinates.xSvg},${selectionArea.svgCoordinates.ySvg} ${selectionArea.svgCoordinates.xSvg},${svgCoordinates.ySvg} ${svgCoordinates.xSvg},${svgCoordinates.ySvg} ${svgCoordinates.xSvg},${selectionArea.svgCoordinates.ySvg}`;
     selectionArea.setAttributeNS(null,`points`, points);
     selectionArea.partialSelection = (svgCoordinates.xSvg >= selectionArea.svgCoordinates.xSvg /*&& svgCoordinates.ySvg >= selectionArea.svgCoordinates.ySvg*/) ? false : true;
@@ -283,8 +277,6 @@ function drawModeClickEventHandler(ev) {
       activeSvg.appendChild(newLine);
       newLine.removeAttributeNS(null,`opacity`);
       newLine.classList.remove(`hoverLine`);
-      newLine.addEventListener(`mouseenter`, mouseEnterEventHandler);
-      newLine.addEventListener(`mouseleave`, mouseLeaveEventHandler);
       
       hoverLine.setAttributeNS(null,`x1`, hoverLine.getAttribute(`x2`));
       hoverLine.setAttributeNS(null,`y1`, hoverLine.getAttribute(`y2`));
@@ -346,7 +338,7 @@ function createEditorTools() {
     btn.classList.add(`btn${el}`);
     btn.value = el;
     btn.title = (el === `Save`) ? `[Strg + s]` : `[Strg + o]`;
-    btn.addEventListener(`click`, saveOpenEventHandler);
+    btn.addEventListener(`click`, saveBtnHandler);
   });
 
   [`UnDo`, `ReDo`].forEach(el => {
@@ -557,36 +549,26 @@ function updateUnDoReDoStack(reset) {
 /*********************EventHandlers*********************/
 function contextMenuEventHandler(ev) {
   ev.preventDefault();
-  //cancelCurrentSelection();
-  let actionExecuted = false;
-  actionExecuted |= cancelCurrentDrawing();
-  //console.log({actionExecuted});
-  const selectionArea = document.querySelector(`.selectionArea`);
-  if (!selectionArea) {
-    actionExecuted |= removeDivIconSignal(ev);
-  }
-  if (!actionExecuted) {
-    selectModeClickEventHandler(ev);  //selection only starts when no other action was executed
-  }
-}
-
-function mouseEnterEventHandler(ev) {
-  //console.log(ev.target);
-  if (ev.target.matches(`.divVisu[mode="select"] svg *`)) {
-    ev.target.setAttributeNS(null, `stroke-width`, 10 * ev.target.getAttribute(`stroke-width`));
-  }
-}
-
-function mouseLeaveEventHandler(ev) {
-  if (ev.target.matches(`.divVisu[mode="select"] svg *`)) {
-    //console.log(ev.target);
-    ev.target.setAttributeNS(null, `stroke-width`, .1 * ev.target.getAttribute(`stroke-width`));
+  
+  if (eventIsWithin(ev, `.divVisu`)) {
+    let actionExecuted = false;
+    actionExecuted |= cancelCurrentDrawing();
+    //console.log({actionExecuted});
+    const selectionArea = document.querySelector(`.selectionArea`);
+    if (!selectionArea) {
+      actionExecuted |= removeDivIconSignal(ev);
+    }
+    if (!actionExecuted) {
+      selectModeClickEventHandler(ev);  //selection only starts when no other action was executed
+    }
   }
 }
 
 function mouseMoveEventHandler(ev) {  
-  drawModeHoverEventHandler(ev);
-  selectModeHoverEventHandler(ev);
+  if (eventIsWithin(ev, `.divVisu`)) {
+    drawModeHoverEventHandler(ev);
+    selectModeHoverEventHandler(ev);
+  }
 }
 
 function mouseDownEventHandler(ev) {
@@ -601,10 +583,17 @@ function mouseDownEventHandler(ev) {
 
 function clickEventHandler(ev) {
   //console.log(ev);
-  if (!cancelCurrentSelection()) {
-    drawModeClickEventHandler(ev); //drawing only starts when no selection was active
+  if (eventIsWithin(ev, `.divVisu`)) {
+    if (!cancelCurrentSelection()) {
+      drawModeClickEventHandler(ev); //drawing only starts when no selection was active
+    }
   }
-  //selectModeClickEventHandler(ev);
+  if (ev.target.matches(`.btnUnDo, .btnReDo`)) {
+    unDoReDoEventListener(ev);
+  }
+  if (ev.target.matches(`.btnSave`)) {
+    saveBtnHandler();
+  }
 }
 
 function cancelCurrentDrawing() {
@@ -749,14 +738,7 @@ function dropEventHandler(ev) {
 
 function dblClickEventHandler(ev) {
   //console.log(ev);
-  if (ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
-    ev.target.removeAttribute(`signal`);
-    ev.target.removeAttribute(`title`);
-    ev.target.setAttribute(`NA`, true);
-  }
-  else {
-    
-  }
+  
 }
 
 function keyDownEventHandler(ev) {
@@ -835,16 +817,9 @@ function keyDownEventHandler(ev) {
 }
 
 function inputEventHandler(ev) {
-  if (ev.target.type === `text`) {
-    //document.querySelectorAll(`.${ev.target.className.replace(` `, `.`)}`).forEach(el => el.)
-  }
-  if (ev.target.type === `radio`) { //triggers twice; dunno y...
-    console.log(`triggers twice for id=${ev.target.id} dunno y...`);
-    cancelCurrentDrawing();
-    cancelCurrentSelection();
-    document.querySelector(`.divVisu`).setAttribute(`mode`, `${ev.target.value}`);
-    document.querySelectorAll(`svg *`).forEach(el => el.setAttribute(`draggable`, `${ev.target.value === 'select'}`));
-  }
+  if (ev.target.matches(`[type=color]`)) {
+    document.querySelector(`#selStrokeDasharray`).style.color = ev.target.value;
+  }  
 }
 
 function unDoReDoEventListener(ev) {
@@ -872,17 +847,11 @@ function openLocalFileEventHandler(ev) {
   });
 }
 
-function saveOpenEventHandler(ev) {
-  if (ev.target.matches(`.btnSave`)) {
-    cancelCurrentSelection();
-    cancelCurrentDrawing();
-    //saveSvg(document.querySelector(`svg`), `test.svg`);
-    saveVisu();
-  }
-  else {
-    
-  }
-
+function saveBtnHandler() {
+  cancelCurrentSelection();
+  cancelCurrentDrawing();
+  saveVisu();
+  //saveSvg(document.querySelector(`svg`), `test.svg`);
 }
 
 function saveVisu() {
@@ -940,4 +909,14 @@ function fetchData() {
 /*********************AuxFunctions*********************/
 function constrain(val, min, max) {
   return Math.min(max, Math.max(min, val));
+}
+
+function eventIsWithin(ev, cssSelector) { //necessary bc fn.closest() fails 4 svg ancestors bc they don't have parents...
+  const {x, y, width, height} = document.querySelector(cssSelector).getBoundingClientRect();
+  return ev.x >= x && ev.x <= x+width && ev.y >= y && ev.y <= y+height
+}
+
+
+function l(data) {
+  console.log(data);
 }
