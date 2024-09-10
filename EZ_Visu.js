@@ -47,36 +47,49 @@ function createIconSVG(symbole) {
     svg.setAttributeNS(null, `viewBox`, `0 0 100 100`);
     if (symbole === `triangle`) {
       const el = document.createElementNS(SVG_NS, `polygon`);
+      svg.appendChild(el);
       el.setAttributeNS(null,`stroke`, `red`);
       el.setAttributeNS(null,`fill`, `none`);
       el.setAttributeNS(null,`points`, `10,90 50,10 90,90`);
-      svg.appendChild(el);
     }
     if (symbole === `pumpe`) {
       let el = document.createElementNS(SVG_NS, `circle`);
+      svg.appendChild(el);
       el.setAttributeNS(null,`stroke`, `red`);
-      el.setAttributeNS(null,`fill`, `none`);
+      el.setAttributeNS(null,`fill`, `grey`);
       el.setAttributeNS(null, `cx`, `50`);
       el.setAttributeNS(null, `cy`, `50`);
       el.setAttributeNS(null, `r`, `40`);
-      svg.appendChild(el);
       
       el = document.createElementNS(SVG_NS, `polyline`);
+      svg.appendChild(el);
       el.setAttributeNS(null,`stroke`, `red`);
       el.setAttributeNS(null,`fill`, `none`);
       el.setAttributeNS(null,`points`, `10,50 50,10 90,50`);
-      svg.appendChild(el);
     }
     if (symbole === `path`) {
-      let el = document.createElementNS(SVG_NS, `path`);
-      el.setAttributeNS(null,`stroke`, `red`);
-      el.setAttributeNS(null,`fill`, `none`);
-      el.setAttributeNS(null, `d`, `M 10,30
-      A 20,20 0,0,1 50,30
-      A 20,20 0,0,1 90,30
-      Q 90,60 50,90
-      Q 10,60 10,30 z`);
-      svg.appendChild(el);
+      [`icon`, `signal`].forEach(elType => {      
+        const el = document.createElementNS(SVG_NS, `path`);
+        svg.appendChild(el);
+        el.setAttributeNS(null,`stroke`, `red`);
+        el.setAttributeNS(null,`fill`, `grey`);
+        const d = (elType === `icon`) ? `M 10,50 A 40 40 180 0 0 90 50 L 50,10 L 10,50 A 40 40 180 0 1 90 50` :
+                                        `M 50,30 A 15 15 180 0 0 50 70 A 15 15 180 0 0 50 30`;
+        el.setAttributeNS(null, `d`, d);
+      
+      
+        /*                              
+        let animation = document.createElementNS(SVG_NS, `animateTransform`);
+        el.appendChild(animation);
+        animation.setAttributeNS(null, `attributeName`, `transform`);
+        animation.setAttributeNS(null, `type`, `rotate`);
+        animation.setAttributeNS(null, `repeatCount`, `indefinite`);
+        animation.setAttributeNS(null, `begin`, `0s`);
+        animation.setAttributeNS(null, `dur`, `2s`);
+        animation.setAttributeNS(null, `from`, `0 50 50`);
+        animation.setAttributeNS(null, `to`, `360 50 50`);
+        */
+      });
     }
     return svg;
   }
@@ -135,48 +148,55 @@ function createVisuItem(...attributes) {
                     (signal === `Betriebsart`)  ? `✋`  :
                     (signal === `Absenkung`)    ? `🌜`  :
                     ``;
-                  });
-                  
+  });
+  
 
-                  return visuItem
-                }
+  return visuItem
+}
 /*********************EditorFunctions*********************/
 function addEditorEventHandler() {
-  document.body.addEventListener(`mousemove`, mouseMoveEventHandler);
   document.body.addEventListener(`mousedown`, mouseDownEventHandler);
   document.body.addEventListener(`mouseup`, mouseUpEventHandler);
   document.body.addEventListener(`dragstart`, dragStartEventHandler);
-  document.body.addEventListener(`dragenter`, dragEnterEventHandler);
-  document.body.addEventListener(`dragleave`, dragLeaveEventHandler);
-  document.body.addEventListener(`dragover`, dragOverEventHandler);
   document.body.addEventListener(`dragend`, dragEndEventHandler);
-  document.body.addEventListener(`drop`, dropEventHandler);
-  document.body.addEventListener(`click`, clickEventHandler);
-  document.body.addEventListener(`dblclick`, dblClickEventHandler);
-  document.body.addEventListener(`contextmenu`, contextMenuEventHandler);
-
-  document.body.addEventListener(`keydown`, keyDownEventHandler);
   
-  document.body.addEventListener(`input`, inputEventHandler);
+  document.body.addEventListener(`keydown`, keyDownEventHandler);
+  document.body.addEventListener(`dblclick`, dblClickEventHandler);
+  
+  const divVisu = document.querySelector(`.divVisu`);
+  divVisu.addEventListener(`mousemove`, divVisuMouseMoveEventHandler);
+  divVisu.addEventListener(`dragenter`, divVisuDragEnterEventHandler);
+  divVisu.addEventListener(`dragleave`, divVisuDragLeaveEventHandler);
+  divVisu.addEventListener(`dragover`, divVisuDragOverEventHandler);
+  divVisu.addEventListener(`drop`, divVisuDropEventHandler);
+  divVisu.addEventListener(`click`, divVisuClickEventHandler);
+  divVisu.addEventListener(`contextmenu`, divVisuContextMenuEventHandler);
+
+  document.querySelectorAll(`.btnUnDo, .btnReDo`).forEach(btn => btn.addEventListener(`click`, unDoReDoEventListener));
+  document.querySelector(`.btnSave`).addEventListener(`click`, saveBtnHandler);
+  document.querySelector(`#openLocaleFile`).addEventListener(`input`, openLocalFileEventHandler);
+  document.querySelector(`[type=color]`).addEventListener(`input`, colorInputEventHandler);
 }
 
 function removeEditorEventHandler() {
-  document.body.removeEventListener(`mousemove`, mouseMoveEventHandler);
   document.body.removeEventListener(`mousedown`, mouseDownEventHandler);
   document.body.removeEventListener(`mouseup`, mouseUpEventHandler);
   document.body.removeEventListener(`dragstart`, dragStartEventHandler);
-  document.body.removeEventListener(`dragenter`, dragEnterEventHandler);
-  document.body.removeEventListener(`dragleave`, dragLeaveEventHandler);
-  document.body.removeEventListener(`dragover`, dragOverEventHandler);
   document.body.removeEventListener(`dragend`, dragEndEventHandler);
-  document.body.removeEventListener(`drop`, dropEventHandler);
-  document.body.removeEventListener(`click`, clickEventHandler);
-  document.body.removeEventListener(`dblclick`, dblClickEventHandler);
-  document.body.removeEventListener(`contextmenu`, contextMenuEventHandler);
-
-  document.body.removeEventListener(`keydown`, keyDownEventHandler);
   
-  document.body.removeEventListener(`input`, inputEventHandler);
+  document.body.removeEventListener(`keydown`, keyDownEventHandler);
+  document.body.removeEventListener(`dblclick`, dblClickEventHandler);
+
+  const divVisu = document.querySelector(`.divVisu`);
+  divVisu.removeEventListener(`mousemove`, divVisuMouseMoveEventHandler);
+  divVisu.removeEventListener(`dragenter`, divVisuDragEnterEventHandler);
+  divVisu.removeEventListener(`dragleave`, divVisuDragLeaveEventHandler);
+  divVisu.removeEventListener(`dragover`, divVisuDragOverEventHandler);
+  divVisu.removeEventListener(`drop`, divVisuDropEventHandler);
+  divVisu.removeEventListener(`click`, divVisuClickEventHandler);
+  divVisu.removeEventListener(`contextmenu`, divVisuContextMenuEventHandler);
+
+  
 }
 
 function calcSvgCoordinates(ev) {
@@ -272,26 +292,33 @@ function drawModeClickEventHandler(ev) {
   const activeSvg = document.querySelector(`svg[active]`);
   const hoverLine = activeSvg.querySelector(`.hoverLine`);
   if (hoverLine) {
-    if (!(hoverLine.getAttribute(`x1`) === hoverLine.getAttribute(`x2`) && hoverLine.getAttribute(`y1`) === hoverLine.getAttribute(`y2`))) {  
+    const x1 = hoverLine.getAttribute(`x1`);
+    const y1 = hoverLine.getAttribute(`y1`);
+    const x2 = hoverLine.getAttribute(`x2`);
+    const y2 = hoverLine.getAttribute(`y2`);
+    const isValidHoverLine = !(x1 === null | y1 === null | x2 === null | y2 === null | (x1 === x2 & y1 === y2));
+    if (isValidHoverLine) {  
       const newLine = hoverLine.cloneNode();
       activeSvg.appendChild(newLine);
       newLine.removeAttributeNS(null,`opacity`);
       newLine.classList.remove(`hoverLine`);
       
-      hoverLine.setAttributeNS(null,`x1`, hoverLine.getAttribute(`x2`));
-      hoverLine.setAttributeNS(null,`y1`, hoverLine.getAttribute(`y2`));
+      hoverLine.setAttributeNS(null,`x1`, x2);
+      hoverLine.setAttributeNS(null,`y1`, y2);
 
       updateUnDoReDoStack();
     }
   }
   else {
     const hoverMarker = activeSvg.querySelector(`.hoverMarker`);
-    const hoverLine = document.createElementNS(SVG_NS, `line`);
-    activeSvg.appendChild(hoverLine);
-    hoverLine.classList.add(`hoverLine`);
-    hoverLine.setAttributeNS(null,`opacity`, `0.4`);
-    hoverLine.setAttributeNS(null,`x1`, hoverMarker.getAttribute(`cx`));
-    hoverLine.setAttributeNS(null,`y1`, hoverMarker.getAttribute(`cy`));
+    if (hoverMarker) {
+      const hoverLine = document.createElementNS(SVG_NS, `line`);
+      activeSvg.appendChild(hoverLine);
+      hoverLine.classList.add(`hoverLine`);
+      hoverLine.setAttributeNS(null,`opacity`, `0.4`);
+      hoverLine.setAttributeNS(null,`x1`, hoverMarker.getAttribute(`cx`));
+      hoverLine.setAttributeNS(null,`y1`, hoverMarker.getAttribute(`cy`));
+    }
   }
 }
 
@@ -517,6 +544,7 @@ function enterVisuEditor(initialCall) {
     document.body.appendChild(createSignalTable());
     document.body.appendChild(createVisuItemPool());
     //document.body.appendChild(createEditorTools());
+    document.querySelector(`#selStrokeDasharray`).style.color = document.querySelector(`.colorPicker`).value;
     updateUnDoReDoStack(true);
   }
   else {
@@ -547,53 +575,42 @@ function updateUnDoReDoStack(reset) {
   }
 }
 /*********************EventHandlers*********************/
-function contextMenuEventHandler(ev) {
+function divVisuContextMenuEventHandler(ev) {
   ev.preventDefault();
-  
-  if (eventIsWithin(ev, `.divVisu`)) {
-    let actionExecuted = false;
-    actionExecuted |= cancelCurrentDrawing();
-    //console.log({actionExecuted});
-    const selectionArea = document.querySelector(`.selectionArea`);
-    if (!selectionArea) {
-      actionExecuted |= removeDivIconSignal(ev);
-    }
-    if (!actionExecuted) {
-      selectModeClickEventHandler(ev);  //selection only starts when no other action was executed
-    }
+
+  let actionExecuted = false;
+  actionExecuted |= cancelCurrentDrawing();
+  //console.log({actionExecuted});
+  const selectionArea = document.querySelector(`.selectionArea`);
+  if (!selectionArea) {
+    actionExecuted |= removeDivIconSignal(ev);
+  }
+  if (!actionExecuted) {
+    selectModeClickEventHandler(ev);  //selection only starts when no other action was executed
   }
 }
 
-function mouseMoveEventHandler(ev) {  
-  if (eventIsWithin(ev, `.divVisu`)) {
-    drawModeHoverEventHandler(ev);
-    selectModeHoverEventHandler(ev);
-  }
+function divVisuMouseMoveEventHandler(ev) {  
+  drawModeHoverEventHandler(ev);
+  selectModeHoverEventHandler(ev);
 }
 
 function mouseDownEventHandler(ev) {
   if (ev.buttons === 1) {
-    const target = (ev.target.matches(`[type="text"], svg *`)) ? ev.target : ev.target.closest(`.visuItem`);
+    const target = (ev.target.matches(`[draggable]`)) ? ev.target : ev.target.closest(`.visuItem[draggable]`);
     if (target) {
-     if (target.matches(`[draggable]`))
       target.setAttribute(`dragging`, `true`);
     }
   }
 }
 
-function clickEventHandler(ev) {
+function divVisuClickEventHandler(ev) {
   //console.log(ev);
-  if (eventIsWithin(ev, `.divVisu`)) {
-    if (!cancelCurrentSelection()) {
-      drawModeClickEventHandler(ev); //drawing only starts when no selection was active
-    }
+  if (!cancelCurrentSelection()) {
+    drawModeClickEventHandler(ev); //drawing only starts when no selection was active
   }
-  if (ev.target.matches(`.btnUnDo, .btnReDo`)) {
-    unDoReDoEventListener(ev);
-  }
-  if (ev.target.matches(`.btnSave`)) {
-    saveBtnHandler();
-  }
+
+  
 }
 
 function cancelCurrentDrawing() {
@@ -628,13 +645,17 @@ function removeDivIconSignal(ev) {
   return false; //feedback that removeAction was NOT executed
 }
 
-function mouseUpEventHandler(ev) {
+function removeAllDraggingAttributes() {
   document.querySelectorAll(`[dragging]`).forEach(el => el.removeAttribute(`dragging`));
 }
 
+function mouseUpEventHandler(ev) {
+  removeAllDraggingAttributes();
+}
+
 function dragStartEventHandler(ev) {
-  console.log(ev);
-  const target = (ev.target.type === `text`) ? ev.target : ev.target.closest(`.visuItem`);
+  //console.log(ev);
+  const target = (ev.target.matches(`[draggable]`)) ? ev.target : ev.target.closest(`.visuItem[draggable]`);
   if (target) {
     target.setAttribute(`dragging`, `true`);
     const targetBox = target.getBoundingClientRect();
@@ -646,22 +667,21 @@ function dragStartEventHandler(ev) {
   }
 }
 
-function dragEnterEventHandler(ev) {
+function divVisuDragEnterEventHandler(ev) {
   const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
   if (draggingItem.matches(`[isBool]`) && ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
-    console.log(ev.target)
+    //console.log(ev.target)
     ev.target.removeAttribute(`NA`);
   }
 }
 
-function dragLeaveEventHandler(ev) {
+function divVisuDragLeaveEventHandler(ev) {
   if (!ev.target.matches(`[signal]`) && ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
     ev.target.setAttribute(`NA`, true);
   }
-
 }
 
-function dragOverEventHandler(ev) {
+function divVisuDragOverEventHandler(ev) {
   const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
   if (draggingItem) {
     const visuItemToDivVisu = (ev.target.closest(`.divVisu`) && draggingItem.matches(`.visuItem`));
@@ -676,10 +696,10 @@ function dragOverEventHandler(ev) {
 }
 
 function dragEndEventHandler(ev) {
-  document.querySelectorAll(`[dragging]`).forEach(el => el.removeAttribute(`dragging`));
+  removeAllDraggingAttributes();
 }
 
-function dropEventHandler(ev) {
+function divVisuDropEventHandler(ev) {
   //ev.preventDefault();
   const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
   const target = (draggingItem.type === `text`) ? ev.target/*.closest(`.visuItem`)/*.querySelector(`.divSignals`)*/ : ev.target.closest(`.divVisu`);
@@ -708,21 +728,19 @@ function dropEventHandler(ev) {
       else {
       const visuItem = target.closest(`.visuItem`);
       if (visuItem) {
-        const divIcon = target.closest(`.divIcon`);
-        if (divIcon) {
-          const divIconBox = divIcon.getBoundingClientRect();
-          divIconBox.xCenter = divIconBox.x + divIconBox.width/2;
-          divIconBox.yCenter = divIconBox.y + divIconBox.height/2;
-          const deltaX = ev.x - divIconBox.xCenter;
-          const deltaY = ev.y - divIconBox.yCenter;
-          const maxDelta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
-          const iconPosition =  (maxDelta === deltaX) ? `left` :
-          (maxDelta === -deltaX) ? `right` :
-          (maxDelta === deltaY) ? `top` :
-          `bottom`;
-          //console.log(divIconBox);
-          visuItem.setAttribute(`iconPosition`, iconPosition);
-        }
+        const divIcon = visuItem.querySelector(`.divIcon`); 
+        const divIconBox = divIcon.getBoundingClientRect();
+        divIconBox.xCenter = divIconBox.x + divIconBox.width/2;
+        divIconBox.yCenter = divIconBox.y + divIconBox.height/2;
+        const deltaX = ev.x - divIconBox.xCenter;
+        const deltaY = ev.y - divIconBox.yCenter;
+        const maxDelta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
+        const iconPosition =  (maxDelta === deltaX) ? `left` :
+        (maxDelta === -deltaX) ? `right` :
+        (maxDelta === deltaY) ? `top` :
+        `bottom`;
+        //console.log(divIconBox);
+        visuItem.setAttribute(`iconPosition`, iconPosition);
       }
 
         const divSignals = visuItem.querySelector(`.divSignals`);
@@ -733,12 +751,28 @@ function dropEventHandler(ev) {
     updateUnDoReDoStack();
   }
 
-  document.querySelectorAll(`[dragging]`).forEach(el => el.removeAttribute(`dragging`));
+  removeAllDraggingAttributes();
 }
 
 function dblClickEventHandler(ev) {
-  //console.log(ev);
-  
+  const divIcon = ev.target.closest(`.divIcon`);
+  const svg = (divIcon) ? divIcon.querySelector(`svg`) : null;
+  if (svg) {
+    const rotation = parseInt(svg.getAttribute(`rotation`));
+    if (rotation < 270) {
+      svg.setAttribute(`rotation`, rotation + 90);
+    }
+    else if (rotation >= 270) {
+      svg.removeAttribute(`rotation`);
+    }
+    else {
+      svg.setAttribute(`rotation`, 90);
+    }
+    cancelCurrentDrawing(); //workaround for (drawing)-clickEventTriggers on dblClick as well!
+    if (svg.matches(`.divVisu *`)) {
+      updateUnDoReDoStack();
+    }
+  }
 }
 
 function keyDownEventHandler(ev) {
@@ -812,14 +846,9 @@ function keyDownEventHandler(ev) {
           }
         }
       });
+      updateUnDoReDoStack();
     }
   }
-}
-
-function inputEventHandler(ev) {
-  if (ev.target.matches(`[type=color]`)) {
-    document.querySelector(`#selStrokeDasharray`).style.color = ev.target.value;
-  }  
 }
 
 function unDoReDoEventListener(ev) {
@@ -843,8 +872,12 @@ function openLocalFileEventHandler(ev) {
   reader.addEventListener(`load`, () => {
     document.querySelector(`.divVisu`).innerHTML = reader.result;
     updateUnDoReDoStack();
-    //console.log(reader.result);
+    console.log(reader.result);
   });
+}
+
+function colorInputEventHandler(ev) {
+  document.querySelector(`#selStrokeDasharray`).style.color = ev.target.value;
 }
 
 function saveBtnHandler() {
@@ -912,8 +945,13 @@ function constrain(val, min, max) {
 }
 
 function eventIsWithin(ev, cssSelector) { //necessary bc fn.closest() fails 4 svg ancestors bc they don't have parents...
-  const {x, y, width, height} = document.querySelector(cssSelector).getBoundingClientRect();
-  return ev.x >= x && ev.x <= x+width && ev.y >= y && ev.y <= y+height
+  if (ev.isTrusted) { //don't check for untrusted events, like using fn.click(), but return false! 
+    const {x, y, width, height} = document.querySelector(cssSelector).getBoundingClientRect();
+    return ev.x >= x && ev.x <= x+width && ev.y >= y && ev.y <= y+height
+  }
+  else {
+    return false;
+  }
 }
 
 

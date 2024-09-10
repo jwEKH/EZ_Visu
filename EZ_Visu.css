@@ -7,6 +7,7 @@
   --GRIDSIZE_AS_PARTS_FROM_WIDTH: 32;
   --iconSize: calc(var(--visuWidth) / var(--GRIDSIZE_AS_PARTS_FROM_WIDTH));
   --fontSizeIconSignals: calc(var(--iconSize) / 3);
+  --inputTextWidth: calc(1.5 * var(--iconSize));
 
   --controlsWidthOffset: 18px; /*such as scrollbar or input[type=number] controls*/
 
@@ -91,8 +92,10 @@ body {
 */
 
 .visuItem {
-  cursor: pointer;
+  /*
   background-color: green;
+  */
+  cursor: pointer;
   display: grid;
 	grid-template-areas: 
 	'icon values';
@@ -100,18 +103,6 @@ body {
   width: fit-content;
   min-width: 2ch;
   min-height: 2ch;
-  /*
-  width: calc(var(--iconSize) * var(--visuWidth));
-  aspect-ratio: 1;
-  height: fit-content;
-  aspect-ratio: var(--visuAspectRatio);
-  width: 10%;
-  height: calc(.1 * var(--visuWidth));
-  width: 10%;
-  position: absolute;
-  top: 10%;
-  left: 10%;
-  */
 }
 [iconPosition = "right"] {
 	grid-template-areas:
@@ -132,8 +123,11 @@ body {
 }
 
 .divIcon {
+  /*
   background-color: yellow;
+  */
   grid-area: icon;
+  box-sizing: border-box;
   width: var(--iconSize);
   aspect-ratio: 1;
   display: grid;
@@ -147,6 +141,15 @@ body {
 
 .divIcon svg {
   grid-area: Error-start / Error-start / Absenkung-end / Absenkung-end;
+}
+[rotation = "90"] {
+  rotate: 90deg;
+}
+[rotation = "180"] {
+  rotate: 180deg;
+}
+[rotation = "270"] {
+  rotate: 270deg;
 }
 
 .divIcon div {
@@ -180,12 +183,15 @@ body {
 }
 
 .divSignals {
+  /*
   background-color: violet;
+  */
   grid-area: values;
 }
 
-[rotation= ".25"] {
-  rotate: .25turn;
+[type = "text"] {
+  box-sizing: border-box;
+  width: var(--inputTextWidth);
 }
 /*********************EditorTools*********************/
 .strokeWidth {
