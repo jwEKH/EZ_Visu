@@ -1,13 +1,8 @@
 //Testbench
-const ATTRIBUTES = {icon: `pumpe`};//, iconPosition: `right`, signals: `AI1, AI17`};
+const ATTRIBUTES = {icon: `heizkreis`};//, iconPosition: `right`, signals: `AI1, AI17`};
 
 
 /*********************Konstanten*********************/
-const SVG_NS = `http://www.w3.org/2000/svg`;
-
-const GRIDSIZE_AS_PARTS_FROM_WIDTH = 64; //Gesamtbreite in 32 Teile
-const ASPECT_RATIO = 16/9;
-
 //Colors here in rgb, because style.color will return rgb-format
 const MAGENTA_HSL = `hsl(334, 74%, 44%)`;
 const MAGENTA_HEX = `#c31d65`;
@@ -23,6 +18,23 @@ const YELLOW_HEX = `#c3a81d`;
 const YELLOW_RGB = `rgb(195, 168, 29)`;
 const COLORS_HEX = [MAGENTA_HEX, CYAN_HEX, PURPLE_HEX, YELLOW_HEX];
 
+const DARKESTGREY_HSL = `hsl(249, 10%, 13%)`;
+const DARKERGREY_HSL = `hsl(249, 10%, 18%)`;
+const DARKGREY_HSL = `hsl(249, 10%, 23%)`;
+const GREY_HSL = `hsl(249, 10%, 28%)`;
+const LIGHTGREY_HSL = `hsl(249, 10%, 33%)`;
+const LIGHTERGREY_HSL = `hsl(249, 10%, 38%)`;
+const LIGHTESTGREY_HSL = `hsl(249, 10%, 43%)`;
+
+
+const SVG_NS = `http://www.w3.org/2000/svg`;
+
+const GRIDSIZE_AS_PARTS_FROM_WIDTH = 64; //Gesamtbreite in 32 Teile
+const ASPECT_RATIO = 16/9;
+
+const STROKE_COLOR = `white`;
+const FILL_COLOR = DARKESTGREY_HSL;
+const STROKE_WIDTH = 2;
 
 /*********************VanillaDocReady*********************/
 window.addEventListener('load', function () {
@@ -41,33 +53,183 @@ function createBackgroundSVG(idx) {
   return svg;
 }
 
-function createIconSVG(symbole) {
-  if (symbole) {
+function createIcon(symbol) {
+  if (symbol) {
     const svg = document.createElementNS(SVG_NS, `svg`);
     svg.setAttributeNS(null, `viewBox`, `0 0 100 100`);
-    if (symbole === `triangle`) {
-      const el = document.createElementNS(SVG_NS, `polygon`);
-      svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `red`);
-      el.setAttributeNS(null,`fill`, `none`);
-      el.setAttributeNS(null,`points`, `10,90 50,10 90,90`);
-    }
-    if (symbole === `pumpe`) {
+    if (symbol === `heizkreis`) {
       let el = document.createElementNS(SVG_NS, `circle`);
       svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `red`);
-      el.setAttributeNS(null,`fill`, `grey`);
+      el.setAttributeNS(null,`stroke`, `white`);
+      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
+      el.setAttributeNS(null, `cx`, `50`);
+      el.setAttributeNS(null, `cy`, `50`);
+      el.setAttributeNS(null, `r`, `45`);
+      el = document.createElementNS(SVG_NS, `circle`);
+      svg.appendChild(el);
+      el.setAttributeNS(null,`stroke`, `white`);
+      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
+      el.setAttributeNS(null, `cx`, `50`);
+      el.setAttributeNS(null, `cy`, `50`);
+      el.setAttributeNS(null, `r`, `40`);
+    }
+    if (symbol === `pumpe`) {
+      let el = document.createElementNS(SVG_NS, `circle`);
+      svg.appendChild(el);
+      el.setAttributeNS(null,`stroke`, `white`);
+      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
       el.setAttributeNS(null, `cx`, `50`);
       el.setAttributeNS(null, `cy`, `50`);
       el.setAttributeNS(null, `r`, `40`);
       
       el = document.createElementNS(SVG_NS, `polyline`);
       svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `red`);
+      el.setAttributeNS(null,`stroke`, `white`);
       el.setAttributeNS(null,`fill`, `none`);
       el.setAttributeNS(null,`points`, `10,50 50,10 90,50`);
     }
-    if (symbole === `path`) {
+    if (symbol === `mischer`) {
+      let el = document.createElementNS(SVG_NS, `polygon`);
+      svg.appendChild(el);
+      el.setAttributeNS(null, `stroke-width`, 2);
+      el.setAttributeNS(null,`stroke`, `white`);
+      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
+      el.setAttributeNS(null,`points`, `30,90 50,50 70,90`);
+      el = document.createElementNS(SVG_NS, `polygon`);
+      svg.appendChild(el);
+      el.setAttributeNS(null, `stroke-width`, 2);
+      el.setAttributeNS(null,`stroke`, `white`);
+      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
+      el.setAttributeNS(null,`points`, `30,10 50,50 70,10`);
+      el = document.createElementNS(SVG_NS, `polygon`);
+      svg.appendChild(el);
+      el.setAttributeNS(null, `stroke-width`, 2);
+      el.setAttributeNS(null,`stroke`, `white`);
+      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
+      el.setAttributeNS(null,`points`, `10,30 50,50 10,70`);
+      el = document.createElementNS(SVG_NS, `circle`);
+      svg.appendChild(el);
+      el.setAttributeNS(null, `stroke-width`, 2);
+      el.setAttributeNS(null,`stroke`, `white`);
+      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
+      el.setAttributeNS(null, `cx`, `80`);
+      el.setAttributeNS(null, `cy`, `50`);
+      el.setAttributeNS(null, `r`, `15`);
+      el = document.createElementNS(SVG_NS, `line`);
+      svg.appendChild(el);
+      el.setAttributeNS(null, `stroke-width`, 2);
+      el.setAttributeNS(null,`stroke`, `white`);
+      el.setAttributeNS(null, `x1`, `50`);
+      el.setAttributeNS(null, `y1`, `50`);
+      el.setAttributeNS(null, `x2`, `65`);
+      el.setAttributeNS(null, `y2`, `50`);
+    }
+    if (symbol === `ventil`) {
+      let el = document.createElementNS(SVG_NS, `polygon`);
+      svg.appendChild(el);
+      el.setAttributeNS(null,`stroke`, `white`);
+      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
+      el.setAttributeNS(null,`points`, `30,90 50,50 70,90`);
+      el = document.createElementNS(SVG_NS, `polygon`);
+      svg.appendChild(el);
+      el.setAttributeNS(null,`stroke`, `white`);
+      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
+      el.setAttributeNS(null,`points`, `30,10 50,50 70,10`);
+      el = document.createElementNS(SVG_NS, `circle`);
+      svg.appendChild(el);
+      el.setAttributeNS(null,`stroke`, `white`);
+      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
+      el.setAttributeNS(null, `cx`, `80`);
+      el.setAttributeNS(null, `cy`, `50`);
+      el.setAttributeNS(null, `r`, `15`);
+      el = document.createElementNS(SVG_NS, `line`);
+      svg.appendChild(el);
+      el.setAttributeNS(null,`stroke`, `white`);
+      el.setAttributeNS(null, `x1`, `50`);
+      el.setAttributeNS(null, `y1`, `50`);
+      el.setAttributeNS(null, `x2`, `65`);
+      el.setAttributeNS(null, `y2`, `50`);
+    }
+    if (symbol === `aggregat`) {
+      const el = document.createElementNS(SVG_NS, `polygon`);
+      svg.appendChild(el);
+      el.setAttributeNS(null,`stroke`, `red`);
+      el.setAttributeNS(null,`fill`, `none`);
+      el.setAttributeNS(null,`points`, `10,90 50,10 90,90`);
+    }
+    if (symbol === `kessel`) {
+      const el = document.createElementNS(SVG_NS, `polygon`);
+      svg.appendChild(el);
+      el.setAttributeNS(null,`stroke`, `red`);
+      el.setAttributeNS(null,`fill`, `none`);
+      el.setAttributeNS(null,`points`, `10,90 50,10 90,90`);
+    }
+    if (symbol === `luefter`) {
+      const r = 45;
+      let el = document.createElementNS(SVG_NS, `circle`);
+      svg.appendChild(el);
+      el.setAttributeNS(null,`stroke`, `white`);
+      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
+      el.setAttributeNS(null, `cx`, `50`);
+      el.setAttributeNS(null, `cy`, `50`);
+      el.setAttributeNS(null, `r`, r);
+      
+      el = document.createElementNS(SVG_NS, `line`);
+      svg.appendChild(el);
+      el.setAttributeNS(null,`stroke`, `white`);
+      el.setAttributeNS(null, `x1`, 50 - r * sinDeg(60));
+      el.setAttributeNS(null, `y1`, 50 + r * cosDeg(60));
+      el.setAttributeNS(null, `x2`, 50 - r * sinDeg(150));
+      el.setAttributeNS(null, `y2`, 50 + r * cosDeg(150));
+      el = document.createElementNS(SVG_NS, `line`);
+      svg.appendChild(el);
+      el.setAttributeNS(null,`stroke`, `white`);
+      el.setAttributeNS(null, `x1`, 50 + r * sinDeg(60));
+      el.setAttributeNS(null, `y1`, 50 + r * cosDeg(60));
+      el.setAttributeNS(null, `x2`, 50 + r * sinDeg(150));
+      el.setAttributeNS(null, `y2`, 50 + r * cosDeg(150));
+
+      
+      //el.setAttributeNS(null,`points`, `10,50 50,10 90,50`);
+    }
+    if (symbol === `lueftungsklappe`) {
+      let el = document.createElementNS(SVG_NS, `line`);
+      svg.appendChild(el);
+      el.setAttributeNS(null,`stroke`, `white`);
+      el.setAttributeNS(null, `x1`, 50);
+      el.setAttributeNS(null, `y1`, 5);
+      el.setAttributeNS(null, `x2`, 50);
+      el.setAttributeNS(null, `y2`, 95);
+      el = document.createElementNS(SVG_NS, `circle`);
+      svg.appendChild(el);
+      el.setAttributeNS(null,`stroke`, `white`);
+      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
+      el.setAttributeNS(null, `cx`, `50`);
+      el.setAttributeNS(null, `cy`, `50`);
+      el.setAttributeNS(null, `r`, `10`);
+    }
+    if (symbol === `button`) {
+      const el = document.createElementNS(SVG_NS, `polygon`);
+      svg.appendChild(el);
+      el.setAttributeNS(null,`stroke`, `red`);
+      el.setAttributeNS(null,`fill`, `none`);
+      el.setAttributeNS(null,`points`, `10,90 50,10 90,90`);
+    }
+    if (symbol === `gassensor`) {
+      const el = document.createElementNS(SVG_NS, `polygon`);
+      svg.appendChild(el);
+      el.setAttributeNS(null,`stroke`, `red`);
+      el.setAttributeNS(null,`fill`, `none`);
+      el.setAttributeNS(null,`points`, `10,90 50,10 90,90`);
+    }
+    if (symbol === `schalter`) {
+      const el = document.createElementNS(SVG_NS, `polygon`);
+      svg.appendChild(el);
+      el.setAttributeNS(null,`stroke`, `red`);
+      el.setAttributeNS(null,`fill`, `none`);
+      el.setAttributeNS(null,`points`, `10,90 50,10 90,90`);
+    }
+    if (symbol === `path`) {
       [`icon`, `signal`].forEach(elType => {      
         const el = document.createElementNS(SVG_NS, `path`);
         svg.appendChild(el);
@@ -108,6 +270,7 @@ function createVisuItem(...attributes) {
   visuItem.appendChild(divSignals);
   divSignals.classList.add(`divSignals`);
   
+  let icon;
   attributes.forEach(attribute => {
     Object.entries(attribute).forEach(([key, value]) => {
       //console.log(`${key} ${value}`);
@@ -116,7 +279,8 @@ function createVisuItem(...attributes) {
       visuItem.setAttribute(key, value);
       
       if (key.toLowerCase() === `icon`) {
-        divIcon.appendChild(createIconSVG(value));        
+        divIcon.appendChild(createIcon(value));
+        icon = value;
       }
       
       if (key.toLowerCase() === `signals`) {
@@ -138,16 +302,17 @@ function createVisuItem(...attributes) {
     });    
   });
 
-  [`Error`, `Freigabe`, `Betriebsart`, `Absenkung`, `Betrieb`].forEach(signal => {
+  [`Betrieb`, `Error`, `Freigabe`, `Betriebsart`, `Absenkung`].forEach(signal => {
     const div = document.createElement(`div`);
-    divIcon.appendChild(div);
-    div.classList.add(`div${signal}`);
-    div.setAttribute(`NA`, true);
+    const parent = (!icon || (signal !== `Betrieb` &&  icon.match(/(aggregat)|(kessel)/))) ? visuItem : divIcon;
+    parent.appendChild(div);
+    div.classList.add(`div${signal}`, `divDigSignal`);
+    div.toggleAttribute(`NA`, true);
     div.innerText = (signal === `Error`)        ? `⚠`  :
                     (signal === `Freigabe`)     ? `⏺` :
                     (signal === `Betriebsart`)  ? `✋`  :
                     (signal === `Absenkung`)    ? `🌜`  :
-                    ``;
+                    `0`;
   });
   
 
@@ -479,7 +644,7 @@ function createSignalTable(visuLiveData) {
     radioBtn.checked = (option === `Drag`);
     radioBtn.addEventListener(`change`, (ev) => {
       console.log(ev.target.value);
-      const inpSignals = document.querySelectorAll(`.signalTable input[type='text']`);
+      const inpSignals = document.querySelectorAll(`.signalTable input[type=text]`);
       //console.log(inpSignals);
       inpSignals.forEach(el => {
         el.readOnly = !el.readOnly;//, (ev.target.value === `drag`)));
@@ -535,7 +700,17 @@ function createVisuItemPool() {
   const summary = document.createElement(`summary`);
   summary.innerText = `visuItems`;
   visuItemPool.appendChild(summary);
-  visuItemPool.appendChild(createVisuItem(ATTRIBUTES));
+  visuItemPool.appendChild(createVisuItem({icon: `heizkreis`}));
+  visuItemPool.appendChild(createVisuItem({icon: `pumpe`}));
+  visuItemPool.appendChild(createVisuItem({icon: `mischer`}));
+  visuItemPool.appendChild(createVisuItem({icon: `ventil`}));
+  visuItemPool.appendChild(createVisuItem({icon: `aggregat`}));
+  visuItemPool.appendChild(createVisuItem({icon: `kessel`}));
+  visuItemPool.appendChild(createVisuItem({icon: `luefter`}));
+  visuItemPool.appendChild(createVisuItem({icon: `lueftungsklappe`}));
+  visuItemPool.appendChild(createVisuItem({icon: `button`}));
+  visuItemPool.appendChild(createVisuItem({icon: `gassensor`}));
+  visuItemPool.appendChild(createVisuItem({icon: `schalter`}));
   return visuItemPool;
 }
 
@@ -639,7 +814,7 @@ function removeDivIconSignal(ev) {
   if (ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
     ev.target.removeAttribute(`signal`);
     ev.target.removeAttribute(`title`);
-    ev.target.setAttribute(`NA`, true);
+    ev.target.toggleAttribute(`NA`, true);
     return true; //feedback that removeAction was executed
   }
   return false; //feedback that removeAction was NOT executed
@@ -677,7 +852,7 @@ function divVisuDragEnterEventHandler(ev) {
 
 function divVisuDragLeaveEventHandler(ev) {
   if (!ev.target.matches(`[signal]`) && ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
-    ev.target.setAttribute(`NA`, true);
+    ev.target.toggleAttribute(`NA`, true);
   }
 }
 
@@ -723,11 +898,11 @@ function divVisuDropEventHandler(ev) {
       if (draggingItem.matches(`[isBool]`)) {
         console.log(target);
         target.setAttribute(`signal`, draggingItem.value);
-        target.title = `${draggingItem.value} (DoubleClick to remove Signal)`;
+        target.title = `${draggingItem.value} (RightClick to remove Signal)`;
       }
       else {
       const visuItem = target.closest(`.visuItem`);
-      if (visuItem) {
+      if (visuItem && visuItem.matches(`*:not([icon=aggregat], [icon=kessel])`)) {
         const divIcon = visuItem.querySelector(`.divIcon`); 
         const divIconBox = divIcon.getBoundingClientRect();
         divIconBox.xCenter = divIconBox.x + divIconBox.width/2;
@@ -864,13 +1039,16 @@ function unDoReDoEventListener(ev) {
     divVisu.innerHTML = unDoReDoStack.stack.at(unDoReDoStack.idx); //todo...
     console.log(`${unDoReDoStack.idx} of ${unDoReDoStack.stack.length - 1}`);
   }
+  cancelCurrentDrawing();
 }
 
 function openLocalFileEventHandler(ev) {
   const reader = new FileReader();
   reader.readAsText(ev.target.files[0]);
   reader.addEventListener(`load`, () => {
-    document.querySelector(`.divVisu`).innerHTML = reader.result;
+    const divVisu = document.querySelector(`.divVisu`);
+    divVisu.innerHTML = reader.result;
+    divVisu.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.value = txtEl.className);
     updateUnDoReDoStack();
     console.log(reader.result);
   });
@@ -944,6 +1122,16 @@ function constrain(val, min, max) {
   return Math.min(max, Math.max(min, val));
 }
 
+function cosDeg(deg) {
+  const pi = Math.PI;
+  return Math.cos(deg/180*pi);
+}
+function sinDeg(deg) {
+  const pi = Math.PI;
+  return Math.sin(deg/180*pi);
+}
+
+
 function eventIsWithin(ev, cssSelector) { //necessary bc fn.closest() fails 4 svg ancestors bc they don't have parents...
   if (ev.isTrusted) { //don't check for untrusted events, like using fn.click(), but return false! 
     const {x, y, width, height} = document.querySelector(cssSelector).getBoundingClientRect();
@@ -955,6 +1143,6 @@ function eventIsWithin(ev, cssSelector) { //necessary bc fn.closest() fails 4 sv
 }
 
 
-function l(data) {
+function l(...data) {
   console.log(data);
 }
