@@ -1038,6 +1038,7 @@ function unDoReDoEventListener(ev) {
     }
     divVisu.innerHTML = unDoReDoStack.stack.at(unDoReDoStack.idx); //todo...
     console.log(`${unDoReDoStack.idx} of ${unDoReDoStack.stack.length - 1}`);
+    divVisu.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.value = txtEl.className);
   }
   cancelCurrentDrawing();
 }
