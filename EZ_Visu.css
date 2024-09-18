@@ -43,32 +43,27 @@ body {
   */
 }
 
-.signalTable {
+.visuEditElement {
   position: fixed;
-  left: 0;
   background-color: var(--grey);
   max-height: 100vh;
   overflow-y: auto;
+}
+.visuEditElement[open] {
+  writing-mode: initial;
+}
+.signalPool {
+  left: 0;
   writing-mode: sideways-rl;
 }
-.signalTable[open] {
-  writing-mode: initial;
+.signalPool[open] {
   padding-right: var(--controlsWidthOffset);
 }
-.signalGroup {
-  display: grid;
-  grid-auto-columns: 1fr;
-}
-
 .visuItemPool {
-  position: fixed;
   right: 0;
-  background-color: var(--grey);
-  overflow-y: auto;
   writing-mode: sideways-lr;
 }
 .visuItemPool[open] {
-  writing-mode: initial;
   height: 100vh;
   padding-left: var(--controlsWidthOffset);
 }

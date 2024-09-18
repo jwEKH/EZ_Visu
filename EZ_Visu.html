@@ -39,6 +39,42 @@
       <input type="checkbox" id="cbShowMarker" title="[m]" checked>
       <label for="cbShowMarker" title="[g]">ShowMarker</label>
     </fieldset>
+    <details class="signalPool visuEditElement">
+      <summary>Signale</summary>
+      <input type="checkbox" id="cbShowSignalParameters" class="cbSignalTableColumnVisibility" checked>
+      <label for="cbShowSignalParameters">showSignalParameters</label>
+      <input type="checkbox" id="cbShowRtosTerm" class="cbSignalTableColumnVisibility" checked>
+      <label for="cbShowRtosTerm">showRtosTerm</label>
+      <table class="signalTable">
+        <colgroup>
+        <col>
+        <col span="1" class="colRtosTerm">
+        <col span="1" class="colSignal">
+        <col span="6" class="colSignalParameters">
+        </colgroup>
+        
+        <thead>
+          <tr>
+            <th scope="col">Used</th>
+            <th scope="col">RTOS Term</th>
+            <th scope="col">Signal</th>
+            <th scope="col">ToolTip</th>
+            <th scope="col">Type</th>
+            <th scope="col">DecPlace</th>
+            <th scope="col">Unit</th>
+            <th scope="col">TrueTxt</th>
+            <th scope="col">FalseTxt</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+      
+
+
+
+    </details>
+
     <script src="EZ_Visu.js"></script>
     <!--
     -->

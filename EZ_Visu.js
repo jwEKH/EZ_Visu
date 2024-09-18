@@ -58,104 +58,111 @@ function createIcon(symbol) {
     const svg = document.createElementNS(SVG_NS, `svg`);
     svg.setAttributeNS(null, `viewBox`, `0 0 100 100`);
     if (symbol === `heizkreis`) {
-      let el = document.createElementNS(SVG_NS, `circle`);
-      svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `white`);
-      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
-      el.setAttributeNS(null, `cx`, `50`);
-      el.setAttributeNS(null, `cy`, `50`);
-      el.setAttributeNS(null, `r`, `45`);
-      el = document.createElementNS(SVG_NS, `circle`);
-      svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `white`);
-      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
-      el.setAttributeNS(null, `cx`, `50`);
-      el.setAttributeNS(null, `cy`, `50`);
-      el.setAttributeNS(null, `r`, `40`);
+      [45, 40].forEach(r => {
+        const el = document.createElementNS(SVG_NS, `circle`);
+        svg.appendChild(el);
+        el.setAttributeNS(null,`stroke`, STROKE_COLOR);
+        el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
+        el.setAttributeNS(null,`fill`, FILL_COLOR);
+        el.setAttributeNS(null, `cx`, 50);
+        el.setAttributeNS(null, `cy`, 50);
+        el.setAttributeNS(null, `r`, r);
+      });
     }
     if (symbol === `pumpe`) {
-      let el = document.createElementNS(SVG_NS, `circle`);
-      svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `white`);
-      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
-      el.setAttributeNS(null, `cx`, `50`);
-      el.setAttributeNS(null, `cy`, `50`);
-      el.setAttributeNS(null, `r`, `40`);
-      
-      el = document.createElementNS(SVG_NS, `polyline`);
-      svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `white`);
-      el.setAttributeNS(null,`fill`, `none`);
-      el.setAttributeNS(null,`points`, `10,50 50,10 90,50`);
+      [`circle`, `polyline`].forEach(shape => {
+        const el = document.createElementNS(SVG_NS, shape);
+        svg.appendChild(el);
+        el.setAttributeNS(null,`stroke`, STROKE_COLOR);
+        el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
+        if (shape === `circle`) {
+          el.setAttributeNS(null,`fill`, FILL_COLOR);
+          el.setAttributeNS(null, `cx`, `50`);
+          el.setAttributeNS(null, `cy`, `50`);
+          el.setAttributeNS(null, `r`, `40`);
+        }
+        else {
+          el.setAttributeNS(null,`fill`, `none`);
+          el.setAttributeNS(null,`points`, `10,50 50,10 90,50`);
+        }
+      });
     }
     if (symbol === `mischer`) {
-      let el = document.createElementNS(SVG_NS, `polygon`);
-      svg.appendChild(el);
-      el.setAttributeNS(null, `stroke-width`, 2);
-      el.setAttributeNS(null,`stroke`, `white`);
-      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
-      el.setAttributeNS(null,`points`, `30,90 50,50 70,90`);
-      el = document.createElementNS(SVG_NS, `polygon`);
-      svg.appendChild(el);
-      el.setAttributeNS(null, `stroke-width`, 2);
-      el.setAttributeNS(null,`stroke`, `white`);
-      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
-      el.setAttributeNS(null,`points`, `30,10 50,50 70,10`);
-      el = document.createElementNS(SVG_NS, `polygon`);
-      svg.appendChild(el);
-      el.setAttributeNS(null, `stroke-width`, 2);
-      el.setAttributeNS(null,`stroke`, `white`);
-      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
-      el.setAttributeNS(null,`points`, `10,30 50,50 10,70`);
-      el = document.createElementNS(SVG_NS, `circle`);
-      svg.appendChild(el);
-      el.setAttributeNS(null, `stroke-width`, 2);
-      el.setAttributeNS(null,`stroke`, `white`);
-      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
-      el.setAttributeNS(null, `cx`, `80`);
-      el.setAttributeNS(null, `cy`, `50`);
-      el.setAttributeNS(null, `r`, `15`);
-      el = document.createElementNS(SVG_NS, `line`);
-      svg.appendChild(el);
-      el.setAttributeNS(null, `stroke-width`, 2);
-      el.setAttributeNS(null,`stroke`, `white`);
-      el.setAttributeNS(null, `x1`, `50`);
-      el.setAttributeNS(null, `y1`, `50`);
-      el.setAttributeNS(null, `x2`, `65`);
-      el.setAttributeNS(null, `y2`, `50`);
+      [`polygon`, `polygon`, `polygon`, `circle`, `line`].forEach((shape, idx) => {
+        const el = document.createElementNS(SVG_NS, shape);
+        svg.appendChild(el);
+        el.setAttributeNS(null,`stroke`, STROKE_COLOR);
+        el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
+        if (idx < 4) {
+          el.setAttributeNS(null,`fill`, FILL_COLOR);
+        }
+        if (idx === 0) {
+          el.setAttributeNS(null,`points`, `30,90 50,50 70,90`);
+        }
+        if (idx === 1) {
+          el.setAttributeNS(null,`points`, `30,10 50,50 70,10`);
+        }
+        if (idx === 2) {
+          el.setAttributeNS(null,`points`, `10,30 50,50 10,70`);
+        }
+        if (idx === 3) {
+          el.setAttributeNS(null, `cx`, `80`);
+          el.setAttributeNS(null, `cy`, `50`);
+          el.setAttributeNS(null, `r`, `15`);
+        }
+        if (idx === 4) {
+          el.setAttributeNS(null, `x1`, `50`);
+          el.setAttributeNS(null, `y1`, `50`);
+          el.setAttributeNS(null, `x2`, `65`);
+          el.setAttributeNS(null, `y2`, `50`);
+        }
+      });
     }
     if (symbol === `ventil`) {
-      let el = document.createElementNS(SVG_NS, `polygon`);
-      svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `white`);
-      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
-      el.setAttributeNS(null,`points`, `30,90 50,50 70,90`);
-      el = document.createElementNS(SVG_NS, `polygon`);
-      svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `white`);
-      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
-      el.setAttributeNS(null,`points`, `30,10 50,50 70,10`);
-      el = document.createElementNS(SVG_NS, `circle`);
-      svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `white`);
-      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
-      el.setAttributeNS(null, `cx`, `80`);
-      el.setAttributeNS(null, `cy`, `50`);
-      el.setAttributeNS(null, `r`, `15`);
-      el = document.createElementNS(SVG_NS, `line`);
-      svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `white`);
-      el.setAttributeNS(null, `x1`, `50`);
-      el.setAttributeNS(null, `y1`, `50`);
-      el.setAttributeNS(null, `x2`, `65`);
-      el.setAttributeNS(null, `y2`, `50`);
+      [`polygon`, `polygon`, `circle`, `line`].forEach((shape, idx) => {
+        const el = document.createElementNS(SVG_NS, shape);
+        svg.appendChild(el);
+        el.setAttributeNS(null,`stroke`, STROKE_COLOR);
+        el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
+        if (idx < 3) {
+          el.setAttributeNS(null,`fill`, FILL_COLOR);
+        }
+        if (idx === 0) {
+          el.setAttributeNS(null,`points`, `30,90 50,50 70,90`);
+        }
+        if (idx === 1) {
+          el.setAttributeNS(null,`points`, `30,10 50,50 70,10`);
+        }
+        if (idx === 2) {
+          el.setAttributeNS(null, `cx`, `80`);
+          el.setAttributeNS(null, `cy`, `50`);
+          el.setAttributeNS(null, `r`, `15`);
+        }
+        if (idx === 3) {
+          el.setAttributeNS(null, `x1`, `50`);
+          el.setAttributeNS(null, `y1`, `50`);
+          el.setAttributeNS(null, `x2`, `65`);
+          el.setAttributeNS(null, `y2`, `50`);
+        }
+      });
     }
     if (symbol === `aggregat`) {
-      const el = document.createElementNS(SVG_NS, `polygon`);
-      svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `red`);
-      el.setAttributeNS(null,`fill`, `none`);
-      el.setAttributeNS(null,`points`, `10,90 50,10 90,90`);
+      [`circle`, `path`].forEach(shape => {
+        const el = document.createElementNS(SVG_NS, shape);
+        svg.appendChild(el);
+        el.setAttributeNS(null,`stroke`, CYAN_HSL);
+        el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
+        el.setAttributeNS(null,`fill`, `none`);
+        if (shape === `circle`) {
+          el.setAttributeNS(null, `cx`, 50);
+          el.setAttributeNS(null, `cy`, 50);
+          el.setAttributeNS(null, `r`, 40);
+        }
+        else {
+        const d = `M 20,50 L 80,50`;
+        el.setAttributeNS(null, `d`, d);
+        }
+      });
     }
     if (symbol === `kessel`) {
       const el = document.createElementNS(SVG_NS, `polygon`);
@@ -165,45 +172,41 @@ function createIcon(symbol) {
       el.setAttributeNS(null,`points`, `10,90 50,10 90,90`);
     }
     if (symbol === `luefter`) {
-      const r = 45;
-      let el = document.createElementNS(SVG_NS, `circle`);
-      svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `white`);
-      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
-      el.setAttributeNS(null, `cx`, `50`);
-      el.setAttributeNS(null, `cy`, `50`);
-      el.setAttributeNS(null, `r`, r);
-      
-      el = document.createElementNS(SVG_NS, `line`);
-      svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `white`);
-      el.setAttributeNS(null, `x1`, 50 - r * sinDeg(60));
-      el.setAttributeNS(null, `y1`, 50 + r * cosDeg(60));
-      el.setAttributeNS(null, `x2`, 50 - r * sinDeg(150));
-      el.setAttributeNS(null, `y2`, 50 + r * cosDeg(150));
-      el = document.createElementNS(SVG_NS, `line`);
-      svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `white`);
-      el.setAttributeNS(null, `x1`, 50 + r * sinDeg(60));
-      el.setAttributeNS(null, `y1`, 50 + r * cosDeg(60));
-      el.setAttributeNS(null, `x2`, 50 + r * sinDeg(150));
-      el.setAttributeNS(null, `y2`, 50 + r * cosDeg(150));
-
-      
-      //el.setAttributeNS(null,`points`, `10,50 50,10 90,50`);
+      [`circle`, `line`, `line`].forEach((shape, idx) => {
+        let el = document.createElementNS(SVG_NS, shape);
+        svg.appendChild(el);
+        el.setAttributeNS(null,`stroke`, STROKE_COLOR);
+        el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
+        const r = 45;
+        if (shape === `circle`) {
+          el.setAttributeNS(null,`fill`, FILL_COLOR);
+          el.setAttributeNS(null, `cx`, `50`);
+          el.setAttributeNS(null, `cy`, `50`);
+          el.setAttributeNS(null, `r`, r);
+        }
+        else {
+          const direction = (idx === 1) ? -1 : 1;
+          el.setAttributeNS(null, `x1`, 50 + r * sinDeg(60) * direction);
+          el.setAttributeNS(null, `y1`, 50 + r * cosDeg(60));
+          el.setAttributeNS(null, `x2`, 50 + r * sinDeg(150) * direction);
+          el.setAttributeNS(null, `y2`, 50 + r * cosDeg(150));
+        }
+      });
     }
     if (symbol === `lueftungsklappe`) {
       let el = document.createElementNS(SVG_NS, `line`);
       svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `white`);
+      el.setAttributeNS(null,`stroke`, STROKE_COLOR);
+      el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
       el.setAttributeNS(null, `x1`, 50);
       el.setAttributeNS(null, `y1`, 5);
       el.setAttributeNS(null, `x2`, 50);
       el.setAttributeNS(null, `y2`, 95);
       el = document.createElementNS(SVG_NS, `circle`);
       svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `white`);
-      el.setAttributeNS(null,`fill`, DARKESTGREY_HSL);
+      el.setAttributeNS(null,`stroke`, STROKE_COLOR);
+      el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
+      el.setAttributeNS(null,`fill`, FILL_COLOR);
       el.setAttributeNS(null, `cx`, `50`);
       el.setAttributeNS(null, `cy`, `50`);
       el.setAttributeNS(null, `r`, `10`);
@@ -341,6 +344,9 @@ function addEditorEventHandler() {
   document.querySelector(`.btnSave`).addEventListener(`click`, saveBtnHandler);
   document.querySelector(`#openLocaleFile`).addEventListener(`input`, openLocalFileEventHandler);
   document.querySelector(`[type=color]`).addEventListener(`input`, colorInputEventHandler);
+
+  document.querySelector(`.signalTable`).addEventListener(`input`, signalTableInputEventHandler);
+  document.querySelectorAll(`.cbSignalTableColumnVisibility`).forEach(cb => cb.addEventListener(`change`, signalTableColumnVisibilityHandler));
 }
 
 function removeEditorEventHandler() {
@@ -631,7 +637,118 @@ function createEditorTools() {
   return fsEditorTools;
 }
 
-function createSignalTable(visuLiveData) {
+function initSignalTable(visuLiveData) {
+  const signalTableBody = document.querySelector(`.signalTable tbody`);
+  if (visuLiveData) {
+    //create table according to liveSignals
+  }
+  else {
+    //create basic table (32 DI, 32 AI, 32 DO, 8 AO, CAN?)
+    [`DI`, `AI`, `DO`, `AO`, `CAN`].forEach(signalGroup => {
+      const channels =  (signalGroup === `AO`) ? 8 :
+                        (signalGroup === `CAN`) ? 4 :
+                        32;
+      for (let i=1; i<=channels; i++) {
+        const tr = document.createElement(`tr`);
+        signalTableBody.appendChild(tr);
+        [`UsageCount`, `RtosTerm`, `SignalId`, `Tooltip`, `SignalType`, `DecPlace`, `Unit`, `TrueTxt`, `FalseTxt`].forEach(col => {
+          const td = document.createElement(`td`);
+          tr.appendChild(td);
+          if (col === `UsageCount`) {
+            td.innerText = 0;
+            td.classList.add(`${signalGroup}${i}count`);
+          }
+          else if (col.match(/(Rtos)|(SignalId)|(Tooltip)|(Txt)/)) {
+            const input = document.createElement(`input`);
+            td.appendChild(input);
+            input.classList.add(`txt${col}`);
+            input.type = `text`;
+            input.disabled = (col.match(/(Txt)/)) && !signalGroup.match(/(DI)|(DO)/);
+            if (col === `SignalId`) {
+              input.value = `${signalGroup}${i}`;
+              input.setAttribute(`signalId`, `${signalGroup}${i}`);
+              input.readOnly = true;
+              input.draggable = true;
+              input.setAttribute(`signalType`, (signalGroup.match(/(DI)|(DO)/)) ? `digital` : `analog`);
+              if (signalGroup.match(/(DI)|(DO)/)) {
+              
+              }
+              else {
+                input.setAttribute(`decPlace`, 1);
+                input.setAttribute(`unit`, `°C`);
+              }
+            }
+          }
+          else {
+            const select = document.createElement(`select`);
+            td.appendChild(select);
+            select.classList.add(`sel${col}`);
+            select.disabled = signalGroup.match(/(DI)|(DO)/);
+            
+            if (col === `SignalType`) {
+              [`Analog`, `Digital`].forEach(signalType => {
+                const option = document.createElement(`option`);
+                select.appendChild(option);
+                option.innerText = signalType;
+                option.value = signalType.toLowerCase();
+                option.selected = (signalType === `Digital` && signalGroup.match(/(DI)|(DO)/));
+              });
+            }
+
+            if (col === `DecPlace`) {
+              [0, 1, 2, 3, 4].forEach(decPlace => {
+                const option = document.createElement(`option`);
+                select.appendChild(option);
+                option.innerText = decPlace;
+                option.value = decPlace;
+                option.selected = (decPlace === 1 && !signalGroup.match(/(DI)|(DO)/));
+              });
+            }
+
+            if (col === `Unit`) {
+              [``, `°C`, `bar`, `V`, `kW`, `m³/h`, `mWS`, `%`, `kWh`, `Bh`, `m³`, `°Cø`, `mV`, `UPM`, `s`, `mbar`, `A`, `Hz`, `l/h`, `l`].forEach(unit => {
+                const option = document.createElement(`option`);
+                select.appendChild(option);
+                option.innerText = unit;
+                option.value = unit;
+                option.selected = (unit === `°C` && !signalGroup.match(/(DI)|(DO)/));
+              });
+            }
+
+
+
+          }
+
+
+
+
+          
+        });
+
+
+        /*
+        tr.type = `text`;
+        tr.classList.add(`${signalGroup}${i}`);
+        tr.readOnly = true;
+        tr.draggable = true;
+        tr.value = `${signalGroup}${i}`;
+        tr.toggleAttribute(`isBool`, signalGroup.match(/(DI)|(DO)/));
+        */
+      }
+    });
+  }
+
+  [`RtosTerm`, `SignalParameters`].forEach(colName => {
+    const cb = document.querySelector(`#cbShow${colName}`);
+    const col = document.querySelector(`.col${colName}`);
+    col.style.visibility = (cb.checked) ? `` : `collapse`;
+  });
+
+
+
+}
+
+function createSignalTableOLD(visuLiveData) {
   const signalTable = document.createElement(`details`);
   signalTable.classList.add(`signalTable`, `visuEditElement`);
   //signalTable.setAttribute(`open`, `true`);
@@ -716,7 +833,8 @@ function createVisuItemPool() {
 
 function enterVisuEditor(initialCall) {
   if (initialCall) {
-    document.body.appendChild(createSignalTable());
+    //document.body.appendChild(createSignalTable());
+    initSignalTable();
     document.body.appendChild(createVisuItemPool());
     //document.body.appendChild(createEditorTools());
     document.querySelector(`#selStrokeDasharray`).style.color = document.querySelector(`.colorPicker`).value;
@@ -812,9 +930,11 @@ function cancelCurrentSelection() {
 
 function removeDivIconSignal(ev) {
   if (ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
-    ev.target.removeAttribute(`signal`);
+    ev.target.removeAttribute(`signalId`);
+    ev.target.removeAttribute(`signalType`);
     ev.target.removeAttribute(`title`);
-    ev.target.toggleAttribute(`NA`, true);
+    ev.target.setAttribute(`NA`, true);
+    updateUsedCount();
     return true; //feedback that removeAction was executed
   }
   return false; //feedback that removeAction was NOT executed
@@ -844,14 +964,14 @@ function dragStartEventHandler(ev) {
 
 function divVisuDragEnterEventHandler(ev) {
   const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
-  if (draggingItem.matches(`[isBool]`) && ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
+  if (draggingItem.matches(`[signalType=digital]`) && ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
     //console.log(ev.target)
     ev.target.removeAttribute(`NA`);
   }
 }
 
 function divVisuDragLeaveEventHandler(ev) {
-  if (!ev.target.matches(`[signal]`) && ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
+  if (!ev.target.matches(`[signalId]`) && ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
     ev.target.toggleAttribute(`NA`, true);
   }
 }
@@ -860,8 +980,8 @@ function divVisuDragOverEventHandler(ev) {
   const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
   if (draggingItem) {
     const visuItemToDivVisu = (ev.target.closest(`.divVisu`) && draggingItem.matches(`.visuItem`));
-    const analogSignalToVisuItem = draggingItem.type === `text` && !draggingItem.matches(`[isBool]`) && ev.target.closest(`.visuItem`) && !ev.target.closest(`.visuEditElement`);
-    const digitalSignalToVisuItem = draggingItem.matches(`[isBool]`) && ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`) && !ev.target.closest(`.visuEditElement`);
+    const analogSignalToVisuItem = draggingItem.type === `text` && !draggingItem.matches(`[signalType=digital]`) && ev.target.closest(`.visuItem`) && !ev.target.closest(`.visuEditElement`);
+    const digitalSignalToVisuItem = draggingItem.matches(`[signalType=digital]`) && ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`) && !ev.target.closest(`.visuEditElement`);
     if (visuItemToDivVisu || analogSignalToVisuItem || digitalSignalToVisuItem) {
       ev.preventDefault();
       //console.log(ev.target);
@@ -895,13 +1015,17 @@ function divVisuDropEventHandler(ev) {
       target.appendChild(dropItem);
     }
     else {
-      if (draggingItem.matches(`[isBool]`)) {
-        console.log(target);
-        target.setAttribute(`signal`, draggingItem.value);
+      if (draggingItem.matches(`[signalType=digital]`)) {
+        Array.from(draggingItem.attributes).forEach(attr => {
+          if (attr.name.match(/(signalId)|(signalType)|(decPlace)|(unit)|(trueTxt)|(falseTxt)/i)) {
+            target.setAttribute(attr.name, attr.value);
+          }
+        });
         target.title = `${draggingItem.value} (RightClick to remove Signal)`;
       }
       else {
       const visuItem = target.closest(`.visuItem`);
+      const divSignals = visuItem.querySelector(`.divSignals`);
       if (visuItem && visuItem.matches(`*:not([icon=aggregat], [icon=kessel])`)) {
         const divIcon = visuItem.querySelector(`.divIcon`); 
         const divIconBox = divIcon.getBoundingClientRect();
@@ -914,15 +1038,30 @@ function divVisuDropEventHandler(ev) {
         (maxDelta === -deltaX) ? `right` :
         (maxDelta === deltaY) ? `top` :
         `bottom`;
-        //console.log(divIconBox);
+        /*
+        todo: positioning for iconPositionRight & Bottom!
+
+        const currentIconPosition = visuItem.getAttribute(`iconPosition`);
+        if (iconPosition !== currentIconPosition && (iconPosition === `right` || currentIconPosition === `right`)) {
+          const divVisuWidth = document.querySelector(`.divVisu`).getBoundingClientRect().width;
+          if (iconPosition === `right`) {
+            visuItem.style.right = `${100 - (parseFloat(visuItem.style.left) + 100 * divIconBox.width / divVisuWidth)}%`;
+            visuItem.style.left = ``;
+          }
+          else {
+            visuItem.style.left = `${100 - (parseFloat(visuItem.style.right) + 100 * divIconBox.width / divVisuWidth)}%`;
+            visuItem.style.right = ``;
+          }
+        }
+        */
         visuItem.setAttribute(`iconPosition`, iconPosition);
       }
 
-        const divSignals = visuItem.querySelector(`.divSignals`);
         //const insertBeforeNode = (target.closest(`.divSignals`)) ? target : divSignals.firstElementChild;
         divSignals.appendChild(dropItem);
       }
     }
+    updateUsedCount();
     updateUnDoReDoStack();
   }
 
@@ -957,20 +1096,17 @@ function keyDownEventHandler(ev) {
   if (!auxKeys) {
     if (key === `c`)
       document.querySelector(`.colorPicker`).click();
-    if (key === `d`)
-      document.querySelector(`#rbDraw`).click();
     if (key === `g`)
       document.querySelector(`#cbGridSnap`).click();
     if (key === `o`)
       document.querySelector(`#cbOrthoMode`).click();
-    if (key === `s`)
-      document.querySelector(`#rbSelect`).click();
     if (key === `escape`) {
       cancelCurrentDrawing();
       cancelCurrentSelection();
     }
     if (key.match(/(delete)|(backspace)/)) {
       document.querySelectorAll(`[selected]`).forEach(el => el.remove());
+      updateUsedCount();
       updateUnDoReDoStack();
     }
   }
@@ -1050,6 +1186,7 @@ function openLocalFileEventHandler(ev) {
     const divVisu = document.querySelector(`.divVisu`);
     divVisu.innerHTML = reader.result;
     divVisu.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.value = txtEl.className);
+    updateUsedCount();
     updateUnDoReDoStack();
     console.log(reader.result);
   });
@@ -1097,10 +1234,74 @@ function saveSvg(svgEl, name) {
   document.body.removeChild(downloadLink);
 }
 
+function signalTableInputEventHandler(ev) {
+  const {target} = ev;
+  const tr = target.closest(`tr`);
+  const signalId = tr.querySelector(`.txtSignalId`);
+  if (target.matches(`.txtTooltip`)) {
+    signalId.title = target.value;
+  }
+  if (target.matches(`.txtTrueTxt`)) {
+    if (target.value.trim().length) {
+      signalId.setAttribute(`trueTxt`, target.value);
+    }
+    else {
+      signalId.removeAttribute(`trueTxt`);
+    }
+  }
+  if (target.matches(`.txtFalseTxt`)) {
+    if (target.value.trim().length) {
+      signalId.setAttribute(`falseTxt`, target.value);
+    }
+    else {
+      signalId.removeAttribute(`falseTxt`);
+    }
+  }
+  if (target.matches(`.selSignalType`)) {
+    signalId.setAttribute(`signalType`, target.value);
+    if (target.value === `digital`) {
+      signalId.removeAttribute(`decPlace`);
+      signalId.removeAttribute(`unit`);
+      const trueTxtVal = tr.querySelector(`.txtTrueTxt`).value;
+      if (trueTxtVal) {
+        signalId.setAttribute(`trueTxt`, trueTxtVal);
+      }
+      const falseTxtVal = tr.querySelector(`.txtFalseTxt`).value;
+      if (falseTxtVal) {
+        signalId.setAttribute(`falseTxt`, falseTxtVal);
+      }
+    }
+    else {
+      signalId.removeAttribute(`trueTxt`);
+      signalId.removeAttribute(`falseTxt`);
+      const decPlaceVal = tr.querySelector(`.selDecPlace`).value;
+      signalId.setAttribute(`trueTxt`, decPlaceVal);
+      const unitVal = tr.querySelector(`.selUnit`).value;
+      signalId.setAttribute(`trueTxt`, unitVal);
+    }
+    tr.querySelectorAll(`.selDecPlace, .selUnit, .txtTrueTxt, .txtFalseTxt`).forEach(el => {
+      el.disabled = (target.value === `digital` && el.matches(`select`) || target.value !== `digital` && el.matches(`input`));
+    });
+  }
+  //console.log(ev);
+}
+
+function signalTableColumnVisibilityHandler(ev) {
+  const col = document.querySelector(`.col${ev.target.id.match(/(RtosTerm)|(SignalParameters)/).at(0)}`);
+  col.style.visibility = (ev.target.checked) ? `` : `collapse`;
+
+  const signalTableWidth = document.querySelector(`.signalTable`).getBoundingClientRect().width;
+  const signalPool = document.querySelector(`.signalPool`);
+  signalPool.style.width = `${signalTableWidth}px`;
+}
 
 
-
-
+function updateUsedCount() {
+  const divVisu = document.querySelector(`.divVisu`)
+  document.querySelectorAll(`.txtSignalId`).forEach(signalId => {
+    document.querySelector(`.${signalId.value}count`).innerText = divVisu.querySelectorAll(`[signalId=${signalId.value}]`).length;
+  });
+}
 
 
 
