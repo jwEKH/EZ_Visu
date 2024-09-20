@@ -1,5 +1,5 @@
 //Testbench
-const ATTRIBUTES = {icon: `heizkreis`};//, iconPosition: `right`, signals: `AI1, AI17`};
+const ATTRIBUTES = {icon: `heizkreis`, iconPosition: `left`};//, signals: `AI1, AI17`};
 
 
 /*********************Konstanten*********************/
@@ -272,6 +272,9 @@ function createVisuItem(...attributes) {
   const divSignals = document.createElement(`div`);
   visuItem.appendChild(divSignals);
   divSignals.classList.add(`divSignals`);
+
+  //default attributes:
+  visuItem.setAttribute(`iconPosition`, `left`);
   
   let icon;
   attributes.forEach(attribute => {
@@ -309,7 +312,7 @@ function createVisuItem(...attributes) {
     const div = document.createElement(`div`);
     const parent = (!icon || (signal !== `Betrieb` &&  icon.match(/(aggregat)|(kessel)/))) ? visuItem : divIcon;
     parent.appendChild(div);
-    div.classList.add(`div${signal}`, `divDigSignal`);
+    div.classList.add(`div${signal}`, `divIconSignal`);
     div.toggleAttribute(`NA`, true);
     div.innerText = (signal === `Error`)        ? `⚠`  :
                     (signal === `Freigabe`)     ? `⏺` :
@@ -651,7 +654,7 @@ function initSignalTable(visuLiveData) {
       for (let i=1; i<=channels; i++) {
         const tr = document.createElement(`tr`);
         signalTableBody.appendChild(tr);
-        [`UsageCount`, `RtosTerm`, `SignalId`, `Tooltip`, `SignalType`, `DecPlace`, `Unit`, `TrueTxt`, `FalseTxt`].forEach(col => {
+        [`UsageCount`, `RtosTerm`, `SignalId`, `Tooltip`, `DecPlace`, `Unit`, `TrueTxt`, `FalseTxt`].forEach(col => {
           const td = document.createElement(`td`);
           tr.appendChild(td);
           if (col === `UsageCount`) {
@@ -663,37 +666,24 @@ function initSignalTable(visuLiveData) {
             td.appendChild(input);
             input.classList.add(`txt${col}`);
             input.type = `text`;
-            input.disabled = (col.match(/(Txt)/)) && !signalGroup.match(/(DI)|(DO)/);
             if (col === `SignalId`) {
               input.value = `${signalGroup}${i}`;
               input.setAttribute(`signalId`, `${signalGroup}${i}`);
               input.readOnly = true;
               input.draggable = true;
-              input.setAttribute(`signalType`, (signalGroup.match(/(DI)|(DO)/)) ? `digital` : `analog`);
-              if (signalGroup.match(/(DI)|(DO)/)) {
-              
-              }
-              else {
+              if (!signalGroup.match(/(DI)|(DO)/)) {
                 input.setAttribute(`decPlace`, 1);
                 input.setAttribute(`unit`, `°C`);
               }
+            }
+            else if (col.match(/(Txt)/)) {
+              input.setAttribute(`list`, `favBoolTxtList`);
             }
           }
           else {
             const select = document.createElement(`select`);
             td.appendChild(select);
             select.classList.add(`sel${col}`);
-            select.disabled = signalGroup.match(/(DI)|(DO)/);
-            
-            if (col === `SignalType`) {
-              [`Analog`, `Digital`].forEach(signalType => {
-                const option = document.createElement(`option`);
-                select.appendChild(option);
-                option.innerText = signalType;
-                option.value = signalType.toLowerCase();
-                option.selected = (signalType === `Digital` && signalGroup.match(/(DI)|(DO)/));
-              });
-            }
 
             if (col === `DecPlace`) {
               [0, 1, 2, 3, 4].forEach(decPlace => {
@@ -871,6 +861,11 @@ function updateUnDoReDoStack(reset) {
 function divVisuContextMenuEventHandler(ev) {
   ev.preventDefault();
 
+  if (!cancelCurrentSelection()) {
+    drawModeClickEventHandler(ev); //drawing only starts when no selection was active
+  }
+
+  /*
   let actionExecuted = false;
   actionExecuted |= cancelCurrentDrawing();
   //console.log({actionExecuted});
@@ -881,6 +876,7 @@ function divVisuContextMenuEventHandler(ev) {
   if (!actionExecuted) {
     selectModeClickEventHandler(ev);  //selection only starts when no other action was executed
   }
+  */
 }
 
 function divVisuMouseMoveEventHandler(ev) {  
@@ -899,11 +895,25 @@ function mouseDownEventHandler(ev) {
 
 function divVisuClickEventHandler(ev) {
   //console.log(ev);
+  if (!ev.target.closest(`.visuItem`)) {
+    let actionExecuted = false;
+    actionExecuted |= cancelCurrentDrawing();
+    //console.log({actionExecuted});
+    const selectionArea = document.querySelector(`.selectionArea`);
+    if (!selectionArea) {
+      actionExecuted |= removeDivIconSignal(ev);
+    }
+    if (!actionExecuted) {
+      selectModeClickEventHandler(ev);  //selection only starts when no other action was executed
+    }
+  }
+  
+  
+  /*
   if (!cancelCurrentSelection()) {
     drawModeClickEventHandler(ev); //drawing only starts when no selection was active
   }
-
-  
+  */  
 }
 
 function cancelCurrentDrawing() {
@@ -931,7 +941,6 @@ function cancelCurrentSelection() {
 function removeDivIconSignal(ev) {
   if (ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
     ev.target.removeAttribute(`signalId`);
-    ev.target.removeAttribute(`signalType`);
     ev.target.removeAttribute(`title`);
     ev.target.setAttribute(`NA`, true);
     updateUsedCount();
@@ -964,28 +973,61 @@ function dragStartEventHandler(ev) {
 
 function divVisuDragEnterEventHandler(ev) {
   const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
-  if (draggingItem.matches(`[signalType=digital]`) && ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
-    //console.log(ev.target)
+  if (ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
     ev.target.removeAttribute(`NA`);
   }
 }
 
 function divVisuDragLeaveEventHandler(ev) {
-  if (!ev.target.matches(`[signalId]`) && ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
-    ev.target.toggleAttribute(`NA`, true);
+  //console.log(ev);
+  const target = (ev.target.nodeName === `#text`) ? ev.target.parentNode : ev.target; //workaround needed bc pressing Esc while dragover .divIconSignal leads to error...
+  if (!target.matches(`[signalId]`) && target.matches(`.divIconSignal`)) {
+    target.toggleAttribute(`NA`, true);
   }
 }
 
 function divVisuDragOverEventHandler(ev) {
   const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
   if (draggingItem) {
+    const visuItem = ev.target.closest(`.visuItem`);
     const visuItemToDivVisu = (ev.target.closest(`.divVisu`) && draggingItem.matches(`.visuItem`));
-    const analogSignalToVisuItem = draggingItem.type === `text` && !draggingItem.matches(`[signalType=digital]`) && ev.target.closest(`.visuItem`) && !ev.target.closest(`.visuEditElement`);
-    const digitalSignalToVisuItem = draggingItem.matches(`[signalType=digital]`) && ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`) && !ev.target.closest(`.visuEditElement`);
-    if (visuItemToDivVisu || analogSignalToVisuItem || digitalSignalToVisuItem) {
+    const signalToVisuItem = draggingItem.type === `text` && visuItem && !ev.target.closest(`.visuEditElement`);
+    if (visuItemToDivVisu || signalToVisuItem) {
       ev.preventDefault();
-      //console.log(ev.target);
       ev.dataTransfer.dropEffect = (ev.ctrlKey || draggingItem.closest(`.visuEditElement`)) ? `copy` : `move`;
+    }
+    if (signalToVisuItem) {
+      //console.log(ev.target);
+      const divIcon = visuItem.querySelector(`.divIcon`);
+      if (visuItem.matches(`:not([icon = kessel], [icon = aggregat])`) && divIcon) {
+        const divIconBox = divIcon.getBoundingClientRect();
+        divIconBox.xCenter = divIconBox.x + divIconBox.width/2;
+        divIconBox.yCenter = divIconBox.y + divIconBox.height/2;
+        const deltaX = ev.x - divIconBox.xCenter;
+        const deltaY = ev.y - divIconBox.yCenter;
+        const maxDelta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
+        const iconPosition =  (maxDelta === deltaX) ? `left` :
+        (maxDelta === -deltaX) ? `right` :
+        (maxDelta === deltaY) ? `top` :
+        `bottom`;
+        //const visuItem = divIcon.closest(`.visuItem`);
+        visuItem.setAttribute(`iconPosition`, iconPosition);
+        visuItem.removeAttribute(`style`);
+        visuItem.style.position = `absolute`;
+        const divVisuBox = document.querySelector(`.divVisu`).getBoundingClientRect();
+        if (iconPosition === `left` || iconPosition === `top`) {
+          visuItem.style.left = `${100 * divIconBox.x / divVisuBox.width}%`;
+          visuItem.style.top = `${100 * divIconBox.y / divVisuBox.height}%`;
+        }
+        if (iconPosition === `right`) {
+          visuItem.style.right = `${100 - 100 * (divIconBox.x + divIconBox.width) / divVisuBox.width}%`;
+          visuItem.style.top = `${100 * divIconBox.y / divVisuBox.height}%`;
+        }
+        if (iconPosition === `bottom`) {
+          visuItem.style.left = `${100 * divIconBox.x / divVisuBox.width}%`;
+          visuItem.style.bottom = `${100 - 100 * (divIconBox.y + divIconBox.height) / divVisuBox.height}%`;
+        }
+      }
     }
   }
 }
@@ -1015,49 +1057,18 @@ function divVisuDropEventHandler(ev) {
       target.appendChild(dropItem);
     }
     else {
-      if (draggingItem.matches(`[signalType=digital]`)) {
+      if (target.closest(`.divIconSignal`)) {
         Array.from(draggingItem.attributes).forEach(attr => {
-          if (attr.name.match(/(signalId)|(signalType)|(decPlace)|(unit)|(trueTxt)|(falseTxt)/i)) {
+          if (attr.name.match(/(signalId)|(decPlace)|(unit)|(trueTxt)|(falseTxt)/i)) {
             target.setAttribute(attr.name, attr.value);
           }
         });
-        target.title = `${draggingItem.value} (RightClick to remove Signal)`;
+        target.title = `${draggingItem.value} (click to remove Signal)`;
+        dropItem.remove();
       }
       else {
-      const visuItem = target.closest(`.visuItem`);
-      const divSignals = visuItem.querySelector(`.divSignals`);
-      if (visuItem && visuItem.matches(`*:not([icon=aggregat], [icon=kessel])`)) {
-        const divIcon = visuItem.querySelector(`.divIcon`); 
-        const divIconBox = divIcon.getBoundingClientRect();
-        divIconBox.xCenter = divIconBox.x + divIconBox.width/2;
-        divIconBox.yCenter = divIconBox.y + divIconBox.height/2;
-        const deltaX = ev.x - divIconBox.xCenter;
-        const deltaY = ev.y - divIconBox.yCenter;
-        const maxDelta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
-        const iconPosition =  (maxDelta === deltaX) ? `left` :
-        (maxDelta === -deltaX) ? `right` :
-        (maxDelta === deltaY) ? `top` :
-        `bottom`;
-        /*
-        todo: positioning for iconPositionRight & Bottom!
-
-        const currentIconPosition = visuItem.getAttribute(`iconPosition`);
-        if (iconPosition !== currentIconPosition && (iconPosition === `right` || currentIconPosition === `right`)) {
-          const divVisuWidth = document.querySelector(`.divVisu`).getBoundingClientRect().width;
-          if (iconPosition === `right`) {
-            visuItem.style.right = `${100 - (parseFloat(visuItem.style.left) + 100 * divIconBox.width / divVisuWidth)}%`;
-            visuItem.style.left = ``;
-          }
-          else {
-            visuItem.style.left = `${100 - (parseFloat(visuItem.style.right) + 100 * divIconBox.width / divVisuWidth)}%`;
-            visuItem.style.right = ``;
-          }
-        }
-        */
-        visuItem.setAttribute(`iconPosition`, iconPosition);
-      }
-
-        //const insertBeforeNode = (target.closest(`.divSignals`)) ? target : divSignals.firstElementChild;
+        const visuItem = target.closest(`.visuItem`);
+        const divSignals = visuItem.querySelector(`.divSignals`);
         divSignals.appendChild(dropItem);
       }
     }
@@ -1105,6 +1116,9 @@ function keyDownEventHandler(ev) {
       cancelCurrentSelection();
     }
     if (key.match(/(delete)|(backspace)/)) {
+      if (document.activeElement.matches(`.divVisu [readonly]`)) {
+        document.activeElement.remove();
+      }
       document.querySelectorAll(`[selected]`).forEach(el => el.remove());
       updateUsedCount();
       updateUnDoReDoStack();
@@ -1237,52 +1251,51 @@ function saveSvg(svgEl, name) {
 function signalTableInputEventHandler(ev) {
   const {target} = ev;
   const tr = target.closest(`tr`);
-  const signalId = tr.querySelector(`.txtSignalId`);
-  if (target.matches(`.txtTooltip`)) {
-    signalId.title = target.value;
-  }
-  if (target.matches(`.txtTrueTxt`)) {
-    if (target.value.trim().length) {
-      signalId.setAttribute(`trueTxt`, target.value);
-    }
-    else {
-      signalId.removeAttribute(`trueTxt`);
-    }
-  }
-  if (target.matches(`.txtFalseTxt`)) {
-    if (target.value.trim().length) {
-      signalId.setAttribute(`falseTxt`, target.value);
-    }
-    else {
-      signalId.removeAttribute(`falseTxt`);
-    }
-  }
-  if (target.matches(`.selSignalType`)) {
-    signalId.setAttribute(`signalType`, target.value);
-    if (target.value === `digital`) {
-      signalId.removeAttribute(`decPlace`);
-      signalId.removeAttribute(`unit`);
-      const trueTxtVal = tr.querySelector(`.txtTrueTxt`).value;
-      if (trueTxtVal) {
-        signalId.setAttribute(`trueTxt`, trueTxtVal);
+  const txtSignalId = tr.querySelector(`.txtSignalId`);
+  document.querySelectorAll(`[signalId = ${txtSignalId.value}]`).forEach(el => {
+    if (!el.matches(`.divIconSignal`)) {
+      if (target.matches(`.txtTooltip`)) {
+        if (target.value.trim().length) {
+          el.setAttribute(`title`, target.value);
+        }
+        else {
+          el.removeAttribute(`title`);
+        }
       }
-      const falseTxtVal = tr.querySelector(`.txtFalseTxt`).value;
-      if (falseTxtVal) {
-        signalId.setAttribute(`falseTxt`, falseTxtVal);
+      if (target.matches(`.selDecPlace`)) {
+        if (target.value.trim().length) {
+          el.setAttribute(`decPlace`, target.value);
+        }
+        else {
+          el.removeAttribute(`decPlace`);
+        }
+      }
+      if (target.matches(`.selUnit`)) {
+        if (target.value.trim().length) {
+          el.setAttribute(`unit`, target.value);
+        }
+        else {
+          el.removeAttribute(`unit`);
+        }
       }
     }
-    else {
-      signalId.removeAttribute(`trueTxt`);
-      signalId.removeAttribute(`falseTxt`);
-      const decPlaceVal = tr.querySelector(`.selDecPlace`).value;
-      signalId.setAttribute(`trueTxt`, decPlaceVal);
-      const unitVal = tr.querySelector(`.selUnit`).value;
-      signalId.setAttribute(`trueTxt`, unitVal);
+    if (target.matches(`.txtTrueTxt`)) {
+      if (target.value.trim().length) {
+        el.setAttribute(`trueTxt`, target.value);
+      }
+      else {
+        el.removeAttribute(`trueTxt`);
+      }
     }
-    tr.querySelectorAll(`.selDecPlace, .selUnit, .txtTrueTxt, .txtFalseTxt`).forEach(el => {
-      el.disabled = (target.value === `digital` && el.matches(`select`) || target.value !== `digital` && el.matches(`input`));
-    });
-  }
+    if (target.matches(`.txtFalseTxt`)) {
+      if (target.value.trim().length) {
+        el.setAttribute(`falseTxt`, target.value);
+      }
+      else {
+        el.removeAttribute(`falseTxt`);
+      }
+    }
+  });
   //console.log(ev);
 }
 

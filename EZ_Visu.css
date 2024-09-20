@@ -115,8 +115,12 @@ body {
 	'icon signals';
 	grid-auto-columns: min-content;
   width: fit-content;
+  /*
   min-width: 2ch;
   min-height: 2ch;
+  background-color: var(--grey);
+  padding: 2ch;
+  */
 }
 .visuItem:not([icon = "aggregat"], [icon = "kessel"])[iconPosition = "right"] {
 	grid-template-areas:
@@ -147,7 +151,7 @@ body {
   display: grid;
   grid-template-areas: 
   'Error        .       Freigabe  '
-  '.            Betrieb .         '
+  '.            .       .         '
   'Betriebsart  .       Absenkung ';
   grid-auto-columns: 1fr;
   grid-auto-rows: 1fr;
@@ -166,12 +170,15 @@ body {
   rotate: 270deg;
 }
 
-.divDigSignal {
+.divIconSignal {
   display: grid;
   justify-items: center;
   align-items: center;
   font-size: var(--fontSizeIconSignals);
   z-index: 1;
+}
+.divIconSignal:not([NA]) {
+  cursor: pointer;
 }
 
 .divError {
@@ -196,13 +203,11 @@ body {
   grid-area: Error-start / Error-start / Absenkung-end / Absenkung-end;
 }
 
-.divIcon div[signal] {
-  cursor: pointer;
-}
-
 .divSignals {
+  background-color: var(--grey);
+  min-width: var(--controlsWidthOffset);
+  min-height: var(--controlsWidthOffset);
   /*
-  background-color: violet;
   */
 }
 .visuItem:not([icon = "aggregat"], [icon = "kessel"]) .divSignals {
@@ -245,6 +250,7 @@ body {
 }
 summary,
 input:not([type="text"]):not([type="number"]),
-label[for] {
+label[for],
+select {
   cursor: pointer;
 }
