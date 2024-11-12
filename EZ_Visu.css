@@ -110,7 +110,7 @@ body {
   grid-auto-columns: 1fr;
   grid-auto-rows: 1fr;
 }
-.visuItem:not([icon = "aggregat"], [icon = "kessel"]) {
+.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "button"]) {
   grid-template-areas: 
 	'icon signals';
 	grid-auto-columns: min-content;
@@ -122,19 +122,19 @@ body {
   padding: 2ch;
   */
 }
-.visuItem:not([icon = "aggregat"], [icon = "kessel"])[iconPosition = "right"] {
+.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "button"])[iconPosition = "right"] {
 	grid-template-areas:
 	'signals icon';
 }
-.visuItem:not([icon = "aggregat"], [icon = "kessel"])[iconPosition = "right"] input {
+.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "button"])[iconPosition = "right"] input {
   text-align: end;
 }
-.visuItem:not([icon = "aggregat"], [icon = "kessel"])[iconPosition = "top"] {
+.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "button"])[iconPosition = "top"] {
 	grid-template-areas: 
 	'icon'
 	'signals';
 }
-.visuItem:not([icon = "aggregat"], [icon = "kessel"])[iconPosition = "bottom"] {
+.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "button"])[iconPosition = "bottom"] {
 	grid-template-areas: 
 	'signals'
 	'icon';
@@ -146,18 +146,24 @@ body {
   */
   grid-area: icon;
   box-sizing: border-box;
-  width: var(--iconSize);
-  aspect-ratio: 1;
+  min-height: var(--iconSize);
   display: grid;
   grid-template-areas: 
-  'Error        .       Freigabe  '
-  '.            .       .         '
-  'Betriebsart  .       Absenkung ';
-  grid-auto-columns: 1fr;
+  'Error        .       Freigabe '
+  '.            .       .        '
+  'Betriebsart  .       Absenkung';
   grid-auto-rows: 1fr;
+  /*
+  grid-auto-columns: 1fr;
+  */
+  min-width: var(--iconSize);
 }
 
-.divIcon svg {
+.visuItem:not([icon = "button"]) .divIcon {
+  width: var(--iconSize);
+}
+
+.icon {
   grid-area: Error-start / Error-start / Absenkung-end / Absenkung-end;
 }
 [rotation = "90"] {
@@ -169,12 +175,19 @@ body {
 [rotation = "270"] {
   rotate: 270deg;
 }
+[writing = "downward"] {
+  writing-mode: sideways-rl;
+}
+[writing = "upward"] {
+  writing-mode: sideways-lr;
+}
 
 .divIconSignal {
   display: grid;
   justify-items: center;
   align-items: center;
   font-size: var(--fontSizeIconSignals);
+  line-height: 1;
   z-index: 1;
 }
 .divIconSignal:not([NA]) {
@@ -204,6 +217,9 @@ body {
 }
 
 .divSignals {
+  display: grid;
+  align-items: center;
+  justify-items: center;
   background-color: var(--grey);
   min-width: var(--controlsWidthOffset);
   min-height: var(--controlsWidthOffset);
@@ -253,4 +269,66 @@ input:not([type="text"]):not([type="number"]),
 label[for],
 select {
   cursor: pointer;
+}
+.divSignals input[type="button"] {
+  cursor: text;
+}
+/*********************FlameStyle*********************/
+.flame {
+  position:relative;
+  opacity: 0.2;
+}
+.flameLayer {
+  aspect-ratio: 1;
+  bottom: 15%;
+  position:absolute;
+  border-bottom-right-radius: 50%;
+  border-bottom-left-radius: 50%;
+  border-top-left-radius: 50%;
+  transform:rotate(-45deg);
+}
+.flameLayer.red {
+  left: 15%;
+  width: 70%;
+  background:OrangeRed;
+  box-shadow: 0 0 calc(.07*var(--iconSize)) calc(.06*var(--iconSize)) OrangeRed;    /*box-shadow akzeptiert keine [%] => umständliche berechnung!*/
+}
+.flameLayer.orange {
+  left: 22%; 
+  width: 56%;
+  background:orange;
+  box-shadow: 0 0 calc(.13*var(--iconSize)) calc(.06*var(--iconSize)) orange;   /*box-shadow akzeptiert keine [%] => umständliche berechnung!*/
+}
+.flameLayer.yellow {
+  left: 29%; 
+  width: 42%;
+  background:gold;
+  box-shadow: 0 0 calc(.13*var(--iconSize)) calc(.06*var(--iconSize)) gold;   /*box-shadow akzeptiert keine [%] => umständliche berechnung!*/
+}
+.flameLayer.white {
+  left: 29%; 
+  bottom: 10%;
+  width: 42%;
+  background:white;
+  box-shadow: 0 0 calc(.13*var(--iconSize)) calc(.06*var(--iconSize)) white;   /*box-shadow akzeptiert keine [%] => umständliche berechnung!*/
+}
+.flameLayer.blue {
+  left: 46%; 
+  bottom: 10%;
+  width: 4%;
+  background:SlateBlue;
+  opacity: 0.7;
+  box-shadow: 0 0 calc(.13*var(--iconSize)) calc(.06*var(--iconSize)) SlateBlue;   /*box-shadow akzeptiert keine [%] => umständliche berechnung!*/
+}
+/*********************Animations*********************/
+.flicker {
+  animation: flicker 3ms ease-in 200ms infinite alternate;
+}
+@keyframes flicker {
+  0%   {transform: rotate(-1deg) scale(.75,.8);}
+  20%  {transform: rotate(1deg) scale(.8,.8);}
+  40%  {transform: rotate(-1deg) scale(.75,.8);}
+  60%  {transform: rotate(1deg) scale(.8,.95);}
+  80%  {transform: rotate(-2deg) scale(.75,.75);}
+  100% {transform: rotate(1deg) scale(.8,.8);}
 }

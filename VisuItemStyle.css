@@ -1,0 +1,650 @@
+﻿:root {
+    /*font-size: 10px;*/
+
+    --gridFractions: 33; /*Teilungen bezogen auf Breite*/
+    --gridSizePercent: 3;
+
+    --visuWidthPx: 1260;	/*ehemals: 1400px*/
+    --visuHeightPx: 680;	/*ehemals:  630px*/
+    --visuRatio: var(--visuWidthPx) / var(--visuHeightPx);
+    
+    --minMarginLeftRight: 1vw;
+    --minMarginTopBottom: 5vh;
+    --ratioHeight: calc((100vw - 2 * var(--minMarginLeftRight)) / var(--visuRatio));
+    --ratioWidth: calc((100vh - 2 * var(--minMarginTopBottom)) * var(--visuRatio));
+
+    --containerMarginWidth: max(1vw, calc((100vw - var(--ratioWidth)) / 2));
+    --containerWidth: calc(100vw - 2 * var(--containerMarginWidth) - 1px); /*-1px workaround! ggf. streichen!*/
+    --iconWidth: calc(var(--gridSizePercent) * var(--containerWidth) / 100);
+
+    --valuesMinWidth: calc(var(--iconWidth));
+    --valuesMinHeight: calc(var(--iconWidth)/2);
+
+    --fontSize: max(calc(var(--containerWidth)/100), 8px); /*font-size min 10px*/ 
+
+    font-size: var(--fontSize);
+
+    /*colors*/
+    --lightgray: #E0E0E0;
+    --lightgrey: var(--lightgray);
+    --darkgray: #C0C0C0;
+    --darkgrey: var(--darkgray);
+    --magenta: hsl(334, 74%, 44%);
+    --cyan: hsl(194, 74%, 44%);
+    --purple: hsl(262, 23%, 47%); /*rgb(112, 92, 147)*/    
+    --cyanOpaque:  hsl(194, 74%, 44%, 10%);
+    --yellow: hsl(60, 74%, 44%);
+
+
+    /*DarkThemeColors
+    --darkestgrey: hsl(0, 0%, 12%);
+    --darkergrey: hsl(0, 0%, 18%);
+    --darkgrey: hsl(0, 0%, 20%);
+    --grey: hsl(0, 0%, 24%);
+    --lightgrey: hsl(0, 0%, 52%);
+    --lightergrey: hsl(0, 0%, 59%);
+    --lightestgrey: hsl(0, 0%, 80%);*/
+
+    /*--deltaHeight: max(0px, calc(var(--ratioHeight) - 100vh));
+
+    --itemWidthSq: 6;
+    --itemHeightSq: 2;
+    --erzeugerHeightSq: 10;
+
+    --itemWidthPercent: calc(2 * var(--itemWidthSq) * 1%);
+    --itemWidthTopBottomPercent: calc(2 * (var(--itemWidthSq) - var(--itemHeightSq)) * 1%);
+    */
+
+    /*--deltaWidth: calc(1px * var(--visuWidthPx) - 100vw);
+    --vw2visuWidth: calc(100vw / var(--visuWidthPx));
+    --vh2visuHeight: calc(100vh / var(--visuHeightPx));
+    --maxWidth: 100vw;
+    --dropAreaWidth: calc(.7 * var(--maxWidth));*/
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+*:focus,
+.focused {
+    outline: 2px solid var(--cyan);
+}
+
+body {
+    /*font-size: clamp(1rem ,15vw, 2rem);
+    background: var(--grey);*/
+}
+
+.windowFooter {
+    position: absolute;
+    right: 0%;
+    bottom: 0%;
+    margin: var(--minMarginLeftRight);
+}
+
+.hidden {
+    visibility: hidden;
+}
+
+.cloaked {
+    display: none;
+}
+
+.errorHighlighter {
+    background: var(--lightgray);
+    color: var(--magenta);
+    border: 2px solid var(--magenta);
+}
+
+.dragoverHighlighter, 
+.visuCanvasTab.dragoverHighlighter {
+    background: hsla(194, 74%, 44%, 0.5);
+}
+
+button {
+    /*color: var(--lightgray);*/
+    font-size: .9rem;
+    background: var(--lightgray);
+}
+
+button.pressed {
+    border: inset;
+    color: white;/*var(--lightgray);*/
+    background: var(--darkgray);
+}
+
+.divLineWidth {
+    border: 1px solid black;
+    width: fit-content;
+    float: right;
+}
+.noLineWidth, .noCopyLineStackFrom {
+    width: calc(2ch + 3ch);
+}
+
+.visuEditArea {
+    position: fixed;
+    top: 7%;
+    width: 22%;
+    max-height: 90%;
+    background: var(--lightgray);
+    border: 1px solid var(--darkgray);
+    z-index: 2;
+    overflow-y: scroll;
+}
+.visuDragArea {
+    left: 0%;
+    border-radius: 0px 10px 10px 0px;
+}
+.visuItemPropertyArea {
+    right: 0%;
+    border-radius: 10px 0px 0px 10px;
+}
+    .propRow {
+        margin-top: 2%;
+    }
+        .propLbl {
+            display: inline-block;
+            width: 30%;
+            text-align: end;
+        }
+        .propInp {
+            display: inline-block;
+            width: 65%;
+        }
+.collapseLeft {
+    left: -18%;
+}
+.collapseRight {
+    right: -18%;
+}
+    .pinVisuDragArea {
+        margin-top: 10px;
+    }
+    .pinVisuEditArea {
+        margin: 2%;
+    }
+
+.visuContainer {
+    margin: 0% var(--containerMarginWidth);
+    /*background: #666;*/
+    cursor: default;
+}
+
+.visuHeader {
+    position: relative;
+    background: #666;
+}
+    .visuHeaderDiv {
+        display: inline-block;
+        margin-right: 1%;
+    }
+
+.visuH1 {
+    background: #666;
+}
+    .fileManagementContainer {
+        position: absolute;
+        top: 0%;
+        right: 0%;
+    }
+
+.visuArea {
+    width: 100%;
+    aspect-ratio: var(--visuRatio);
+    /*border: 1px solid black;*/
+    background: var(--darkgray);
+    position: relative;
+}
+.visuArea.drag, .visuDragArea,
+.visuArea.drag .btnIcon {
+    cursor: grab;
+}
+    .visuDragArea > * {
+        cursor: grab;
+        overflow: hidden;
+    }
+    .visuEditAreaDiv {
+        margin: 5% 2%;
+        border: 1px solid var(--darkgray);
+        border-radius: 5px;
+        padding-top: 3%;
+        padding-bottom: 2%;
+    }
+    .visuH2, .visuH3 {
+        position: absolute;
+        left: 5%;
+        margin-top: -8%;
+        background: var(--lightgray);
+    }
+    .visuH3 {
+        left: 8%;
+        margin-top: -6.5%;
+    }
+
+
+
+.visuArea.dragging {
+    cursor: grabbing;
+}
+.visuArea.draw {
+    cursor: crosshair;
+}
+.visuArea.drawArc {
+    cursor: crosshair;
+}
+.visuArea.erase {
+    cursor: crosshair;
+}
+.visuArea.watch > .divVisu > .visuItem,
+.visuArea.watch .btnIcon {
+    cursor: pointer;
+}
+.visuArea.watch.loading,
+.visuArea.watch.loading > .divVisu > .visuItem,
+.visuArea.watch.loading > .divVisu > .txtItem > .divTxt > .visuBtn,
+.visuArea.watch.loading > .divVisu > .txtItem > .divTxt > .visuTxt {
+    cursor: wait;
+}
+    .visuArea > .divVisu,
+    .visuArea > canvas {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+    }
+    .auxCanvas {
+        opacity: 0.2;
+    }
+    .visuAreaFooter {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        display: grid;
+        grid-template-columns: 2fr auto 1fr repeat(5, 2fr);
+        grid-template-rows: repeat(2, 1fr);
+        grid-gap: .5rem;
+    }
+    .visuAreaFooterElementContainer > * {
+        float: left;
+    }
+    .visuAreaFooterElementContainer > .floatRight {
+        float: right;
+    }
+    .visuAreaFooter > p {
+        text-align: right;
+    }
+    .visuAreaFooter > .pAI {
+        text-align: left;
+    }
+    /*.visuAreaFooter > button {
+        color: var(--lightgray);
+        font-size: .9rem;
+    }*/
+    .visuAreaFooter > .btnStoerungen {
+        color: var(--lightgray);
+        background: var(--magenta);
+        /*animation: btnStoerungBlink 1s infinite;*/
+    }
+    .visuAreaFooter > .btnZaehler {
+        background: var(--cyan);
+    }
+
+.visuFooter {
+    overflow: hidden; /*notwendig um Height entsprechend der childs (alle floated) zu erreichen*/
+}
+    .visuCanvasTab {
+        cursor: pointer;
+        float: left;
+        background: var(--darkgrey);
+        text-align: center;
+        padding: .1rem .5rem;
+        border-left: 1px solid black;
+        border-bottom: 1px solid black;
+        border-radius: 0rem 0rem .5rem .5rem;
+    }
+
+    .visuCanvasTab.active {
+        color: var(--lightgray);
+        background: var(--cyan);
+    }
+
+    .visuCanvasTab.addTab {
+        font-weight: bold;
+        border-right: 1px solid black;
+    }    
+
+.pStoerung {
+    position: absolute;
+    /*top: -10%;*/
+    left: 0;
+    color: var(--magenta);
+    text-align: left; /*bei Erzeugern*/
+}
+.pFG {
+    position: absolute;
+    /*top: -10%;*/
+    right: 0;
+    color: var(--cyan);
+    text-align: right; /*bei Erzeugern??*/
+}
+.pBA {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+.pABS {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+.pRM {
+    bottom: 0;
+    left: 0;
+}
+
+.visuBtn.up,
+.visuTxt.up {
+    writing-mode: sideways-lr;
+}
+.visuBtn.dn,
+.visuTxt.dn {
+    writing-mode: sideways-rl;
+}
+
+.visuItem {
+    width: fit-content; /*width auf inhalt reduzieren*/
+    /*overflow: hidden; /*notwendig um Height entsprechend der childs (alle floated) zu erreichen*/
+    float: left;
+}
+
+.drag .visuItem,
+.draw .visuItem {
+    background-color: var(--cyanOpaque);
+}
+.visuDragArea .visuItem {
+    margin: 2%;
+}
+.visuDragArea .visuItem.KES,
+.visuDragArea .visuItem.BHK {
+    position: relative;
+}
+.divVisu > .visuItem {
+    position: absolute;
+}
+    .tbAKA {
+        position: absolute;
+        width: 6ch;
+        z-index: 1;
+    }
+/*.visuItem.visuBtnContainer,
+.visuItem.visutxtContainer {
+    /*display: flex;
+    align-items: center;*/
+    /*width: var(--iconWidth);
+}*/
+.visuItem.footer {
+    position: static;
+}
+    /*.visuItem > .visuBtn.up,
+    .visuItem > .visuTxt.up {
+        writing-mode: sideways-lr;
+    }
+    .visuItem > .visuBtn.dn,
+    .visuItem > .visuTxt.dn {
+        writing-mode: sideways-rl;
+    }*/
+    .visuItem > div {
+        float: left;
+    }
+    .visuItem.positionTop > div,
+    .visuItem.positionBottom > div { /*für .bottom is elementSwap nötig! (vgl.handleIconPosition)*/
+        float: none;
+    }
+    .visuItem.positionRight > div {
+        float: right;
+    }
+        .visuItem.positionRight > .divValues > p {
+            text-align: right;
+        }
+    /*.visuItem.dn, .visuTxtContainer.dn, .visuBtnContainer.dn {
+        transform: rotate(.25turn);
+    }
+    .visuItem.up, .visuTxtContainer.up, .visuBtnContainer.up {
+        transform: rotate(.75turn);
+    }*/
+    .visuItem > .divIcon {
+        position: relative;
+        float: left;
+        /*width: var(--iconWidth);
+        aspect-ratio: 1/1;
+        /*background: greenyellow;*/
+        /*clip-path: circle(50% at 50% 50%);*/
+    }
+    :not(.visuItem.BTN) > .divIcon {
+        width: var(--iconWidth);
+        aspect-ratio: 1/1;
+    }
+    .visuItem.BTN > .divIcon {
+        display: flex;
+        justify-content: center;
+        min-width: var(--iconWidth);
+        min-height: var(--iconWidth);
+    }/**/
+    .btnIcon {
+        padding: 1ch .5ch;
+    }
+    .visuItem > .divTxt {
+        display: grid;
+        align-items: center;
+        justify-items: center;
+        position: relative;
+        float: left;
+        width: var(--iconWidth);
+        height: var(--iconWidth);
+    }
+    .visuItem.KES > .divValues,
+    .visuItem.BHK > .divValues {
+        position: relative;
+        width: calc(2*var(--iconWidth));
+        aspect-ratio: 4/7;
+        background: var(--darkgray);
+        border: 1px solid black;
+        text-align: center;
+        box-sizing: border-box;
+        /*clip-path: circle(50% at 50% 50%);*/
+    }
+        .visuItem.KES .pVal1,
+        .visuItem.BHK .pVal1 {
+            margin-top: var(--fontSize);
+        }
+    .visuItem.KES > .divIcon,
+    .visuItem.BHK > .divIcon {
+        position: absolute;
+        left: calc(var(--iconWidth)/2);
+        bottom: calc(var(--iconWidth)/2);
+        /*background: orangered;*/
+        z-index: 1;
+    }
+    .visuItem.TI > .divIcon,
+    .visuItem.TC > .divIcon {	/*tinyIcons für TIs!*/
+        width: calc(var(--iconWidth)/2);
+    }
+        :not(.visuItem.BTN) > .divIcon > *,
+        .visuItem > .divTxt > * {
+            position: absolute;
+        }
+        .visuBtn,
+        .visuTxt {
+            width: calc(var(--iconWidth)/2);
+            height: calc(var(--iconWidth)/2);
+        }
+        .divIcon canvas,
+        .divIcon div {
+            width: 100%;
+            height: 100%;
+        }
+        .divIcon > .canvasIcon {
+            /*background: red;*/
+        }
+        .visuItem.orientationRight .canvasIcon,
+        .visuItem.orientationRight .canvasRM {
+            transform: rotate(.25turn);
+        }
+        .visuItem.orientationBottom .canvasIcon,
+        .visuItem.orientationBottom .canvasRM {
+            transform: rotate(.5turn);
+        }
+        .visuItem.orientationLeft .canvasIcon,
+        .visuItem.orientationLeft .canvasRM {
+            transform: rotate(.75turn);
+        }
+        .visuItem.orientationRight.BTN .btnIcon {
+            writing-mode: sideways-rl;
+        }
+        /*.visuItem.orientationBottom.BTN .btnIcon {
+            writing-mode: 
+        }*/
+        .visuItem.orientationLeft.BTN .btnIcon {
+            writing-mode: sideways-lr;
+        }
+        .divIcon > .canvasFG {
+            /*display: none;
+            background: azure;
+            opacity: .5;
+            /*width: 80%;*/
+        }
+        .flameContainer {
+            position:relative;
+        }
+            .flameContainer > .flame {
+                bottom: 15%;
+                position:absolute;
+                border-bottom-right-radius: 50%;
+                border-bottom-left-radius: 50%;
+                border-top-left-radius: 50%;
+                transform:rotate(-45deg);
+            }
+                .flameContainer > .flame.red {
+                    left: 15%;
+                    width: 70%;
+                    height: 70%;
+                    background:OrangeRed;
+                    box-shadow: 0 0 calc(.07*var(--iconWidth)) calc(.06*var(--iconWidth)) OrangeRed;    /*box-shadow akzeptiert keine [%] => umständliche berechnung!*/
+                }
+                .flameContainer > .flame.orange {
+                    left: 22%; 
+                    width: 56%;
+                    height: 56%;
+                    background:orange;
+                    box-shadow: 0 0 calc(.13*var(--iconWidth)) calc(.06*var(--iconWidth)) orange;   /*box-shadow akzeptiert keine [%] => umständliche berechnung!*/
+                }
+                .flameContainer > .flame.yellow {
+                    left: 29%; 
+                    width: 42%;
+                    height: 42%;
+                    background:gold;
+                    box-shadow: 0 0 calc(.13*var(--iconWidth)) calc(.06*var(--iconWidth)) gold;   /*box-shadow akzeptiert keine [%] => umständliche berechnung!*/
+                }
+                .flameContainer > .flame.white {
+                    left: 29%; 
+                    bottom: 10%;
+                    width: 42%;
+                    height: 42%;
+                    background:white;
+                    box-shadow: 0 0 calc(.13*var(--iconWidth)) calc(.06*var(--iconWidth)) white;   /*box-shadow akzeptiert keine [%] => umständliche berechnung!*/
+                }
+                .flameContainer > .flame.blue {
+                    left: 46%; 
+                    bottom: 10%;
+                    width: 4%;
+                    height: 4%;
+                    background:SlateBlue;
+                    opacity: 0.7;
+                    box-shadow: 0 0 calc(.13*var(--iconWidth)) calc(.06*var(--iconWidth)) SlateBlue;   /*box-shadow akzeptiert keine [%] => umständliche berechnung!*/
+                }
+        /*.divIcon > .pStoerung {
+            top: -10%;
+            left: 0;
+            color: var(--magenta);
+            text-align: left; /*bei Erzeugern*
+        }
+        .divIcon > .pBA {
+            bottom: 0;
+            right: 0;
+        }*/
+        
+        .visuItem > .divValues {
+            
+        }
+        .NA {
+            opacity: .6;
+            text-decoration: line-through 2px black;
+        }
+        .divValues > p.sollwert {
+            color: var(--lightgray);
+            background: var(--cyan);
+        }
+        .divValues > p.grenzwert {
+            color: var(--lightgray);
+            background: var(--magenta);
+        }
+        .divValues > p > .IDidx {    /*IDnumberbox EditMode*/
+            width: 7ch;
+            color: inherit;
+            background: inherit;
+            border: inherit;
+            font-size: inherit;
+            text-align: center;
+            /*scale: max(.5, calc(var(--containerWidth)/100));*/
+        }
+
+/*ANIMATIONS*/
+.spin {
+    animation: spin 2s linear infinite;
+}
+.spin.bottom {
+    animation: spinBottom 2s linear infinite;
+}
+@keyframes spin {
+    to {transform: rotate(1turn);}
+}
+@keyframes spinBottom {
+    to {transform: rotate(1.5turn);}
+}
+.blink {
+    animation: blink 2s steps(4, start) infinite;
+}
+@keyframes blink {
+    to {visibility: hidden;}
+}
+.flip {
+    animation: flip 2s steps(36) infinite;
+}
+@keyframes flip {
+    0%	 {transform: scaleX(1);}
+    50%	 {transform: scaleX(-1);}
+    100% {transform: scaleX(1);}
+}
+.flicker {
+    animation: flicker 3ms ease-in 200ms infinite alternate;
+}
+@keyframes flicker {
+    0%   {transform: rotate(-1deg) scale(.75,.8);}
+    20%  {transform: rotate(1deg) scale(.8,.8);}
+    40%  {transform: rotate(-1deg) scale(.75,.8);}
+    60%  {transform: rotate(1deg) scale(.8,.95);}
+    80%  {transform: rotate(-2deg) scale(.75,.75);}
+    100% {transform: rotate(1deg) scale(.8,.8);}
+}
+@keyframes btnBlink {
+    from {
+        color: var(--lightgray);
+        background: var(--magenta);
+    }
+    to {
+        color: var(--magenta);
+        background: var(--lightgray);
+    }
+}

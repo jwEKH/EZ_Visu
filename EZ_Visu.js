@@ -16,7 +16,10 @@ const PURPLE_RGB = `rgb(96, 29, 195)`;
 const YELLOW_HSL = `hsl(50, 74%, 44%)`;
 const YELLOW_HEX = `#c3a81d`;
 const YELLOW_RGB = `rgb(195, 168, 29)`;
-const COLORS_HEX = [MAGENTA_HEX, CYAN_HEX, PURPLE_HEX, YELLOW_HEX];
+const GREEN_HSL = `hsl(120, 74%, 44%)`;
+const GREEN_HEX = `#1dc31d`;
+const GREEN_RGB = `rgb(29, 195, 29)`;
+const COLORS_HEX = [MAGENTA_HEX, CYAN_HEX, PURPLE_HEX, YELLOW_HEX, GREEN_HEX];
 
 const DARKESTGREY_HSL = `hsl(249, 10%, 13%)`;
 const DARKERGREY_HSL = `hsl(249, 10%, 18%)`;
@@ -55,12 +58,22 @@ function createBackgroundSVG(idx) {
 
 function createIcon(symbol) {
   if (symbol) {
-    const svg = document.createElementNS(SVG_NS, `svg`);
-    svg.setAttributeNS(null, `viewBox`, `0 0 100 100`);
+    const icon =  (symbol === `kessel`) ? document.createElement(`div`) : 
+                  (symbol === `button`) ? document.createElement(`input`) : 
+                  document.createElementNS(SVG_NS, `svg`);
+    if (icon.tagName === `INPUT`) {
+      icon.type = `button`;
+    }
+    else {
+      icon.classList.add(`icon`);
+      if (icon.tagName === `svg`) {
+        icon.setAttributeNS(null, `viewBox`, `0 0 100 100`);
+      }
+    }
     if (symbol === `heizkreis`) {
       [45, 40].forEach(r => {
         const el = document.createElementNS(SVG_NS, `circle`);
-        svg.appendChild(el);
+        icon.appendChild(el);
         el.setAttributeNS(null,`stroke`, STROKE_COLOR);
         el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
         el.setAttributeNS(null,`fill`, FILL_COLOR);
@@ -72,7 +85,7 @@ function createIcon(symbol) {
     if (symbol === `pumpe`) {
       [`circle`, `polyline`].forEach(shape => {
         const el = document.createElementNS(SVG_NS, shape);
-        svg.appendChild(el);
+        icon.appendChild(el);
         el.setAttributeNS(null,`stroke`, STROKE_COLOR);
         el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
         if (shape === `circle`) {
@@ -90,7 +103,7 @@ function createIcon(symbol) {
     if (symbol === `mischer`) {
       [`polygon`, `polygon`, `polygon`, `circle`, `line`].forEach((shape, idx) => {
         const el = document.createElementNS(SVG_NS, shape);
-        svg.appendChild(el);
+        icon.appendChild(el);
         el.setAttributeNS(null,`stroke`, STROKE_COLOR);
         el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
         if (idx < 4) {
@@ -121,7 +134,7 @@ function createIcon(symbol) {
     if (symbol === `ventil`) {
       [`polygon`, `polygon`, `circle`, `line`].forEach((shape, idx) => {
         const el = document.createElementNS(SVG_NS, shape);
-        svg.appendChild(el);
+        icon.appendChild(el);
         el.setAttributeNS(null,`stroke`, STROKE_COLOR);
         el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
         if (idx < 3) {
@@ -149,7 +162,7 @@ function createIcon(symbol) {
     if (symbol === `aggregat`) {
       [`circle`, `path`].forEach(shape => {
         const el = document.createElementNS(SVG_NS, shape);
-        svg.appendChild(el);
+        icon.appendChild(el);
         el.setAttributeNS(null,`stroke`, CYAN_HSL);
         el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
         el.setAttributeNS(null,`fill`, `none`);
@@ -165,16 +178,62 @@ function createIcon(symbol) {
       });
     }
     if (symbol === `kessel`) {
-      const el = document.createElementNS(SVG_NS, `polygon`);
-      svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `red`);
-      el.setAttributeNS(null,`fill`, `none`);
-      el.setAttributeNS(null,`points`, `10,90 50,10 90,90`);
+      icon.classList.add(`flame`);
+      [`red`, `orange`, `yellow`, `white`, `blue`].forEach(color => {        
+        const div = document.createElement(`div`);
+        div.classList.add(`flameLayer`, color);
+        icon.appendChild(div);
+      });
+    }
+    if (symbol === `puffer`) {
+      
+    }
+    if (symbol === `waermetauscher`) {
+      [`rect`,`line`].forEach(shape => {
+        const el = document.createElementNS(SVG_NS, shape);
+        icon.appendChild(el);
+        el.setAttributeNS(null,`stroke`, STROKE_COLOR);
+        el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
+        if (shape === `rect`) {
+          el.setAttributeNS(null,`fill`, FILL_COLOR);
+          el.setAttributeNS(null, `x`, `10`);
+          el.setAttributeNS(null, `y`, `20`);
+          el.setAttributeNS(null, `width`, `80`);
+          el.setAttributeNS(null, `height`, `60`);
+        }
+        else {
+          
+        }
+      });
+    }
+    if (symbol === `heizpatrone`) {
+      [`rect`, `path`].forEach(shape => {
+        const el = document.createElementNS(SVG_NS, shape);
+        icon.appendChild(el);
+        el.setAttributeNS(null,`stroke`, STROKE_COLOR);
+        el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
+        if (shape === `rect`) {
+          el.setAttributeNS(null,`fill`, FILL_COLOR);
+          el.setAttributeNS(null, `x`, `40`);
+          el.setAttributeNS(null, `y`, `20`);
+          el.setAttributeNS(null, `width`, `60`);
+          el.setAttributeNS(null, `height`, `60`);
+        }
+        else {
+          const d = `M 40,30 L 10,30 A 5 5 180 0 0 10 40
+                     M 40,40 L 10,40 A 5 5 180 0 0 10 50
+                     M 40,50 L 10,50 A 5 5 180 0 0 10 60 
+                     M 40,60 L 10,60 A 5 5 180 0 0 10 70 
+                     L 40,70`;
+          el.setAttributeNS(null,`fill`, `none`);
+          el.setAttributeNS(null,`d`, d);
+        }
+      });
     }
     if (symbol === `luefter`) {
       [`circle`, `line`, `line`].forEach((shape, idx) => {
         let el = document.createElementNS(SVG_NS, shape);
-        svg.appendChild(el);
+        icon.appendChild(el);
         el.setAttributeNS(null,`stroke`, STROKE_COLOR);
         el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
         const r = 45;
@@ -195,7 +254,7 @@ function createIcon(symbol) {
     }
     if (symbol === `lueftungsklappe`) {
       let el = document.createElementNS(SVG_NS, `line`);
-      svg.appendChild(el);
+      icon.appendChild(el);
       el.setAttributeNS(null,`stroke`, STROKE_COLOR);
       el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
       el.setAttributeNS(null, `x1`, 50);
@@ -203,7 +262,7 @@ function createIcon(symbol) {
       el.setAttributeNS(null, `x2`, 50);
       el.setAttributeNS(null, `y2`, 95);
       el = document.createElementNS(SVG_NS, `circle`);
-      svg.appendChild(el);
+      icon.appendChild(el);
       el.setAttributeNS(null,`stroke`, STROKE_COLOR);
       el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
       el.setAttributeNS(null,`fill`, FILL_COLOR);
@@ -212,30 +271,44 @@ function createIcon(symbol) {
       el.setAttributeNS(null, `r`, `10`);
     }
     if (symbol === `button`) {
-      const el = document.createElementNS(SVG_NS, `polygon`);
-      svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `red`);
-      el.setAttributeNS(null,`fill`, `none`);
-      el.setAttributeNS(null,`points`, `10,90 50,10 90,90`);
+      icon.value = `LinkButton`;
     }
     if (symbol === `gassensor`) {
-      const el = document.createElementNS(SVG_NS, `polygon`);
-      svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `red`);
-      el.setAttributeNS(null,`fill`, `none`);
-      el.setAttributeNS(null,`points`, `10,90 50,10 90,90`);
+      [`rect`, `path`].forEach(shape => {
+        const el = document.createElementNS(SVG_NS, shape);
+        icon.appendChild(el);
+        el.setAttributeNS(null,`stroke`, STROKE_COLOR);
+        el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
+        if (shape === `rect`) {
+          el.setAttributeNS(null,`fill`, FILL_COLOR);
+          el.setAttributeNS(null, `x`, `10`);
+          el.setAttributeNS(null, `y`, `20`);
+          el.setAttributeNS(null, `width`, `80`);
+          el.setAttributeNS(null, `height`, `60`);
+        }
+        else {
+          const d = `M 30,20 L 30,30 M 50,20 L 50,30 M 70,20 L 70,30
+                     M 30,80 L 30,70 M 50,80 L 50,70 M 70,80 L 70,70`;
+          el.setAttributeNS(null,`fill`, `none`);
+          el.setAttributeNS(null,`d`, d);
+        }
+      });
     }
     if (symbol === `schalter`) {
-      const el = document.createElementNS(SVG_NS, `polygon`);
-      svg.appendChild(el);
-      el.setAttributeNS(null,`stroke`, `red`);
-      el.setAttributeNS(null,`fill`, `none`);
-      el.setAttributeNS(null,`points`, `10,90 50,10 90,90`);
+      [`polyline`, `polyline`].forEach((shape, idx) => {
+        let el = document.createElementNS(SVG_NS, shape);
+        icon.appendChild(el);
+        el.setAttributeNS(null,`stroke`, STROKE_COLOR);
+        el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
+        el.setAttributeNS(null,`fill`, `none`);
+        const points = (idx) ? `0,50 25,50 25,35` : `100,50 75,50 20,40`;
+        el.setAttributeNS(null, `points`, points);
+      });
     }
     if (symbol === `path`) {
       [`icon`, `signal`].forEach(elType => {      
         const el = document.createElementNS(SVG_NS, `path`);
-        svg.appendChild(el);
+        icon.appendChild(el);
         el.setAttributeNS(null,`stroke`, `red`);
         el.setAttributeNS(null,`fill`, `grey`);
         const d = (elType === `icon`) ? `M 10,50 A 40 40 180 0 0 90 50 L 50,10 L 10,50 A 40 40 180 0 1 90 50` :
@@ -256,7 +329,7 @@ function createIcon(symbol) {
         */
       });
     }
-    return svg;
+    return icon;
   }
 }
 
@@ -285,7 +358,8 @@ function createVisuItem(...attributes) {
       visuItem.setAttribute(key, value);
       
       if (key.toLowerCase() === `icon`) {
-        divIcon.appendChild(createIcon(value));
+        const target = (value === `button`) ? divSignals : divIcon ;
+        target.appendChild(createIcon(value));       
         icon = value;
       }
       
@@ -308,7 +382,12 @@ function createVisuItem(...attributes) {
     });    
   });
 
-  [`Betrieb`, `Error`, `Freigabe`, `Betriebsart`, `Absenkung`].forEach(signal => {
+  const divIconSignals = [`Error`, `Freigabe`, `Betriebsart`, `Absenkung`];
+  if (icon !== `button`) {
+    divIconSignals.push(`Betrieb`);
+    divIconSignals.reverse();
+  }
+  divIconSignals.forEach(signal => {
     const div = document.createElement(`div`);
     const parent = (!icon || (signal !== `Betrieb` &&  icon.match(/(aggregat)|(kessel)/))) ? visuItem : divIcon;
     parent.appendChild(div);
@@ -342,7 +421,7 @@ function addEditorEventHandler() {
   divVisu.addEventListener(`drop`, divVisuDropEventHandler);
   divVisu.addEventListener(`click`, divVisuClickEventHandler);
   divVisu.addEventListener(`contextmenu`, divVisuContextMenuEventHandler);
-
+  
   document.querySelectorAll(`.btnUnDo, .btnReDo`).forEach(btn => btn.addEventListener(`click`, unDoReDoEventListener));
   document.querySelector(`.btnSave`).addEventListener(`click`, saveBtnHandler);
   document.querySelector(`#openLocaleFile`).addEventListener(`input`, openLocalFileEventHandler);
@@ -455,7 +534,7 @@ function selectModeHoverEventHandler(ev) {
     const points = `${selectionArea.svgCoordinates.xSvg},${selectionArea.svgCoordinates.ySvg} ${selectionArea.svgCoordinates.xSvg},${svgCoordinates.ySvg} ${svgCoordinates.xSvg},${svgCoordinates.ySvg} ${svgCoordinates.xSvg},${selectionArea.svgCoordinates.ySvg}`;
     selectionArea.setAttributeNS(null,`points`, points);
     selectionArea.partialSelection = (svgCoordinates.xSvg >= selectionArea.svgCoordinates.xSvg /*&& svgCoordinates.ySvg >= selectionArea.svgCoordinates.ySvg*/) ? false : true;
-    const color = (selectionArea.partialSelection) ? YELLOW_HEX : CYAN_HEX;
+    const color = (selectionArea.partialSelection) ? YELLOW_HEX : GREEN_HEX;
     selectionArea.setAttributeNS(null,`fill`, color);
 
     selectionAreaHandler();
@@ -807,17 +886,10 @@ function createVisuItemPool() {
   const summary = document.createElement(`summary`);
   summary.innerText = `visuItems`;
   visuItemPool.appendChild(summary);
-  visuItemPool.appendChild(createVisuItem({icon: `heizkreis`}));
-  visuItemPool.appendChild(createVisuItem({icon: `pumpe`}));
-  visuItemPool.appendChild(createVisuItem({icon: `mischer`}));
-  visuItemPool.appendChild(createVisuItem({icon: `ventil`}));
-  visuItemPool.appendChild(createVisuItem({icon: `aggregat`}));
-  visuItemPool.appendChild(createVisuItem({icon: `kessel`}));
-  visuItemPool.appendChild(createVisuItem({icon: `luefter`}));
-  visuItemPool.appendChild(createVisuItem({icon: `lueftungsklappe`}));
-  visuItemPool.appendChild(createVisuItem({icon: `button`}));
-  visuItemPool.appendChild(createVisuItem({icon: `gassensor`}));
-  visuItemPool.appendChild(createVisuItem({icon: `schalter`}));
+  [`heizkreis`, `pumpe`, `mischer`, `ventil`, `aggregat`, `kessel`, `puffer`, `waermetauscher`, `heizpatrone`, `luefter`, `lueftungsklappe`, `button`, `gassensor`, `schalter`].forEach(el => {
+    visuItemPool.appendChild(createVisuItem({icon: el}));
+  });
+  
   return visuItemPool;
 }
 
@@ -895,6 +967,10 @@ function mouseDownEventHandler(ev) {
 
 function divVisuClickEventHandler(ev) {
   //console.log(ev);
+  if (ev.target.type === `button`) {
+    ev.target.type = `text`;
+    ev.target.addEventListener(`blur`, linkBtnBlurHandler);
+  }
   if (!ev.target.closest(`.visuItem`)) {
     let actionExecuted = false;
     actionExecuted |= cancelCurrentDrawing();
@@ -914,6 +990,12 @@ function divVisuClickEventHandler(ev) {
     drawModeClickEventHandler(ev); //drawing only starts when no selection was active
   }
   */  
+}
+
+function linkBtnBlurHandler(ev) {
+  //console.log(ev);
+  ev.target.type = `button`;
+  ev.target.removeEventListener(`blur`, linkBtnBlurHandler);
 }
 
 function cancelCurrentDrawing() {
@@ -998,36 +1080,7 @@ function divVisuDragOverEventHandler(ev) {
     }
     if (signalToVisuItem) {
       //console.log(ev.target);
-      const divIcon = visuItem.querySelector(`.divIcon`);
-      if (visuItem.matches(`:not([icon = kessel], [icon = aggregat])`) && divIcon) {
-        const divIconBox = divIcon.getBoundingClientRect();
-        divIconBox.xCenter = divIconBox.x + divIconBox.width/2;
-        divIconBox.yCenter = divIconBox.y + divIconBox.height/2;
-        const deltaX = ev.x - divIconBox.xCenter;
-        const deltaY = ev.y - divIconBox.yCenter;
-        const maxDelta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
-        const iconPosition =  (maxDelta === deltaX) ? `left` :
-        (maxDelta === -deltaX) ? `right` :
-        (maxDelta === deltaY) ? `top` :
-        `bottom`;
-        //const visuItem = divIcon.closest(`.visuItem`);
-        visuItem.setAttribute(`iconPosition`, iconPosition);
-        visuItem.removeAttribute(`style`);
-        visuItem.style.position = `absolute`;
-        const divVisuBox = document.querySelector(`.divVisu`).getBoundingClientRect();
-        if (iconPosition === `left` || iconPosition === `top`) {
-          visuItem.style.left = `${100 * divIconBox.x / divVisuBox.width}%`;
-          visuItem.style.top = `${100 * divIconBox.y / divVisuBox.height}%`;
-        }
-        if (iconPosition === `right`) {
-          visuItem.style.right = `${100 - 100 * (divIconBox.x + divIconBox.width) / divVisuBox.width}%`;
-          visuItem.style.top = `${100 * divIconBox.y / divVisuBox.height}%`;
-        }
-        if (iconPosition === `bottom`) {
-          visuItem.style.left = `${100 * divIconBox.x / divVisuBox.width}%`;
-          visuItem.style.bottom = `${100 - 100 * (divIconBox.y + divIconBox.height) / divVisuBox.height}%`;
-        }
-      }
+      setTimeout(setIconPosition, 1000, ev);
     }
   }
 }
@@ -1080,6 +1133,18 @@ function divVisuDropEventHandler(ev) {
 }
 
 function dblClickEventHandler(ev) {
+  if (ev.target.type === `button`) {
+    const current = ev.target.getAttribute(`writing`);
+    if (current === `downward`) {
+      ev.target.removeAttribute(`writing`);
+    }
+    else if (current === `upward`) {
+      ev.target.setAttribute(`writing`, `downward`);
+    }
+    else if (!current) {
+      ev.target.setAttribute(`writing`, `upward`);
+    }
+  }
   const divIcon = ev.target.closest(`.divIcon`);
   const svg = (divIcon) ? divIcon.querySelector(`svg`) : null;
   if (svg) {
@@ -1102,76 +1167,78 @@ function dblClickEventHandler(ev) {
 
 function keyDownEventHandler(ev) {
   //console.log(ev.key);
-  const key = ev.key.toLowerCase();
-  const auxKeys = ev.altKey | ev.ctrlKey | ev.shiftKey;
-  if (!auxKeys) {
-    if (key === `c`)
+  if (!document.activeElement.matches(`.visuItem[icon=button] input`)) {
+    const key = ev.key.toLowerCase();
+    const auxKeys = ev.altKey | ev.ctrlKey | ev.shiftKey;
+    if (!auxKeys) {
+      if (key === `c`)
       document.querySelector(`.colorPicker`).click();
-    if (key === `g`)
+      if (key === `g`)
       document.querySelector(`#cbGridSnap`).click();
-    if (key === `o`)
+      if (key === `o`)
       document.querySelector(`#cbOrthoMode`).click();
-    if (key === `escape`) {
-      cancelCurrentDrawing();
-      cancelCurrentSelection();
-    }
-    if (key.match(/(delete)|(backspace)/)) {
-      if (document.activeElement.matches(`.divVisu [readonly]`)) {
-        document.activeElement.remove();
+      if (key === `escape`) {
+        cancelCurrentDrawing();
+        cancelCurrentSelection();
       }
-      document.querySelectorAll(`[selected]`).forEach(el => el.remove());
-      updateUsedCount();
-      updateUnDoReDoStack();
+      if (key.match(/(delete)|(backspace)/)) {
+        if (document.activeElement.matches(`.divVisu [readonly]`)) {
+          document.activeElement.remove();
+        }
+        document.querySelectorAll(`[selected]`).forEach(el => el.remove());
+        updateUsedCount();
+        updateUnDoReDoStack();
+      }
     }
-  }
-  else if (ev.ctrlKey) {
-    if (key === `a`) {
-      ev.preventDefault();
-      document.querySelectorAll(`.visuItem, svg[active] *`).forEach(el => el.setAttribute(`selected`, true));
-    }
-    if (key === `y`)
+    else if (ev.ctrlKey) {
+      if (key === `a`) {
+        ev.preventDefault();
+        document.querySelectorAll(`.visuItem, svg[active] *`).forEach(el => el.setAttribute(`selected`, true));
+      }
+      if (key === `y`)
       document.querySelector(`.btnReDo`).click();
-    if (key === `z`)
+      if (key === `z`)
       document.querySelector(`.btnUnDo`).click();
-  }
-
-  const activeSvg = document.querySelector(`svg[active]`);
-  if (activeSvg) {
-    if (key.startsWith(`arrow`)) {
-      ev.preventDefault();
-      const stepWidthSvg = (document.querySelector(`#cbGridSnap`).checked) ? activeSvg.viewBox.baseVal.width / GRIDSIZE_AS_PARTS_FROM_WIDTH : 10; //todo...
-      //const stepWidthRel = stepWidthSvg / activeSvg.viewBox.baseVal.width;
-      const dxSvg = (key.includes(`left`)) ? -stepWidthSvg :
-                    (key.includes(`right`)) ? stepWidthSvg :
-                    0;
-      const dxRel = dxSvg / activeSvg.viewBox.baseVal.width;
-      const dySvg = (key.includes(`up`)) ? -stepWidthSvg :
-                    (key.includes(`down`)) ? stepWidthSvg :
-                    0;
-      const dyRel = dySvg / activeSvg.viewBox.baseVal.height;
-
-      document.querySelectorAll(`[selected]`).forEach(el => {
-        if (el.matches(`svg *`)) {
-          if (dxSvg) {
-            el.setAttribute(`x1`, dxSvg + parseFloat(el.getAttribute(`x1`)));
-            el.setAttribute(`x2`, dxSvg + parseFloat(el.getAttribute(`x2`)));
+    }
+  
+    const activeSvg = document.querySelector(`svg[active]`);
+    if (activeSvg) {
+      if (key.startsWith(`arrow`)) {
+        ev.preventDefault();
+        const stepWidthSvg = (document.querySelector(`#cbGridSnap`).checked) ? activeSvg.viewBox.baseVal.width / GRIDSIZE_AS_PARTS_FROM_WIDTH : 10; //todo...
+        //const stepWidthRel = stepWidthSvg / activeSvg.viewBox.baseVal.width;
+        const dxSvg = (key.includes(`left`)) ? -stepWidthSvg :
+        (key.includes(`right`)) ? stepWidthSvg :
+        0;
+        const dxRel = dxSvg / activeSvg.viewBox.baseVal.width;
+        const dySvg = (key.includes(`up`)) ? -stepWidthSvg :
+        (key.includes(`down`)) ? stepWidthSvg :
+        0;
+        const dyRel = dySvg / activeSvg.viewBox.baseVal.height;
+        
+        document.querySelectorAll(`[selected]`).forEach(el => {
+          if (el.matches(`svg *`)) {
+            if (dxSvg) {
+              el.setAttribute(`x1`, dxSvg + parseFloat(el.getAttribute(`x1`)));
+              el.setAttribute(`x2`, dxSvg + parseFloat(el.getAttribute(`x2`)));
+            }
+            if (dySvg) {
+              el.setAttribute(`y1`, dySvg + parseFloat(el.getAttribute(`y1`)));
+              el.setAttribute(`y2`, dySvg + parseFloat(el.getAttribute(`y2`)));
+            }
           }
-          if (dySvg) {
-            el.setAttribute(`y1`, dySvg + parseFloat(el.getAttribute(`y1`)));
-            el.setAttribute(`y2`, dySvg + parseFloat(el.getAttribute(`y2`)));
+          else if (el.matches(`.visuItem`)) {
+            if (dxRel) {
+              console.log(`match`);
+              el.style.left = `${parseFloat(el.style.left) + 100 * dxRel}%`;
+            }
+            if (dyRel) {
+              el.style.top = `${parseFloat(el.style.top) + 100 * dyRel}%`;
+            }
           }
-        }
-        else if (el.matches(`.visuItem`)) {
-          if (dxRel) {
-            console.log(`match`);
-            el.style.left = `${parseFloat(el.style.left) + 100 * dxRel}%`;
-          }
-          if (dyRel) {
-            el.style.top = `${parseFloat(el.style.top) + 100 * dyRel}%`;
-          }
-        }
-      });
-      updateUnDoReDoStack();
+        });
+        updateUnDoReDoStack();
+      }
     }
   }
 }
@@ -1316,7 +1383,39 @@ function updateUsedCount() {
   });
 }
 
-
+function setIconPosition(ev) {
+  const visuItem = ev.target.closest(`.visuItem`);
+  const divIcon = visuItem.querySelector(`.divIcon`);
+  if (visuItem.matches(`:not([icon = kessel], [icon = aggregat])`) && divIcon) {
+    const divIconBox = divIcon.getBoundingClientRect();
+    divIconBox.xCenter = divIconBox.x + divIconBox.width/2;
+    divIconBox.yCenter = divIconBox.y + divIconBox.height/2;
+    const deltaX = ev.x - divIconBox.xCenter;
+    const deltaY = ev.y - divIconBox.yCenter;
+    const maxDelta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
+    const iconPosition =  (maxDelta === deltaX) ? `left` :
+    (maxDelta === -deltaX) ? `right` :
+    (maxDelta === deltaY) ? `top` :
+    `bottom`;
+    //const visuItem = divIcon.closest(`.visuItem`);
+    visuItem.setAttribute(`iconPosition`, iconPosition);
+    visuItem.removeAttribute(`style`);
+    visuItem.style.position = `absolute`;
+    const divVisuBox = document.querySelector(`.divVisu`).getBoundingClientRect();
+    if (iconPosition === `left` || iconPosition === `top`) {
+      visuItem.style.left = `${100 * divIconBox.x / divVisuBox.width}%`;
+      visuItem.style.top = `${100 * divIconBox.y / divVisuBox.height}%`;
+    }
+    if (iconPosition === `right`) {
+      visuItem.style.right = `${100 - 100 * (divIconBox.x + divIconBox.width) / divVisuBox.width}%`;
+      visuItem.style.top = `${100 * divIconBox.y / divVisuBox.height}%`;
+    }
+    if (iconPosition === `bottom`) {
+      visuItem.style.left = `${100 * divIconBox.x / divVisuBox.width}%`;
+      visuItem.style.bottom = `${100 - 100 * (divIconBox.y + divIconBox.height) / divVisuBox.height}%`;
+    }
+  }
+}
 
 /*********************ComFunctions*********************/
 function getLiveData(visuLiveData, projectNo) {
