@@ -928,6 +928,7 @@ function updateUnDoReDoStack(reset) {
     unDoReDoStack.stack.length = ++unDoReDoStack.idx;
     unDoReDoStack.stack.push(divVisu.innerHTML);
   }
+  updateUsedCount();
 }
 /*********************EventHandlers*********************/
 function divVisuContextMenuEventHandler(ev) {
@@ -966,19 +967,21 @@ function mouseDownEventHandler(ev) {
 }
 
 function divVisuClickEventHandler(ev) {
-  //console.log(ev);
+  //console.log(ev.target);
   if (ev.target.type === `button`) {
     ev.target.type = `text`;
     ev.target.addEventListener(`blur`, linkBtnBlurHandler);
   }
+  
+  let actionExecuted = false;
+  const selectionArea = document.querySelector(`.selectionArea`);
+  if (!selectionArea) {
+    actionExecuted |= removeDivIconSignal(ev);
+  }
+
   if (!ev.target.closest(`.visuItem`)) {
-    let actionExecuted = false;
     actionExecuted |= cancelCurrentDrawing();
     //console.log({actionExecuted});
-    const selectionArea = document.querySelector(`.selectionArea`);
-    if (!selectionArea) {
-      actionExecuted |= removeDivIconSignal(ev);
-    }
     if (!actionExecuted) {
       selectModeClickEventHandler(ev);  //selection only starts when no other action was executed
     }
@@ -1080,7 +1083,7 @@ function divVisuDragOverEventHandler(ev) {
     }
     if (signalToVisuItem) {
       //console.log(ev.target);
-      setTimeout(setIconPosition, 1000, ev);
+      //setTimeout(setIconPosition, 1000, ev);
     }
   }
 }
@@ -1125,7 +1128,6 @@ function divVisuDropEventHandler(ev) {
         divSignals.appendChild(dropItem);
       }
     }
-    updateUsedCount();
     updateUnDoReDoStack();
   }
 
@@ -1133,20 +1135,21 @@ function divVisuDropEventHandler(ev) {
 }
 
 function dblClickEventHandler(ev) {
-  if (ev.target.type === `button`) {
-    const current = ev.target.getAttribute(`writing`);
+  const visuItem = ev.target.closest(`.visuItem`);
+  const btn = (visuItem) ? visuItem.querySelector(`[type=button]`) : null;
+  if (btn) {
+    const current = btn.getAttribute(`writing`);
     if (current === `downward`) {
-      ev.target.removeAttribute(`writing`);
+      btn.removeAttribute(`writing`);
     }
     else if (current === `upward`) {
-      ev.target.setAttribute(`writing`, `downward`);
+      btn.setAttribute(`writing`, `downward`);
     }
     else if (!current) {
-      ev.target.setAttribute(`writing`, `upward`);
+      btn.setAttribute(`writing`, `upward`);
     }
   }
-  const divIcon = ev.target.closest(`.divIcon`);
-  const svg = (divIcon) ? divIcon.querySelector(`svg`) : null;
+  const svg = (visuItem) ? visuItem.querySelector(`svg`) : null;
   if (svg) {
     const rotation = parseInt(svg.getAttribute(`rotation`));
     if (rotation < 270) {
@@ -1186,7 +1189,7 @@ function keyDownEventHandler(ev) {
           document.activeElement.remove();
         }
         document.querySelectorAll(`[selected]`).forEach(el => el.remove());
-        updateUsedCount();
+        
         updateUnDoReDoStack();
       }
     }
@@ -1204,39 +1207,51 @@ function keyDownEventHandler(ev) {
     const activeSvg = document.querySelector(`svg[active]`);
     if (activeSvg) {
       if (key.startsWith(`arrow`)) {
-        ev.preventDefault();
-        const stepWidthSvg = (document.querySelector(`#cbGridSnap`).checked) ? activeSvg.viewBox.baseVal.width / GRIDSIZE_AS_PARTS_FROM_WIDTH : 10; //todo...
-        //const stepWidthRel = stepWidthSvg / activeSvg.viewBox.baseVal.width;
-        const dxSvg = (key.includes(`left`)) ? -stepWidthSvg :
-        (key.includes(`right`)) ? stepWidthSvg :
-        0;
-        const dxRel = dxSvg / activeSvg.viewBox.baseVal.width;
-        const dySvg = (key.includes(`up`)) ? -stepWidthSvg :
-        (key.includes(`down`)) ? stepWidthSvg :
-        0;
-        const dyRel = dySvg / activeSvg.viewBox.baseVal.height;
-        
-        document.querySelectorAll(`[selected]`).forEach(el => {
-          if (el.matches(`svg *`)) {
-            if (dxSvg) {
-              el.setAttribute(`x1`, dxSvg + parseFloat(el.getAttribute(`x1`)));
-              el.setAttribute(`x2`, dxSvg + parseFloat(el.getAttribute(`x2`)));
+        if (ev.altKey) {
+          const iconPosition = (key.includes(`left`)) ? `right` :
+                               (key.includes(`right`)) ? `left` :
+                               (key.includes(`up`)) ? `bottom` :
+                               (key.includes(`down`)) ? `top` :
+                               ``;
+          document.querySelectorAll(`[selected]`).forEach(el => {
+            setIconPosition(el, iconPosition);
+          });
+        }
+        else {
+          ev.preventDefault();
+          const stepWidthSvg = (document.querySelector(`#cbGridSnap`).checked) ? activeSvg.viewBox.baseVal.width / GRIDSIZE_AS_PARTS_FROM_WIDTH : 10; //todo...
+          //const stepWidthRel = stepWidthSvg / activeSvg.viewBox.baseVal.width;
+          const dxSvg = (key.includes(`left`)) ? -stepWidthSvg :
+                        (key.includes(`right`)) ? stepWidthSvg :
+                        0;
+          const dxRel = dxSvg / activeSvg.viewBox.baseVal.width;
+          const dySvg = (key.includes(`up`)) ? -stepWidthSvg :
+                        (key.includes(`down`)) ? stepWidthSvg :
+                        0;
+          const dyRel = dySvg / activeSvg.viewBox.baseVal.height;
+          
+          document.querySelectorAll(`[selected]`).forEach(el => {
+            if (el.matches(`svg *`)) {
+              if (dxSvg) {
+                el.setAttribute(`x1`, dxSvg + parseFloat(el.getAttribute(`x1`)));
+                el.setAttribute(`x2`, dxSvg + parseFloat(el.getAttribute(`x2`)));
+              }
+              if (dySvg) {
+                el.setAttribute(`y1`, dySvg + parseFloat(el.getAttribute(`y1`)));
+                el.setAttribute(`y2`, dySvg + parseFloat(el.getAttribute(`y2`)));
+              }
             }
-            if (dySvg) {
-              el.setAttribute(`y1`, dySvg + parseFloat(el.getAttribute(`y1`)));
-              el.setAttribute(`y2`, dySvg + parseFloat(el.getAttribute(`y2`)));
+            else if (el.matches(`.visuItem`)) {
+              if (dxRel) {
+                console.log(`match`);
+                el.style.left = `${parseFloat(el.style.left) + 100 * dxRel}%`;
+              }
+              if (dyRel) {
+                el.style.top = `${parseFloat(el.style.top) + 100 * dyRel}%`;
+              }
             }
-          }
-          else if (el.matches(`.visuItem`)) {
-            if (dxRel) {
-              console.log(`match`);
-              el.style.left = `${parseFloat(el.style.left) + 100 * dxRel}%`;
-            }
-            if (dyRel) {
-              el.style.top = `${parseFloat(el.style.top) + 100 * dyRel}%`;
-            }
-          }
-        });
+          });
+        }
         updateUnDoReDoStack();
       }
     }
@@ -1258,6 +1273,7 @@ function unDoReDoEventListener(ev) {
     divVisu.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.value = txtEl.className);
   }
   cancelCurrentDrawing();
+  updateUsedCount();
 }
 
 function openLocalFileEventHandler(ev) {
@@ -1267,7 +1283,6 @@ function openLocalFileEventHandler(ev) {
     const divVisu = document.querySelector(`.divVisu`);
     divVisu.innerHTML = reader.result;
     divVisu.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.value = txtEl.className);
-    updateUsedCount();
     updateUnDoReDoStack();
     console.log(reader.result);
   });
@@ -1383,36 +1398,26 @@ function updateUsedCount() {
   });
 }
 
-function setIconPosition(ev) {
-  const visuItem = ev.target.closest(`.visuItem`);
-  const divIcon = visuItem.querySelector(`.divIcon`);
-  if (visuItem.matches(`:not([icon = kessel], [icon = aggregat])`) && divIcon) {
-    const divIconBox = divIcon.getBoundingClientRect();
-    divIconBox.xCenter = divIconBox.x + divIconBox.width/2;
-    divIconBox.yCenter = divIconBox.y + divIconBox.height/2;
-    const deltaX = ev.x - divIconBox.xCenter;
-    const deltaY = ev.y - divIconBox.yCenter;
-    const maxDelta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
-    const iconPosition =  (maxDelta === deltaX) ? `left` :
-    (maxDelta === -deltaX) ? `right` :
-    (maxDelta === deltaY) ? `top` :
-    `bottom`;
-    //const visuItem = divIcon.closest(`.visuItem`);
-    visuItem.setAttribute(`iconPosition`, iconPosition);
-    visuItem.removeAttribute(`style`);
-    visuItem.style.position = `absolute`;
-    const divVisuBox = document.querySelector(`.divVisu`).getBoundingClientRect();
-    if (iconPosition === `left` || iconPosition === `top`) {
-      visuItem.style.left = `${100 * divIconBox.x / divVisuBox.width}%`;
-      visuItem.style.top = `${100 * divIconBox.y / divVisuBox.height}%`;
-    }
-    if (iconPosition === `right`) {
-      visuItem.style.right = `${100 - 100 * (divIconBox.x + divIconBox.width) / divVisuBox.width}%`;
-      visuItem.style.top = `${100 * divIconBox.y / divVisuBox.height}%`;
-    }
-    if (iconPosition === `bottom`) {
-      visuItem.style.left = `${100 * divIconBox.x / divVisuBox.width}%`;
-      visuItem.style.bottom = `${100 - 100 * (divIconBox.y + divIconBox.height) / divVisuBox.height}%`;
+function setIconPosition(visuItem, iconPosition) {
+  if (visuItem.getAttribute(`iconPosition`) !== iconPosition.toLowerCase()) {
+    //console.log(visuItem.getAttribute(`iconPosition`));
+    const divIcon = visuItem.querySelector(`.divIcon`);
+    if (visuItem.matches(`:not([icon = kessel], [icon = aggregat])`) && divIcon) {
+      const divIconBox = divIcon.getBoundingClientRect();
+      const divVisuBox = document.querySelector(`.divVisu`).getBoundingClientRect();
+
+      const top = (iconPosition === `bottom`) ? undefined : `${100 * divIconBox.y / divVisuBox.height}%`;
+      const left = (iconPosition === `right`) ? undefined : `${100 * divIconBox.x / divVisuBox.width}%`;
+      const bottom = (iconPosition === `bottom`) ? `${100 - 100 * (divIconBox.y + divIconBox.height) / divVisuBox.height}%` : undefined;
+      const right = (iconPosition === `right`) ? `${100 - 100 * (divIconBox.x + divIconBox.width) / divVisuBox.width}%` : undefined;
+      
+      visuItem.setAttribute(`iconPosition`, iconPosition);
+      visuItem.removeAttribute(`style`);
+      visuItem.style.position = `absolute`;
+      visuItem.style.top = top;
+      visuItem.style.left = left;
+      visuItem.style.bottom = bottom;
+      visuItem.style.right = right;
     }
   }
 }
