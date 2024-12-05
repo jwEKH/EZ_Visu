@@ -82,8 +82,8 @@ function createIcon(symbol) {
       const d = (symbol === `temperatur`) ? `M0 12 8 4M5 1 11 7` :
                 (symbol === `heizkreis`) ? `M0 6a1 1 0 0112 0A1 1 0 010 6M1 6A1 1 0 0011 6 1 1 0 001 6 1 1 0 0011 6 1 1 0 001 6` :
                 (symbol === `pumpe`) ? `M2 6 6 2l4 4A1 1 0 012 6a1 1 0 018 0` : //`M2 6 6 2 10 6A1 1 0 012 6 1 1 0 0110 6M4 6A1 1 0 008 6 1 1 0 004 6L6 6 6 4` :
-                (symbol === `mischer`) ? `M6 6 3 0 9 0 3 12 9 12 6 6 0 3 0 9 6 6 9 6A1 1 0 0012 6 1 1 0 009 6` :
-                (symbol === `ventil`) ? `M9 6a1 1 0 013 0A1 1 0 019 6H6l3 6H3L9 0H3L6 6` :
+                (symbol === `mischer`) ? `M8 6a1 1 0 014 0A1 1 0 018 6H6L1 9V3L6 6l3 5H3L9 1H3L6 6` : //`M8 6a1 1 0 013 0A1 1 0 018 6H6L2 8V4L6 6l2 4H4L8 2H4L6 6` : //`M6 6 3 0 9 0 3 12 9 12 6 6 0 3 0 9 6 6 9 6A1 1 0 0012 6 1 1 0 009 6` :
+                (symbol === `ventil`) ? `M8 6a1 1 0 014 0A1 1 0 018 6H6l3 5H3L9 1H3L6 6` : //`M9 6a1 1 0 013 0A1 1 0 019 6H6l3 6H3L9 0H3L6 6` :
                 (symbol === `aggregat`) ? `m2 9Q1 8 1 6T2 3m8 6q1-1 1-3T10 3M1 6H11` :
                 (symbol === `puffer`) ? `` :
                 (symbol === `waermetauscher`) ? `` :
@@ -540,7 +540,7 @@ function initSignalTable(visuLiveData) {
       for (let i=1; i<=channels; i++) {
         const tr = document.createElement(`tr`);
         signalTableBody.appendChild(tr);
-        [`UsageCount`, `RtosTerm`, `SignalId`, `Tooltip`, `DecPlace`, `Unit`, `TrueTxt`, `FalseTxt`].forEach(col => {
+        [`UsageCount`, `RtosTerm`, `SignalId`, `Tooltip`, `DecPlace`, `Unit`, `Style`, `TrueTxt`, `FalseTxt`].forEach(col => {
           const td = document.createElement(`td`);
           tr.appendChild(td);
           if (col === `UsageCount`) {
@@ -588,6 +588,16 @@ function initSignalTable(visuLiveData) {
                 option.innerText = unit;
                 option.value = unit;
                 option.selected = (unit === `°C` && !signalGroup.match(/(DI)|(DO)/));
+              });
+            }
+
+            if (col === `Style`) {
+              [``, `sollwert`, `grenzwert`].forEach(style => {
+                const option = document.createElement(`option`);
+                select.appendChild(option);
+                option.innerText = style;
+                option.value = style;
+                option.setAttribute(`stil`, style);
               });
             }
 
@@ -769,12 +779,13 @@ function mouseDownEventHandler(ev) {
     const target = (ev.target.matches(`[draggable]`)) ? ev.target : ev.target.closest(`.visuItem[draggable]`);
     if (target) {
       target.setAttribute(`dragging`, `true`);
+      //target.setAttribute(`selected`, `true`);
     }
   }
 }
 
 function divVisuClickEventHandler(ev) {
-  //console.log(ev.target);
+  console.log(ev.target);
   if (ev.target.type === `button`) {
     ev.target.type = `text`;
     ev.target.addEventListener(`blur`, linkBtnBlurHandler);
@@ -786,7 +797,13 @@ function divVisuClickEventHandler(ev) {
     actionExecuted |= removeDivIconSignal(ev);
   }
 
-  if (!ev.target.closest(`.visuItem`)) {
+  const visuItem = ev.target.closest(`.visuItem`);
+
+  if (visuItem) {
+    //cancelCurrentSelection();
+    visuItem.setAttribute(`selected`, `true`);
+  }
+  else {
     actionExecuted |= cancelCurrentDrawing();
     //console.log({actionExecuted});
     if (!actionExecuted) {

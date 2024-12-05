@@ -68,6 +68,15 @@ body {
   padding-left: var(--controlsWidthOffset);
 }
 
+[stil = "sollwert"] {
+  color: white;
+  background-color: var(--cyan);
+}
+[stil = "grenzwert"] {
+  color: white;
+  background-color: var(--magenta);
+}
+
 .divVisu {
   /*
   overflow: hidden;
