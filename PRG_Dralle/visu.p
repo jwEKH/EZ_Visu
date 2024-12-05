@@ -114,7 +114,7 @@ VISUAL: TASK PRIO 30; ! Visualisierungsdaten,...
 
   REPEAT 
     /* Einheiten: */
-    /* 1: °C  */
+    /* 1: ï¿½C  */
     /* 2: bar  */
     /* 3: V    */
     /* 4: kW   */
@@ -124,7 +124,7 @@ VISUAL: TASK PRIO 30; ! Visualisierungsdaten,...
     /* 8: kWh  */
     /* 9: Bh   */
     /*10: m^3 */
-    /*11: °Cø */
+    /*11: ï¿½Cï¿½ */
     /*12: mV  */
     /*13: UPM */
     /*14: s   */
@@ -202,14 +202,14 @@ VISUAL: TASK PRIO 30; ! Visualisierungsdaten,...
  !  PUT 'PMB 2,0, 4',PE_MAXBHKW( 2) TO TEMP BY A,F(7,2);   /* Maximalleistung BHKW2    */
  !  PUT 'PMB 3,0, 4',PE_MAXBHKW( 3) TO TEMP BY A,F(7,2);   /* Maximalleistung BHKW3    */
 
-    /* anstehende Störungen  */
+    /* anstehende Stï¿½rungen  */
     FOR I TO 120 REPEAT
       IF B_STOER(I) AND ZF_STOERFREI(I) < 2 THEN
         PUT 'STOE',I,TX_STOERMEL(I) TO TEMP BY A,F(3),A;
       FIN;
     END;
   
-    /* relevante Analogeingänge */
+    /* relevante Analogeingï¿½nge */
     PUT 'AI  0,1,11',TC_ATTAU   TO TEMP BY A,F(7,2);  /* durchschn. Aussentemp der letzten 24h */
     PUT 'AI  1,1, 1',X_AEIN( 1) TO TEMP BY A,F(7,2);    /* akt. Aussentemp. */
     PUT 'AI  2,1, 1',X_AEIN( 2) TO TEMP BY A,F(7,2);    /* Holzkessel1 VL       */
@@ -264,7 +264,7 @@ VISUAL: TASK PRIO 30; ! Visualisierungsdaten,...
     PUT 'PT  5,1, 4',PTH_MBUS( 5)  TO TEMP BY A,F(7,2); /* Pth HK1 Nordtrasse    */ 
     PUT 'PT  6,1, 4',PTH_MBUS( 6)  TO TEMP BY A,F(7,2); /* Pth HK2 Westtrasse    */ 
     PUT 'PT  7,1, 4',PTH_MBUS( 7)  TO TEMP BY A,F(7,2); /* Pth HK1 Suedtrasse    */ 
-     /* relevante Durchflüsse */
+     /* relevante Durchflï¿½sse */
     PUT 'DF  1,1, 5',DF_MBUS( 1)  TO TEMP BY A,F(7,2); /* Durchfluss BHKW             */
     PUT 'DF  2,1, 5',DF_MBUS( 2)  TO TEMP BY A,F(7,2); /* Durchfluss Holzkessel1      */
     PUT 'DF  3,1, 5',DF_MBUS( 3)  TO TEMP BY A,F(7,2); /* Durchfluss Holzkessel2      */      
@@ -272,7 +272,7 @@ VISUAL: TASK PRIO 30; ! Visualisierungsdaten,...
     PUT 'DF  5,1, 5',DF_MBUS( 5)  TO TEMP BY A,F(7,2); /* Durchfluss HK1 Nordtrasse   */      
     PUT 'DF  6,1, 5',DF_MBUS( 6)  TO TEMP BY A,F(7,2); /* Durchfluss HK2 Westtrasse   */    
     PUT 'DF  7,1, 5',DF_MBUS( 7)  TO TEMP BY A,F(7,2); /* Durchfluss HK3 Suedtrasse   */    
-   /* relevante Pumpendrücke */
+   /* relevante Pumpendrï¿½cke */
  !  PUT 'UDR 1,1, 6',UPE_ISTDRUCK( 1) TO TEMP BY A,F(7,2);  /* Differenzdruck Pumpe Kessel           */
  !  PUT 'UDR 2,1, 6',UPE_ISTDRUCK( 2) TO TEMP BY A,F(7,2);  /* Differenzdruck Pumpe1 HK1 NW nord    */
  !  PUT 'UDR 3,1, 6',UPE_ISTDRUCK( 3) TO TEMP BY A,F(7,2);  /* Differenzdruck Pumpe2 HK1 NW nord    */
@@ -282,7 +282,7 @@ VISUAL: TASK PRIO 30; ! Visualisierungsdaten,...
  !  PUT 'PGG 1,0, 4',P_DI(10)*FL_GASHU TO TEMP BY A,F(7,2); /* Gas gesamt    */
  !  PUT 'PGB 1,0, 4',P_DI( 9)*FL_GASHU TO TEMP BY A,F(7,2); /* Gas BHKW       */
     PUT 'PBH 1,1, 4',PE_BIST(1) TO TEMP BY A,F(7,2);       /* el. Istleistung BHKW (ca.) */
-    /* relevante Analogausgänge */
+    /* relevante Analogausgï¿½nge */
     PUT 'AA  1,1, 7',X_AAUS(1)           TO TEMP BY A,F(7,2);    /* Soll Pumpe Biogaskessel <<< */    
     PUT 'AA  2,1, 7',X_AAUS(2)           TO TEMP BY A,F(7,2);    /* Soll Pumpe Holzkessel1   */    
     PUT 'AA  4,1, 7',X_AAUS(4)           TO TEMP BY A,F(7,2);    /* Soll Pumpe Holzkessel2   */   
@@ -317,7 +317,7 @@ VISUAL: TASK PRIO 30; ! Visualisierungsdaten,...
  !  FIN;                                                                                                   
  !  PUT 'MS  3,1, 7',X_AAUS(4)                           TO TEMP BY A,F(7,2); /* Mi HK3 Buero */
   
-    /* relevante Digitaldaten  <<< evtl. bei Digitalausgängen Handeinstellungen berücksichtigen ? */
+    /* relevante Digitaldaten  <<< evtl. bei Digitalausgï¿½ngen Handeinstellungen berï¿½cksichtigen ? */
     PUT 'PH  1,0, 0',B_DO(15)  TO TEMP BY A,B(1);  /* Pumpe HK1 Nordtrasse  */
     PUT 'PH  2,0, 0',B_DO(18)  TO TEMP BY A,B(1);  /* Pumpe HK2 Westtrasse  */
     PUT 'PH  3,0, 0',B_DO(21)  TO TEMP BY A,B(1);  /* Pumpe HK3 Suedtrasse  */
@@ -488,305 +488,196 @@ VISUAL: TASK PRIO 30; ! Visualisierungsdaten,...
       OPEN TEMP BY IDF('TEMP'),ANY;
       CALL REWIND(TEMP);
     
-      PUT 'P',NR_PRJ TO TEMP BY A,F(4);
-      PUT '  ',IDPI TO TEMP BY A,A,SKIP;
-
-      PUT DA_DAT,'.',DA_MON,'.',DA_JAH TO TEMP BY F(2),A,F(2),A,F(4);
-      PUT '   ',ZP_NOW TO TEMP BY A,T(8),SKIP,SKIP;
+      PUT '{' TO TEMP BY A;						/* start JSON-Object*/	  
+	    PUT 'prjNo:',NR_PRJ TO TEMP BY A,F(4);
+      PUT ',prjName:"',IDPI,'"' TO TEMP BY A,A,A;
+	  
+      PUT ',date:"',DA_DAT,'.',DA_MON,'.',DA_JAH,' ',ZP_NOW,'"' TO TEMP BY A,F(2),A,F(2),A,F(4),A,T(8),A;
     
-      PUT 'Stoerungen:     ' TO TEMP BY A,SKIP;
-      PUT ' Nr Name             Freig.?    Dringed?    ' TO TEMP BY A,SKIP;
-      FOR I TO 200 REPEAT
-        PUT I,' ',TX_STOERMEL(I) TO TEMP BY F(3),A,A;
-        IF ZF_STOERFREI(I) < 2 THEN
-          PUT '  JA    ' TO TEMP BY A;
-        ELSE
-          PUT ' NEIN' TO TEMP BY A;
-          IF ZF_STOERFREI(I) > 2 THEN
-            PUT '!! ' TO TEMP BY A;
-          ELSE
-            PUT '   ' TO TEMP BY A;
-          FIN;
-        FIN;      
-        IF ZF_STOERDRIG(I) > 0 THEN
-          PUT '  JA  ' TO TEMP BY A;
-        ELSE
-          PUT ' NEIN ' TO TEMP BY A;
-        FIN;      
-        PUT TO TEMP BY SKIP;
-      END;
-    
-      PUT TO TEMP BY SKIP;
-      PUT 'Analogeingaenge:' TO TEMP BY A,SKIP;
-      PUT ' Nr Name                 UAbgl  OAbgl  Min/Max-Ueberwachung' TO TEMP BY A,SKIP;
+      PUT ',AI:' TO TEMP BY A;
+      PUT '[' TO TEMP BY A;						/* start JSON-Array*/
       FOR I TO N_FUEHLER REPEAT
-        PUT I,' ',FP_NAME(I) TO TEMP BY F(3),A,A;
-        IF FP_TYP(I)==3 OR FP_TYP(I)==12 OR FP_TYP(I)==15 THEN
-          PUT ' ',FP_ULOW(I),'       ' TO TEMP BY A,F(6),A;
-        ELSE
-          PUT ' ',FP_ULOW(I),' ',FP_UHIGH(I) TO TEMP BY A,F(6),A,F(6);
-        FIN;
-        PUT ' ',FL_XAEINMIN(I),' ',FL_XAEINMAX(I) TO TEMP BY A,F(6,1),A,F(6,1);
-        IF B_FUEHLWACH(I) THEN
-          PUT '    JA  ' TO TEMP BY A;
-        ELSE
-          PUT '   NEIN ' TO TEMP BY A;
-        FIN;      
-        PUT TO TEMP BY SKIP;
+        PUT '{' TO TEMP BY A;						/* start JSON-Object*/
+        PUT 'no:', I TO TEMP BY A,F(3);
+        PUT ',name:"', FP_NAME(I),'"' TO TEMP BY A,A,A;
+        PUT ',uMin:',FP_ULOW(I) TO TEMP BY A,F(6);
+        IF FP_TYP(I)/=3 AND FP_TYP(I)/=12 AND FP_TYP(I)/=15 THEN
+          PUT ',uMax:',FP_UHIGH(I) TO TEMP BY A,F(6);
+          FIN;
+        PUT ',min:',FL_XAEINMIN(I) TO TEMP BY A,F(6,1);
+        PUT ',max:',FL_XAEINMAX(I) TO TEMP BY A,F(6,1);
+        PUT ',rangeCheck:',B_FUEHLWACH(I) TO TEMP BY A,B(1);
+        PUT '}' TO TEMP BY A;						/* end JSON-Object*/
+        IF I<N_FUEHLER THEN
+          PUT ',' TO TEMP BY A;
+          FIN;
       END;
-      
-      PUT TO TEMP BY SKIP;
-      PUT 'Analogausgaenge:' TO TEMP BY A,SKIP;
-      PUT ' Nr Name                  U(0%)  U(100%)  Betriebsart     Hand%  Max%   Min%' TO TEMP BY A,SKIP;
+      PUT ']' TO TEMP BY A;						/* end JSON-Array*/
+	  
+      PUT ',AO:' TO TEMP BY A;
+      PUT '[' TO TEMP BY A;						/* start JSON-Array*/
       FOR I TO N_ANALOG REPEAT
-        PUT I,' ',AP_NAME(I) TO TEMP BY F(3),A,A;
-        PUT ' ',AP_ULOW(I),' ',AP_UHIGH(I) TO TEMP BY A,F(6,2),A,F(6,2);
-        PUT '   ' TO TEMP BY A;
-        CASE Z_AAUTO(I)
-          ALT
-            PUT ' AUTO         ' TO TEMP BY A;
-          ALT                 
-            PUT ' HAND W+Ausg  ' TO TEMP BY A;
-          ALT
-            PUT ' HAND nur W   ' TO TEMP BY A;
-          OUT
-        FIN;
-        PUT ' ',X_AHAND(I),' ',X_AAUSMAX(I),' ',X_AAUSMIN(I) TO TEMP BY A,F(6,1),A,F(6,1),A,F(6,1);
-        PUT TO TEMP BY SKIP;
+        PUT '{' TO TEMP BY A;						/* start JSON-Object*/
+        PUT 'no:', I TO TEMP BY A,F(3);
+        PUT ',name:"', AP_NAME(I),'"' TO TEMP BY A,A,A;
+        PUT ',uMin:',AP_ULOW(I) TO TEMP BY A,F(6,2);
+        PUT ',uMax:',AP_UHIGH(I) TO TEMP BY A,F(6,2);
+        PUT ',betriebsart:',Z_AAUTO(I) TO TEMP BY A,F(1); /*auto, hand, hand(nurWert)*/
+        PUT ',handwert:',X_AHAND(I) TO TEMP BY A,F(6,1);
+        PUT ',min:',X_AAUSMIN(I) TO TEMP BY A,F(6,1);
+        PUT ',max:',X_AAUSMAX(I) TO TEMP BY A,F(6,1);
+        PUT '}' TO TEMP BY A;						/* end JSON-Object*/
+        IF I<N_ANALOG THEN
+          PUT ',' TO TEMP BY A;
+          FIN;
       END;
-      
-      PUT TO TEMP BY SKIP;
-      PUT 'PWM/Takt Ausgaenge:' TO TEMP BY A,SKIP;
-      PUT ' Nr Name                 Betriebsart    Hand%  Max%    Min%' TO TEMP BY A,SKIP;
-      FOR I TO N_PWM REPEAT
-        PUT I,' ',PW_NAME(I) TO TEMP BY F(3),A,A;
-        CASE Z_PWMAUTO(I)
-          ALT
-            PUT ' AUTO         ' TO TEMP BY A;
-          ALT                 
-            PUT ' HAND W+Ausg  ' TO TEMP BY A;
-          ALT
-            PUT ' HAND nur W   ' TO TEMP BY A;
-          OUT
-        FIN;
-        PUT ' ',X_PWMHAND(I),' ',X_PWMMAX(I),' ',X_PWMMIN(I) TO TEMP BY A,F(6,1),A,F(6,1),A,F(6,1);
-        PUT TO TEMP BY SKIP;
-      END;
-    
-      PUT TO TEMP BY SKIP;
-      PUT 'Digitalausgaenge:' TO TEMP BY A,SKIP;
-      PUT ' Nr Name                   Betriebsart  ' TO TEMP BY A,SKIP;
+      PUT ']' TO TEMP BY A;						/* end JSON-Array*/
+	  
+      PUT ',DO:' TO TEMP BY A;
+      PUT '[' TO TEMP BY A;						/* start JSON-Array*/
       FOR I TO N_RELPLT*8 REPEAT
-        PUT I,' ',DO_NAME(I),' ' TO TEMP BY F(3),A,A,A;
-        IF Z_DOHAND(I)>0 THEN
-          PUT ' EIN' TO TEMP BY A;
-          IF Z_DOHAND(I) < 1000 THEN
-            PUT Z_DOHAND(I) TO TEMP BY F(6);
-          ELSE
-            PUT ' DAUER' TO TEMP BY A;
+        PUT '{' TO TEMP BY A;						/* start JSON-Object*/
+        PUT 'no:', I TO TEMP BY A,F(3);
+        PUT ',name:"', DO_NAME(I),'"' TO TEMP BY A,A,A;
+        PUT ',betriebsart:',Z_DOHAND(I) TO TEMP BY A,F(6); /*0=auto, >0=ein, <0=aus*/
+        PUT '}' TO TEMP BY A;						/* end JSON-Object*/
+        IF I<N_RELPLT*8 THEN
+          PUT ',' TO TEMP BY A;
           FIN;
-        ELSE
-          IF Z_DOHAND(I)<0 THEN
-            PUT ' AUS' TO TEMP BY A;
-            IF Z_DOHAND(I) > -1000 THEN
-              PUT Z_DOHAND(I) TO TEMP BY F(6);
-            ELSE
-              PUT ' DAUER' TO TEMP BY A;
-            FIN;
-          ELSE
-            PUT 'AUTO       ' TO TEMP BY A;
-          FIN;
-        FIN;
-        PUT TO TEMP BY SKIP;
       END;
-      
-      PUT TO TEMP BY SKIP;
-      PUT 'Digitaleingaenge:' TO TEMP BY A,SKIP;
-      PUT ' Nr Name                       Betriebsart  ' TO TEMP BY A,SKIP;
+      PUT ']' TO TEMP BY A;						/* end JSON-Array*/
+	  
+      PUT ',DI:' TO TEMP BY A;
+      PUT '[' TO TEMP BY A;						/* start JSON-Array*/
       FOR I TO N_DIGIN REPEAT
-        PUT I,' ',DI_NAME(I) TO TEMP BY F(3),A,A;
-        CASE Z_DIBEWERT(I)
-          ALT
-            PUT '  norm  ' TO TEMP BY A;
-          ALT
-            PUT '  TOGG!!' TO TEMP BY A;
-          ALT     
-            PUT '  EINS!!' TO TEMP BY A;
-          ALT     
-            PUT '  NULL!!' TO TEMP BY A;
-          OUT
-        FIN;
-        PUT TO TEMP BY SKIP;
+        PUT '{' TO TEMP BY A;						/* start JSON-Object*/
+        PUT 'no:', I TO TEMP BY A,F(3);
+        PUT ',name:"', DI_NAME(I),'"' TO TEMP BY A,A,A;
+        PUT ',betriebsart:',Z_DIBEWERT(I) TO TEMP BY A,F(1); /*norm, toggle, eins, null*/
+        PUT '}' TO TEMP BY A;						/* end JSON-Object*/
+        IF I<N_DIGIN THEN
+          PUT ',' TO TEMP BY A;
+          FIN;
       END;
-      
-      PUT TO TEMP BY SKIP;
+      PUT ']' TO TEMP BY A;						/* end JSON-Array*/
+	  
       FOR I TO N_KESSEL REPEAT
-        PUT 'Kessel',I,':' TO TEMP BY A,F(2),A,SKIP;
-        PUT KES_TXT1(I) TO TEMP BY A,SKIP;
-        PUT KES_TXT2(I) TO TEMP BY A,SKIP;
-        PUT 'Leistung(kW):            ',PT_KES(I) TO TEMP BY A,F(5),SKIP;
-        PUT 'Pumpennachlauf(s):       ',ZF_KPNL(I) TO TEMP BY A,F(5),SKIP;
-        PUT 'Anf. Zeit bis P-Reg(s):  ',ZF_KWARML(I) TO TEMP BY A,F(5),SKIP;
-        PUT 'Max VL-Temp (>+4K AUS):  ',TC_KVMAX(I) TO TEMP BY A,F(5,1),SKIP;
-        PUT 'Max Spreizung(K):        ',TD_KMAX(I) TO TEMP BY A,F(5,1),SKIP;
-        PUT 'Ueberh. VL-Soll(K):      ',TD_KVLPLUS(I) TO TEMP BY A,F(5,1),SKIP;
-        PUT 'MindestAA Betrieb(%):    ',X_AAKMIN(I) TO TEMP BY A,F(5,1),SKIP;
-        PUT 'Stellzeit P-Reg(s):      ',ZF_KSTELL(I) TO TEMP BY A,F(5),SKIP;
-        PUT 'Kesselrang:              ',FS_LKES(I) TO TEMP BY A,F(5),SKIP;
-        PUT ' Leistungsregelung  ' TO TEMP BY A,SKIP;
-        PUT '      P    I         D    TauD(s)' TO TEMP BY A,SKIP;
-        PUT RP_K(I),RI_K(I),RD_K(I),RTAU_K(I) TO TEMP BY F(8,1),F(8,4),F(8,1),F(8,1),SKIP;
-        PUT ' Durchflussregelung  ' TO TEMP BY A,SKIP;
-        PUT '      P    I         D    TauD(s)' TO TEMP BY A,SKIP;
-        PUT RP_KP(I),RI_KP(I),RD_KP(I),RTAU_KP(I) TO TEMP BY F(8,1),F(8,4),F(8,1),F(8,1),SKIP;
-        PUT TO TEMP BY SKIP;
+        PUT ',Kessel',I,':' TO TEMP BY A,F(2),A;
+		    PUT '{' TO TEMP BY A;						/* start JSON-Object*/
+        
+        PUT 'Leistung:',PT_KES(I) TO TEMP BY A,F(5);
+        PUT ',Pumpennachlauf:',ZF_KPNL(I) TO TEMP BY A,F(5);
+        PUT ',AnfZeitBisPreg:',ZF_KWARML(I) TO TEMP BY A,F(5);
+        PUT ',MaxVLtemp:',TC_KVMAX(I) TO TEMP BY A,F(5,1);
+        PUT ',MaxSpreizung:',TD_KMAX(I) TO TEMP BY A,F(5,1);
+        PUT ',UeberhVLsoll:',TD_KVLPLUS(I) TO TEMP BY A,F(5,1);
+        PUT ',MindestAABetrieb:',X_AAKMIN(I) TO TEMP BY A,F(5,1);
+        PUT ',StellzeitPreg:',ZF_KSTELL(I) TO TEMP BY A,F(5);
+        PUT ',Kesselrang:',FS_LKES(I) TO TEMP BY A,F(5);
+        
+        PUT ',Leistungsregelung:' TO TEMP BY A;
+        PUT '{' TO TEMP BY A;						/* start JSON-Object*/
+        PUT 'P:',RP_K(I) TO TEMP BY A,F(8,1);
+        PUT ',I:',RI_K(I) TO TEMP BY A,F(8,4);
+        PUT ',D:',RD_K(I) TO TEMP BY A,F(8,1);
+        PUT ',TauD:',RTAU_K(I) TO TEMP BY A,F(8,1);
+        PUT '}' TO TEMP BY A;						/* end JSON-Object*/
+        
+        PUT ',Durchflussregelung:' TO TEMP BY A;
+        PUT '{' TO TEMP BY A;						/* start JSON-Object*/
+        PUT 'P:',RP_KP(I) TO TEMP BY A,F(8,1);
+        PUT ',I:',RI_KP(I) TO TEMP BY A,F(8,4);
+        PUT ',D:',RD_KP(I) TO TEMP BY A,F(8,1);
+        PUT ',TauD:',RTAU_KP(I) TO TEMP BY A,F(8,1);
+        PUT '}' TO TEMP BY A;						/* end JSON-Object*/
+
+        PUT ',allgemeineParameter:' TO TEMP BY A;
+        PUT '{' TO TEMP BY A;						/* start JSON-Object*/
+        PUT 'autoKesselrangfolge:',B_FSLKESAUTO TO TEMP BY A,B(1);
+        PUT ',KesseltoleranzHauptkreis:',TD_KS TO TEMP BY A,F(5,1);
+        PUT ',PumpenvorlaufAktiv:',B_PMPVORL TO TEMP BY A,B(1);
+        PUT '}' TO TEMP BY A;						/* end JSON-Object*/
+
+        PUT '}' TO TEMP BY A;						/* end JSON-Object*/
       END;
     
-      PUT ' Kesselrangfolge automatisch?:   ' TO TEMP BY A;
-      IF B_FSLKESAUTO THEN
-        PUT '  JA  ' TO TEMP BY A;
-      ELSE
-        PUT ' NEIN ' TO TEMP BY A;
-      FIN;      
-      PUT TO TEMP BY SKIP;
-      PUT ' Kesseltoleranz Hauptkreis (K):  ',TD_KS TO TEMP BY A,F(5,1),SKIP;
-      PUT ' Pumpenvorlauf erlaubt?:         ' TO TEMP BY A;
-      IF B_PMPVORL THEN
-        PUT '  JA  ' TO TEMP BY A;
-      ELSE
-        PUT ' NEIN ' TO TEMP BY A;
-      FIN;      
-      PUT TO TEMP BY SKIP;
-      PUT TO TEMP BY SKIP;
-      
-      PUT TO TEMP BY SKIP;
       FOR I TO N_BHKW REPEAT
-        PUT 'BHKW',I,':' TO TEMP BY A,F(2),A,SKIP;
-        PUT 'Pel Max(kW):             ',PE_MAXBHKW(I) TO TEMP BY A,F(5,1),SKIP;
-        PUT 'Pel Min(kW):             ',PE_MINBHKW(I) TO TEMP BY A,F(5,1),SKIP;
-        PUT 'erl. Pel-Soll(%) 100 -   ',PE_BMINPRO(I) TO TEMP BY A,F(5,1),SKIP;
-        PUT 'Thermostat VL:           ',TC_BHZGVO(I) TO TEMP BY A,F(5,1),SKIP;
-        PUT 'Thermostat RL:           ',TC_BHZGRO(I) TO TEMP BY A,F(5,1),SKIP;
-        PUT 'Mindest VL-Soll:         ',TC_BVLMIN(I) TO TEMP BY A,F(5,1),SKIP;
-        PUT 'Pumpennachlauf(s):       ',ZF_BPNL(I) TO TEMP BY A,F(5),SKIP;
-        PUT 'Freigabe? :              ' TO TEMP BY A;
-        IF B_BERLAUBT(I) THEN
-          PUT '   JA  ' TO TEMP BY A,SKIP;
-        ELSE
-          PUT '  NEIN ' TO TEMP BY A,SKIP;
-        FIN;
-        PUT TO TEMP BY SKIP;
+        PUT ',BHKW',I,':' TO TEMP BY A,F(2),A;
+        PUT '{' TO TEMP BY A;						/* start JSON-Object*/
+
+        PUT 'PelMax:',PE_MAXBHKW(I) TO TEMP BY A,F(5,1);
+        PUT ',PelMin:',PE_MINBHKW(I) TO TEMP BY A,F(5,1);
+        PUT ',PelSollMin:',PE_BMINPRO(I) TO TEMP BY A,F(5,1);
+        PUT ',ThermostatVL:',TC_BHZGVO(I) TO TEMP BY A,F(5,1);
+        PUT ',ThermostatRL:',TC_BHZGRO(I) TO TEMP BY A,F(5,1);
+        PUT ',MindestVLsoll:',TC_BVLMIN(I) TO TEMP BY A,F(5,1);
+        PUT ',Pumpennachlauf:',ZF_BPNL(I) TO TEMP BY A,F(5);
+        PUT ',gesperrt:', NOT B_BERLAUBT(I) TO TEMP BY A, B(1);
+
+        PUT ',allgemeineParameter:' TO TEMP BY A;
+        PUT '{' TO TEMP BY A;						/* start JSON-Object*/
+        PUT 'WarnungBeiStartanzahl:',ZF_STARTMAX TO TEMP BY A,F(5);
+        PUT ',BHKW1EinschaltverzMinuten:',ZF_T1EIN TO TEMP BY A,F(5);
+        PUT ',BHKW1DeltaEinschalttemp:',TD_1EIN TO TEMP BY A,F(5);
+        PUT ',MinTCMAX:',TC_MAXMIN TO TEMP BY A,F(5,1);
+        PUT ',MinimalBeachteterStrombedarf:',PE_RMIN1B TO TEMP BY A,F(5,1);
+        PUT '}' TO TEMP BY A;						/* end JSON-Object*/
+        
+        PUT '}' TO TEMP BY A;						/* end JSON-Object*/
       END;
     
-      PUT ' Warn. bei Starts > (in 24h):    ',ZF_STARTMAX TO TEMP BY A,F(5),SKIP;
-      PUT ' BHKW1 Einschaltverz. in MIN:    ',ZF_T1EIN TO TEMP BY A,F(5),SKIP;
-      PUT ' BHKW1 Einschalttemp. Differ.:   ',TD_1EIN TO TEMP BY A,F(5),SKIP;
-      PUT ' Min TCMAX (WW ueberladen,...):  ',TC_MAXMIN TO TEMP BY A,F(5,1),SKIP;
-      PUT ' Minimal beachteter Strombedarf: ',PE_RMIN1B TO TEMP BY A,F(5,1),SKIP;
-      PUT TO TEMP BY SKIP;
-    
-      PUT TO TEMP BY SKIP;
       FOR I TO N_HZKR REPEAT
-        PUT 'HK',I,': ',HK_NAME(I) TO TEMP BY A,F(2),A,A,SKIP;
-        PUT 'Nennvorlauf:   ',TC_HKVNENN(I),' Mindestvorl.:  ',TC_HKVMIN(I)  TO TEMP BY A,F(4),A,F(4),SKIP;
-        PUT 'Tagheizgrenze: ',TC_HMT(I),    ' Nachtheizgr.: ',TC_HMN(I)      TO TEMP BY A,F(4,1),A,F(5,1),SKIP;
-        PUT 'Nennraumtemp.: ',TC_HKINENN(I),' Nennaussen:   ',TC_HKANENN(I)  TO TEMP BY A,F(4,1),A,F(5,1),SKIP;
-        PUT 'Exponent:      ',FL_EXPHK(I),  ' Absenkung um:  ',TD_ABSHK(I)   TO TEMP BY A,F(4,1),A,F(4,1),SKIP;
-        PUT 'STW HK VL:     ',TC_HKSTW(I)                                    TO TEMP BY A,F(4),SKIP;
-        PUT 'Stellzeit Mischer(s):    ',ZF_HKMISTELL(I) TO TEMP BY A,F(5),SKIP;
-        PUT 'Langfr. Integrator MAX:  ',TD_HKINTMAX(I) TO TEMP BY A,F(5,1),SKIP;
-        PUT 'Langfr. Integrator MIN:  ',TD_HKINTMIN(I) TO TEMP BY A,F(5,1),SKIP;
-        PUT ' Vorlaufregelung  ' TO TEMP BY A,SKIP;
-        PUT '      P    I         D    TauD(s)' TO TEMP BY A,SKIP;
-        PUT RP_M(I),RI_M(I),RD_M(I),RTAU_M(I) TO TEMP BY F(8,1),F(8,4),F(8,1),F(8,1),SKIP;
-        IF I==99 THEN
-          PUT '   Solldruck in mWS bei              ' TO TEMP BY A,SKIP;
-          PUT	'   AT=20      AT=5       AT=-10 ' TO TEMP BY A,SKIP;
-          PUT	FL_SOLLAT20(I),FL_SOLLAT5(I),FL_SOLLATM10(I)	TO TEMP BY F(8,1),F(10,1),F(12,1),SKIP;
-        ELSE
-          PUT '   Sollwert in %                     ' TO TEMP BY A,SKIP;
-          PUT	'   AT=20      AT=5       AT=-10 ' TO TEMP BY A,SKIP;
-          PUT	FL_SOLLAT20(I),FL_SOLLAT5(I),FL_SOLLATM10(I)	TO TEMP BY F(8,1),F(10,1),F(12,1),SKIP;
-        FIN;
-        PUT TO TEMP BY SKIP;
+        PUT ',HK',I,':' TO TEMP BY A,F(2),A;
+        PUT '{' TO TEMP BY A;						/* start JSON-Object*/
+        PUT 'name:"',HK_NAME(I),'"' TO TEMP BY A,A,A;
+        PUT ',NennVL:',TC_HKVNENN(I) TO TEMP BY A,F(4);
+        PUT ',MindestVL:',TC_HKVMIN(I) TO TEMP BY A,F(4);
+        PUT ',Tagheizgrenze:',TC_HMT(I) TO TEMP BY A,F(4,1);    
+        PUT ',Nachtheizgrenze:',TC_HMN(I) TO TEMP BY A,F(5,1);
+        PUT ',Nennraumtemp:',TC_HKINENN(I) TO TEMP BY A,F(4,1);
+        PUT ',Nennaussentemp:',TC_HKANENN(I) TO TEMP BY A,F(5,1);
+        PUT ',Exponent:',FL_EXPHK(I) TO TEMP BY A,F(4,1); 
+        PUT ',deltaAbsenkung:',TD_ABSHK(I) TO TEMP BY A,F(4,1);
+        PUT ',STWhkVL:',TC_HKSTW(I) TO TEMP BY A,F(4);
+        PUT ',StellzeitMischer:',ZF_HKMISTELL(I) TO TEMP BY A,F(5);
+        PUT ',LangfrIntegratorMax:',TD_HKINTMAX(I) TO TEMP BY A,F(5,1);
+        PUT ',LangfrIntegratorMin:',TD_HKINTMIN(I) TO TEMP BY A,F(5,1);
+        
+        PUT ',Temperaturregelung:' TO TEMP BY A;
+        PUT '{' TO TEMP BY A;						/* start JSON-Object*/
+        PUT 'P:',RP_M(I) TO TEMP BY A,F(8,1);
+        PUT ',I:',RI_M(I) TO TEMP BY A,F(8,4);
+        PUT ',D:',RD_M(I) TO TEMP BY A,F(8,1);
+        PUT ',TauD:',RTAU_M(I) TO TEMP BY A,F(8,1);
+        PUT '}' TO TEMP BY A;						/* end JSON-Object*/
+
+        PUT ',Durchflussregelung:' TO TEMP BY A;
+        PUT '{' TO TEMP BY A;						/* start JSON-Object*/
+        PUT 'AT20:',FL_SOLLAT20(I) TO TEMP BY A,F(8,1);
+        PUT ',AT5:',FL_SOLLAT5(I) TO TEMP BY A,F(8,1);
+        PUT ',AT_10:',FL_SOLLATM10(I) TO TEMP BY A,F(8,1);
+        PUT '}' TO TEMP BY A;						/* end JSON-Object*/
+
+        PUT ',Wochenkalender:"' TO TEMP BY A;
+        FOR INDEX TO 1008 REPEAT  /* 7[tage]*24[std]*6[10min] = 1008 */
+          PUT B_ZONE1((I-1)//16+1,INDEX).BIT((I-1) REM 16+1) TO TEMP BY B(1);
+        END;
+        PUT '"' TO TEMP BY A;
+
+        PUT ',Jahreskalender:"' TO TEMP BY A;
+        FOR MONAT TO 12 REPEAT
+          FOR TAG TO 31 REPEAT
+            PUT B_JAHRAB(MONAT,TAG).BIT(I) TO TEMP BY B(1);
+          END;
+        END;
+        PUT '"' TO TEMP BY A;
+
+        PUT '}' TO TEMP BY A;						/* end JSON-Object*/
+
+        
       END;
-    
-      PUT TO TEMP BY SKIP;
-      FOR I TO N_SPEI REPEAT
-        PUT 'WW',I,': ',WW_NAME(I) TO TEMP BY A,F(2),A,A,SKIP;
-        PUT 'Sollwert (Tag):',TC_BWSOLL(I),' Min-W. (Nacht):',TC_BWMIN(I)    TO TEMP BY A,F(4),A,F(4),SKIP;
-        PUT 'Soll Desinf.:  ',TC_LEGIO(I), ' Zirk-RL-Soll:  ',TC_BWZRSOLL(I) TO TEMP BY A,F(4),A,F(4),SKIP;
-        PUT 'Abw.-Norm:     ',TD_BWNORM(I),' Abw.-Dring:    ',TD_BWDRIG(I)   TO TEMP BY A,F(4,1),A,F(4,1),SKIP;
-        PUT 'Max-Wert (Waermeuebersch.):    ',TC_BOMAX(I)                       TO TEMP BY A,F(4,1),SKIP;
-        PUT 'Mehranf. Hauptkr. bei Ladung:  ',TD_BWLS(I)                        TO TEMP BY A,F(4,1),SKIP;
-        PUT 'Start Lad bei Hauptk > Spei +  ',TD_BWTOO(I)                       TO TEMP BY A,F(4,1),SKIP;
-        PUT 'Stop  Lad bei Hauptk < Spei +  ',TD_BWTOU(I)                       TO TEMP BY A,F(4,1),SKIP;
-        PUT 'Max gewuenschte Lade-RL:       ',TC_BWRSOLL(I)                     TO TEMP BY A,F(4,1),SKIP;
-        PUT 'Ueberhoeh. Speise VL:          ',TD_BWTW(I)                        TO TEMP BY A,F(4,1),SKIP;
-        PUT '   WW-Laderegelung (AussenWT) ' TO TEMP BY A,SKIP;
-        PUT '    P(I)     D    ' TO TEMP BY A,SKIP;
-        PUT RP_BWL(I),RD_BWL(I) TO TEMP BY F(8,2),F(8,2),SKIP;
-        PUT '   WW-Laderegelung (FWS) ' TO TEMP BY A,SKIP;
-        PUT '      P     I         D    TauD(s)' TO TEMP BY A,SKIP;
-        PUT RP_WWL(I),RI_WWL(I),RD_WWL(I),RTAU_WWL(I) TO TEMP BY F(8,1),F(8,3),F(8,1),F(8,1),SKIP;
-        PUT '   WW-Zirk-RL-Regelung  ' TO TEMP BY A,SKIP;
-        PUT '      P     I         D    TauD(s)' TO TEMP BY A,SKIP;
-        PUT RP_WWZ(I),RI_WWZ(I),RD_WWZ(I),RTAU_WWZ(I) TO TEMP BY F(8,1),F(8,4),F(8,1),F(8,1),SKIP;
-        PUT TO TEMP BY SKIP;
-      END;
-    
-      PUT TO TEMP BY SKIP;
-      PUT 'Genibuspumpen:  ' TO TEMP BY A,SKIP;
-      PUT ' Nr Name                 Kennl-Typ     Betrieb Handw.  ST(0,4%) ST(0,8%) ST(99,6%) ST(100%)' TO TEMP BY A,SKIP;
-      FOR I TO N_UPE REPEAT
-        PUT I,' ',UPE_NAME(I) TO TEMP BY F(3),A,A;
-        CASE UPE_SOLLKOMM(I)+1
-          ALT /*  0 */ PUT ' Konst. Druck  ' TO TEMP BY A;
-          ALT /*  1 */ PUT ' Prop. Druck   ' TO TEMP BY A;
-          ALT /*  2 */ PUT ' Konst. Kennl. ' TO TEMP BY A;
-          ALT /*  3 */ PUT ' Konst. Leist. ' TO TEMP BY A;
-          OUT          PUT '               ' TO TEMP BY A;
-        FIN;
-        IF B_UPEHAND(I) THEN
-          PUT 'HAND   ' TO TEMP BY A;
-        ELSE  
-          PUT 'AUTO   ' TO TEMP BY A;
-        FIN;
-        PUT Z_UPESOLLHAND(I) TO TEMP BY F(4);
-        PUT UPE_KENN(I,1) TO TEMP BY F(9);
-        PUT UPE_KENN(I,2) TO TEMP BY F(9);
-        PUT UPE_KENN(I,3) TO TEMP BY F(9);
-        PUT UPE_KENN(I,4) TO TEMP BY F(9);
-        PUT TO TEMP BY SKIP;
-      END;
-    
-      PUT TO TEMP BY SKIP;
-      PUT 'Impulszaehler:  ' TO TEMP BY A,SKIP;
-      PUT ' Nr Name                       Imp./Einh.   ' TO TEMP BY A,SKIP;
-      FOR I TO N_ZAEHLER REPEAT
-        PUT I,' ',ZP_NAME(I) TO TEMP BY F(3),A,A;
-        PUT FL_IMP(ZP_EIN(I)) TO TEMP BY F(8,3);
-        PUT TO TEMP BY SKIP;
-      END;
-    
-      PUT TO TEMP BY SKIP;
-      PUT 'Unterer Heizwert Gas: ',FL_GASHU TO TEMP BY A,F(5,2),SKIP;
-    
-      PUT TO TEMP BY SKIP;
-      PUT 'Gassensorstoerschwelle(V) :',FL_GASSTOER TO TEMP BY A,F(7,2),SKIP;
-      PUT 'Gassensorwarnschwelle (V) :',FL_GASWARN  TO TEMP BY A,F(7,2),SKIP; 
-    
-      PUT TO TEMP BY SKIP;
-      PUT 'HZG-Druck-MIN-Warnschwelle (bar): ',FL_DRWARN TO TEMP BY A,F(5,2),SKIP;
-      PUT 'HZG-Druck-MAX-Warnschwelle (bar): ',FL_DRMAX  TO TEMP BY A,F(5,2),SKIP; 
-    
-      PUT TO TEMP BY SKIP;
-      PUT 'Ueberheizung Hauptkreis (K): ',TD_UEBERHEIZ TO TEMP BY A,F(5,1),SKIP;
-    
-      PUT TO TEMP BY SKIP;
-      PUT 'Hauptnutzungsdauer Heizung: ',ZP_SCHANF,' - ',ZP_SCHEND TO TEMP BY A,T(8),A,T(8),SKIP;
-    
-      PUT TOCHAR(27),TOCHAR(27),'D4' TO TEMP BY A,A,A;
+
+      PUT '}' TO TEMP BY A;						/* end JSON-Object*/
 
       CLOSE TEMP;  
       F15=SETPRI(1);

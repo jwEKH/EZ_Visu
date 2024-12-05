@@ -37,7 +37,7 @@ const ASPECT_RATIO = 16/9;
 
 const STROKE_COLOR = `white`;
 const FILL_COLOR = DARKESTGREY_HSL;
-const STROKE_WIDTH = 2;
+const STROKE_WIDTH = .1;
 
 /*********************VanillaDocReady*********************/
 window.addEventListener('load', function () {
@@ -67,116 +67,38 @@ function createIcon(symbol) {
     else {
       icon.classList.add(`icon`);
       if (icon.tagName === `svg`) {
-        icon.setAttributeNS(null, `viewBox`, `0 0 100 100`);
+        icon.setAttributeNS(null, `viewBox`, `-0.5 -0.5 13 13`);
       }
     }
-    if (symbol === `heizkreis`) {
-      [45, 40].forEach(r => {
-        const el = document.createElementNS(SVG_NS, `circle`);
-        icon.appendChild(el);
-        el.setAttributeNS(null,`stroke`, STROKE_COLOR);
-        el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
-        el.setAttributeNS(null,`fill`, FILL_COLOR);
-        el.setAttributeNS(null, `cx`, 50);
-        el.setAttributeNS(null, `cy`, 50);
-        el.setAttributeNS(null, `r`, r);
-      });
+    const el = (icon.matches(`.icon`)) ? document.createElementNS(SVG_NS, `path`) : undefined;
+    if (el) {
+      icon.appendChild(el);
+      const strokeColor = (symbol === `aggregat`) ? CYAN_HEX : STROKE_COLOR;
+      el.setAttributeNS(null,`stroke`, strokeColor);
+      el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
+      const fillColor = (symbol === `temperatur` || symbol === `aggregat` || symbol === `schalter`) ? `none` : FILL_COLOR;
+      el.setAttributeNS(null,`fill`, fillColor);
+      
+      const d = (symbol === `temperatur`) ? `M0 12 5 7 7 9 3 5` :
+                (symbol === `heizkreis`) ? `M0 6a1 1 0 0112 0A1 1 0 010 6M1 6A1 1 0 0011 6 1 1 0 001 6 1 1 0 0011 6 1 1 0 001 6` :
+                (symbol === `pumpe`) ? `M2 6 6 2l4 4A1 1 0 012 6a1 1 0 018 0` : //`M2 6 6 2 10 6A1 1 0 012 6 1 1 0 0110 6M4 6A1 1 0 008 6 1 1 0 004 6L6 6 6 4` :
+                (symbol === `mischer`) ? `M6 6 3 0 9 0 3 12 9 12 6 6 0 3 0 9 6 6 9 6A1 1 0 0012 6 1 1 0 009 6` :
+                (symbol === `ventil`) ? `M9 6a1 1 0 013 0A1 1 0 019 6H6l3 6H3L9 0H3L6 6` :
+                (symbol === `aggregat`) ? `m2 9Q1 8 1 6T2 3m8 6q1-1 1-3T10 3M1 6H11` :
+                (symbol === `puffer`) ? `` :
+                (symbol === `waermetauscher`) ? `` :
+                (symbol === `heizpatrone`) ? `M0 3V9H6V3H0M6 8h5c1 0 1-1 0-1 1 0 1-1 0-1 1 0 1-1 0-1 1 0 1-1 0-1H6M6 5h5M6 6h5M6 7h5` :
+                (symbol === `luefter`) ? `m2 9a1 1 0 008-6A1 1 0 002 9L3 2M9 2l1 7` : //M2 9A1 1 0 0010 3 1 1 0 002 9L3 2M9 2 10 9M6 6C6 4 5 2 3 2 3 4 4 6 6 6 8 6 9 8 9 10 7 10 6 8 6 6
+                (symbol === `lueftungsklappe`) ? `M5 6A1 1 0 007 6 1 1 0 005 6M6 1 6 5M6 7 6 11` :
+                (symbol === `gassensor`) ? `` :
+                (symbol === `schalter`) ? `M0 6 2 6 11 4M10 4 10 6 12 6` : //M0 6 2 6 9 0M10 4 10 6 12 6M2 6 11 4
+                (symbol === `zaehler`) ? `M1 3v7H11V3H1M2 4V7h8V4H2` :
+                ``;
+
+      el.setAttributeNS(null, `d`, d);
     }
-    if (symbol === `pumpe`) {
-      [`circle`, `polyline`].forEach(shape => {
-        const el = document.createElementNS(SVG_NS, shape);
-        icon.appendChild(el);
-        el.setAttributeNS(null,`stroke`, STROKE_COLOR);
-        el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
-        if (shape === `circle`) {
-          el.setAttributeNS(null,`fill`, FILL_COLOR);
-          el.setAttributeNS(null, `cx`, `50`);
-          el.setAttributeNS(null, `cy`, `50`);
-          el.setAttributeNS(null, `r`, `40`);
-        }
-        else {
-          el.setAttributeNS(null,`fill`, `none`);
-          el.setAttributeNS(null,`points`, `10,50 50,10 90,50`);
-        }
-      });
-    }
-    if (symbol === `mischer`) {
-      [`polygon`, `polygon`, `polygon`, `circle`, `line`].forEach((shape, idx) => {
-        const el = document.createElementNS(SVG_NS, shape);
-        icon.appendChild(el);
-        el.setAttributeNS(null,`stroke`, STROKE_COLOR);
-        el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
-        if (idx < 4) {
-          el.setAttributeNS(null,`fill`, FILL_COLOR);
-        }
-        if (idx === 0) {
-          el.setAttributeNS(null,`points`, `30,90 50,50 70,90`);
-        }
-        if (idx === 1) {
-          el.setAttributeNS(null,`points`, `30,10 50,50 70,10`);
-        }
-        if (idx === 2) {
-          el.setAttributeNS(null,`points`, `10,30 50,50 10,70`);
-        }
-        if (idx === 3) {
-          el.setAttributeNS(null, `cx`, `80`);
-          el.setAttributeNS(null, `cy`, `50`);
-          el.setAttributeNS(null, `r`, `15`);
-        }
-        if (idx === 4) {
-          el.setAttributeNS(null, `x1`, `50`);
-          el.setAttributeNS(null, `y1`, `50`);
-          el.setAttributeNS(null, `x2`, `65`);
-          el.setAttributeNS(null, `y2`, `50`);
-        }
-      });
-    }
-    if (symbol === `ventil`) {
-      [`polygon`, `polygon`, `circle`, `line`].forEach((shape, idx) => {
-        const el = document.createElementNS(SVG_NS, shape);
-        icon.appendChild(el);
-        el.setAttributeNS(null,`stroke`, STROKE_COLOR);
-        el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
-        if (idx < 3) {
-          el.setAttributeNS(null,`fill`, FILL_COLOR);
-        }
-        if (idx === 0) {
-          el.setAttributeNS(null,`points`, `30,90 50,50 70,90`);
-        }
-        if (idx === 1) {
-          el.setAttributeNS(null,`points`, `30,10 50,50 70,10`);
-        }
-        if (idx === 2) {
-          el.setAttributeNS(null, `cx`, `80`);
-          el.setAttributeNS(null, `cy`, `50`);
-          el.setAttributeNS(null, `r`, `15`);
-        }
-        if (idx === 3) {
-          el.setAttributeNS(null, `x1`, `50`);
-          el.setAttributeNS(null, `y1`, `50`);
-          el.setAttributeNS(null, `x2`, `65`);
-          el.setAttributeNS(null, `y2`, `50`);
-        }
-      });
-    }
-    if (symbol === `aggregat`) {
-      [`circle`, `path`].forEach(shape => {
-        const el = document.createElementNS(SVG_NS, shape);
-        icon.appendChild(el);
-        el.setAttributeNS(null,`stroke`, CYAN_HSL);
-        el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
-        el.setAttributeNS(null,`fill`, `none`);
-        if (shape === `circle`) {
-          el.setAttributeNS(null, `cx`, 50);
-          el.setAttributeNS(null, `cy`, 50);
-          el.setAttributeNS(null, `r`, 40);
-        }
-        else {
-        const d = `M 20,50 L 80,50`;
-        el.setAttributeNS(null, `d`, d);
-        }
-      });
-    }
+
+    
     if (symbol === `kessel`) {
       icon.classList.add(`flame`);
       [`red`, `orange`, `yellow`, `white`, `blue`].forEach(color => {        
@@ -185,126 +107,10 @@ function createIcon(symbol) {
         icon.appendChild(div);
       });
     }
-    if (symbol === `puffer`) {
-      
-    }
-    if (symbol === `waermetauscher`) {
-      [`rect`,`line`].forEach(shape => {
-        const el = document.createElementNS(SVG_NS, shape);
-        icon.appendChild(el);
-        el.setAttributeNS(null,`stroke`, STROKE_COLOR);
-        el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
-        if (shape === `rect`) {
-          el.setAttributeNS(null,`fill`, FILL_COLOR);
-          el.setAttributeNS(null, `x`, `10`);
-          el.setAttributeNS(null, `y`, `20`);
-          el.setAttributeNS(null, `width`, `80`);
-          el.setAttributeNS(null, `height`, `60`);
-        }
-        else {
-          
-        }
-      });
-    }
-    if (symbol === `heizpatrone`) {
-      [`rect`, `path`].forEach(shape => {
-        const el = document.createElementNS(SVG_NS, shape);
-        icon.appendChild(el);
-        el.setAttributeNS(null,`stroke`, STROKE_COLOR);
-        el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
-        if (shape === `rect`) {
-          el.setAttributeNS(null,`fill`, FILL_COLOR);
-          el.setAttributeNS(null, `x`, `40`);
-          el.setAttributeNS(null, `y`, `20`);
-          el.setAttributeNS(null, `width`, `60`);
-          el.setAttributeNS(null, `height`, `60`);
-        }
-        else {
-          const d = `M 40,30 L 10,30 A 5 5 180 0 0 10 40
-                     M 40,40 L 10,40 A 5 5 180 0 0 10 50
-                     M 40,50 L 10,50 A 5 5 180 0 0 10 60 
-                     M 40,60 L 10,60 A 5 5 180 0 0 10 70 
-                     L 40,70`;
-          el.setAttributeNS(null,`fill`, `none`);
-          el.setAttributeNS(null,`d`, d);
-        }
-      });
-    }
-    if (symbol === `luefter`) {
-      [`circle`, `line`, `line`].forEach((shape, idx) => {
-        let el = document.createElementNS(SVG_NS, shape);
-        icon.appendChild(el);
-        el.setAttributeNS(null,`stroke`, STROKE_COLOR);
-        el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
-        const r = 45;
-        if (shape === `circle`) {
-          el.setAttributeNS(null,`fill`, FILL_COLOR);
-          el.setAttributeNS(null, `cx`, `50`);
-          el.setAttributeNS(null, `cy`, `50`);
-          el.setAttributeNS(null, `r`, r);
-        }
-        else {
-          const direction = (idx === 1) ? -1 : 1;
-          el.setAttributeNS(null, `x1`, 50 + r * sinDeg(60) * direction);
-          el.setAttributeNS(null, `y1`, 50 + r * cosDeg(60));
-          el.setAttributeNS(null, `x2`, 50 + r * sinDeg(150) * direction);
-          el.setAttributeNS(null, `y2`, 50 + r * cosDeg(150));
-        }
-      });
-    }
-    if (symbol === `lueftungsklappe`) {
-      let el = document.createElementNS(SVG_NS, `line`);
-      icon.appendChild(el);
-      el.setAttributeNS(null,`stroke`, STROKE_COLOR);
-      el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
-      el.setAttributeNS(null, `x1`, 50);
-      el.setAttributeNS(null, `y1`, 5);
-      el.setAttributeNS(null, `x2`, 50);
-      el.setAttributeNS(null, `y2`, 95);
-      el = document.createElementNS(SVG_NS, `circle`);
-      icon.appendChild(el);
-      el.setAttributeNS(null,`stroke`, STROKE_COLOR);
-      el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
-      el.setAttributeNS(null,`fill`, FILL_COLOR);
-      el.setAttributeNS(null, `cx`, `50`);
-      el.setAttributeNS(null, `cy`, `50`);
-      el.setAttributeNS(null, `r`, `10`);
-    }
     if (symbol === `button`) {
       icon.value = `LinkButton`;
     }
-    if (symbol === `gassensor`) {
-      [`rect`, `path`].forEach(shape => {
-        const el = document.createElementNS(SVG_NS, shape);
-        icon.appendChild(el);
-        el.setAttributeNS(null,`stroke`, STROKE_COLOR);
-        el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
-        if (shape === `rect`) {
-          el.setAttributeNS(null,`fill`, FILL_COLOR);
-          el.setAttributeNS(null, `x`, `10`);
-          el.setAttributeNS(null, `y`, `20`);
-          el.setAttributeNS(null, `width`, `80`);
-          el.setAttributeNS(null, `height`, `60`);
-        }
-        else {
-          const d = `M 30,20 L 30,30 M 50,20 L 50,30 M 70,20 L 70,30
-                     M 30,80 L 30,70 M 50,80 L 50,70 M 70,80 L 70,70`;
-          el.setAttributeNS(null,`fill`, `none`);
-          el.setAttributeNS(null,`d`, d);
-        }
-      });
-    }
-    if (symbol === `schalter`) {
-      [`polyline`, `polyline`].forEach((shape, idx) => {
-        let el = document.createElementNS(SVG_NS, shape);
-        icon.appendChild(el);
-        el.setAttributeNS(null,`stroke`, STROKE_COLOR);
-        el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
-        el.setAttributeNS(null,`fill`, `none`);
-        const points = (idx) ? `0,50 25,50 25,35` : `100,50 75,50 20,40`;
-        el.setAttributeNS(null, `points`, points);
-      });
-    }
+    
     if (symbol === `path`) {
       [`icon`, `signal`].forEach(elType => {      
         const el = document.createElementNS(SVG_NS, `path`);
@@ -886,7 +692,7 @@ function createVisuItemPool() {
   const summary = document.createElement(`summary`);
   summary.innerText = `visuItems`;
   visuItemPool.appendChild(summary);
-  [`heizkreis`, `pumpe`, `mischer`, `ventil`, `aggregat`, `kessel`, `puffer`, `waermetauscher`, `heizpatrone`, `luefter`, `lueftungsklappe`, `button`, `gassensor`, `schalter`].forEach(el => {
+  [`temperatur`, `heizkreis`, `pumpe`, `mischer`, `ventil`, `aggregat`, `kessel`, `puffer`, `waermetauscher`, `heizpatrone`, `luefter`, `lueftungsklappe`, `button`, `gassensor`, `schalter`, `zaehler`].forEach(el => {
     visuItemPool.appendChild(createVisuItem({icon: el}));
   });
   
