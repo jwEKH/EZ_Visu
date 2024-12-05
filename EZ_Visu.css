@@ -146,7 +146,6 @@ body {
   */
   grid-area: icon;
   box-sizing: border-box;
-  min-height: var(--iconSize);
   display: grid;
   grid-template-areas: 
   'Error        .       Freigabe '
@@ -156,11 +155,18 @@ body {
   /*
   grid-auto-columns: 1fr;
   */
+}
+.visuItem:not([icon = "temperatur"]) .divIcon {
+  min-height: var(--iconSize);
   min-width: var(--iconSize);
 }
 
-.visuItem:not([icon = "button"]) .divIcon {
+.visuItem:not([icon = "button"]):not([icon = "temperatur"]) .divIcon {
   width: var(--iconSize);
+}
+.visuItem[icon = "temperatur"] .divIcon {
+  width: calc(var(--iconSize)/2);
+  aspect-ratio: 1;
 }
 
 .icon {

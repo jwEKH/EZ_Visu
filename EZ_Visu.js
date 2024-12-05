@@ -37,7 +37,7 @@ const ASPECT_RATIO = 16/9;
 
 const STROKE_COLOR = `white`;
 const FILL_COLOR = DARKESTGREY_HSL;
-const STROKE_WIDTH = .1;
+const STROKE_WIDTH = .3;
 
 /*********************VanillaDocReady*********************/
 window.addEventListener('load', function () {
@@ -79,7 +79,7 @@ function createIcon(symbol) {
       const fillColor = (symbol === `temperatur` || symbol === `aggregat` || symbol === `schalter`) ? `none` : FILL_COLOR;
       el.setAttributeNS(null,`fill`, fillColor);
       
-      const d = (symbol === `temperatur`) ? `M0 12 5 7 7 9 3 5` :
+      const d = (symbol === `temperatur`) ? `M0 12 8 4M5 1 11 7` :
                 (symbol === `heizkreis`) ? `M0 6a1 1 0 0112 0A1 1 0 010 6M1 6A1 1 0 0011 6 1 1 0 001 6 1 1 0 0011 6 1 1 0 001 6` :
                 (symbol === `pumpe`) ? `M2 6 6 2l4 4A1 1 0 012 6a1 1 0 018 0` : //`M2 6 6 2 10 6A1 1 0 012 6 1 1 0 0110 6M4 6A1 1 0 008 6 1 1 0 004 6L6 6 6 4` :
                 (symbol === `mischer`) ? `M6 6 3 0 9 0 3 12 9 12 6 6 0 3 0 9 6 6 9 6A1 1 0 0012 6 1 1 0 009 6` :
@@ -188,24 +188,25 @@ function createVisuItem(...attributes) {
     });    
   });
 
-  const divIconSignals = [`Error`, `Freigabe`, `Betriebsart`, `Absenkung`];
-  if (icon !== `button`) {
-    divIconSignals.push(`Betrieb`);
-    divIconSignals.reverse();
+  if (icon !== `temperatur`) {
+    const divIconSignals = [`Error`, `Freigabe`, `Betriebsart`, `Absenkung`];
+    if (icon !== `button`) {
+      divIconSignals.push(`Betrieb`);
+      divIconSignals.reverse();
+    }
+    divIconSignals.forEach(signal => {
+      const div = document.createElement(`div`);
+      const parent = (!icon || (signal !== `Betrieb` &&  icon.match(/(aggregat)|(kessel)/))) ? visuItem : divIcon;
+      parent.appendChild(div);
+      div.classList.add(`div${signal}`, `divIconSignal`);
+      div.toggleAttribute(`NA`, true);
+      div.innerText = (signal === `Error`)        ? `⚠`  :
+                      (signal === `Freigabe`)     ? `⏺` :
+                      (signal === `Betriebsart`)  ? `✋`  :
+                      (signal === `Absenkung`)    ? `🌜`  :
+                      `0`;
+    });
   }
-  divIconSignals.forEach(signal => {
-    const div = document.createElement(`div`);
-    const parent = (!icon || (signal !== `Betrieb` &&  icon.match(/(aggregat)|(kessel)/))) ? visuItem : divIcon;
-    parent.appendChild(div);
-    div.classList.add(`div${signal}`, `divIconSignal`);
-    div.toggleAttribute(`NA`, true);
-    div.innerText = (signal === `Error`)        ? `⚠`  :
-                    (signal === `Freigabe`)     ? `⏺` :
-                    (signal === `Betriebsart`)  ? `✋`  :
-                    (signal === `Absenkung`)    ? `🌜`  :
-                    `0`;
-  });
-  
 
   return visuItem
 }
@@ -863,9 +864,11 @@ function dragStartEventHandler(ev) {
 }
 
 function divVisuDragEnterEventHandler(ev) {
-  const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
-  if (ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
-    ev.target.removeAttribute(`NA`);
+  const draggingItems = document.querySelectorAll(`[dragging]`);
+  if (draggingItems.length === 1 & draggingItems[0].matches(`.txtSignalId`)) {    
+    if (ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
+      ev.target.removeAttribute(`NA`);
+    }
   }
 }
 
@@ -1013,6 +1016,7 @@ function keyDownEventHandler(ev) {
     const activeSvg = document.querySelector(`svg[active]`);
     if (activeSvg) {
       if (key.startsWith(`arrow`)) {
+        ev.preventDefault();
         if (ev.altKey) {
           const iconPosition = (key.includes(`left`)) ? `right` :
                                (key.includes(`right`)) ? `left` :
@@ -1024,7 +1028,6 @@ function keyDownEventHandler(ev) {
           });
         }
         else {
-          ev.preventDefault();
           const stepWidthSvg = (document.querySelector(`#cbGridSnap`).checked) ? activeSvg.viewBox.baseVal.width / GRIDSIZE_AS_PARTS_FROM_WIDTH : 10; //todo...
           //const stepWidthRel = stepWidthSvg / activeSvg.viewBox.baseVal.width;
           const dxSvg = (key.includes(`left`)) ? -stepWidthSvg :
