@@ -1186,6 +1186,16 @@ function signalTableInputEventHandler(ev) {
           el.removeAttribute(`unit`);
         }
       }
+      if (target.matches(`.selStyle`)) {
+        if (target.value.trim().length) {
+          target.setAttribute(`stil`, target.value);
+          el.setAttribute(`stil`, target.value);
+        }
+        else {
+          target.removeAttribute(`stil`);
+          el.removeAttribute(`stil`);
+        }
+      }
     }
     if (target.matches(`.txtTrueTxt`)) {
       if (target.value.trim().length) {
