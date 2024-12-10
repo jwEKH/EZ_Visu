@@ -90,7 +90,7 @@ function createIcon(symbol) {
                 (symbol === `heizpatrone`) ? `M0 3V9H6V3H0M6 8h5c1 0 1-1 0-1 1 0 1-1 0-1 1 0 1-1 0-1 1 0 1-1 0-1H6M6 5h5M6 6h5M6 7h5` :
                 (symbol === `luefter`) ? `m2 9a1 1 0 008-6A1 1 0 002 9L3 2M9 2l1 7` : //M2 9A1 1 0 0010 3 1 1 0 002 9L3 2M9 2 10 9M6 6C6 4 5 2 3 2 3 4 4 6 6 6 8 6 9 8 9 10 7 10 6 8 6 6
                 (symbol === `lueftungsklappe`) ? `M5 6A1 1 0 007 6 1 1 0 005 6M6 1 6 5M6 7 6 11` :
-                (symbol === `gassensor`) ? `` :
+                (symbol === `gassensor`) ? `M 1 3 L 11 3 L 11 9 L 1 9 L 1 3 M 3 3 L 3 4 M 5 3 L 5 4 M 7 3 L 7 4 M 9 3 L 9 4 M 3 9 L 3 8 M 5 9 L 5 8 M 7 9 L 7 8 M 9 9 L 9 8` :
                 (symbol === `schalter`) ? `M0 6 2 6 11 4M10 4 10 6 12 6` : //M0 6 2 6 9 0M10 4 10 6 12 6M2 6 11 4
                 (symbol === `zaehler`) ? `M1 3v7H11V3H1M2 4V7h8V4H2` :
                 ``;
@@ -1096,7 +1096,7 @@ function unDoReDoEventListener(ev) {
     }
     divVisu.innerHTML = unDoReDoStack.stack.at(unDoReDoStack.idx); //todo...
     console.log(`${unDoReDoStack.idx} of ${unDoReDoStack.stack.length - 1}`);
-    divVisu.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.value = txtEl.className);
+    divVisu.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.value = txtEl.getAttribute(`signalId`));
   }
   cancelCurrentDrawing();
   updateUsedCount();
