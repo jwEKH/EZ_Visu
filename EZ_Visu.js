@@ -1257,7 +1257,7 @@ function resizePufferEventHandler(ev) {
 
       const currentHeightInGridSteps = Math.round(pufferWidthInGridSteps / currentAspectRatio);
 
-      puffer.style.aspectRatio = pufferWidthInGridSteps / Math.max(1, currentHeightInGridSteps + resizeGridSteps);      
+      puffer.style.aspectRatio = pufferWidthInGridSteps / Math.max(1, currentHeightInGridSteps - resizeGridSteps);      
     });
   }
 }
@@ -1270,10 +1270,10 @@ function setIconPosition(visuItem, iconPosition) {
       const divIconBox = divIcon.getBoundingClientRect();
       const divVisuBox = document.querySelector(`.divVisu`).getBoundingClientRect();
 
-      const top = (iconPosition === `bottom`) ? undefined : `${100 * divIconBox.y / divVisuBox.height}%`;
-      const left = (iconPosition === `right`) ? undefined : `${100 * divIconBox.x / divVisuBox.width}%`;
-      const bottom = (iconPosition === `bottom`) ? `${100 - 100 * (divIconBox.y + divIconBox.height) / divVisuBox.height}%` : undefined;
-      const right = (iconPosition === `right`) ? `${100 - 100 * (divIconBox.x + divIconBox.width) / divVisuBox.width}%` : undefined;
+      const top = (iconPosition === `bottom`) ? undefined : `${100 * (divIconBox.y - divVisuBox.y) / divVisuBox.height}%`;
+      const left = (iconPosition === `right`) ? undefined : `${100 * (divIconBox.x - divVisuBox.x) / divVisuBox.width}%`;
+      const bottom = (iconPosition === `bottom`) ? `${100 - 100 * ((divIconBox.y - divVisuBox.y) + divIconBox.height) / divVisuBox.height}%` : undefined;
+      const right = (iconPosition === `right`) ? `${100 - 100 * ((divIconBox.x - divVisuBox.x) + divIconBox.width) / divVisuBox.width}%` : undefined;
       
       visuItem.setAttribute(`iconPosition`, iconPosition);
       visuItem.removeAttribute(`style`);
