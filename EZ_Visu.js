@@ -34,6 +34,8 @@ const SVG_NS = `http://www.w3.org/2000/svg`;
 
 const GRIDSIZE_AS_PARTS_FROM_WIDTH = 64; //Gesamtbreite in 32 Teile
 const ASPECT_RATIO = 16/9;
+const SVG_VIEWBOX_WIDTH = 1600;
+const SVG_VIEWBOX_HEIGHT = 900;
 
 const STROKE_COLOR = `white`;
 const FILL_COLOR = DARKESTGREY_HSL;
@@ -50,7 +52,7 @@ window.addEventListener('load', function () {
 /*********************GenericFunctions*********************/
 function createBackgroundSVG(idx) {
   const svg = document.createElementNS(SVG_NS, `svg`);
-  svg.setAttributeNS(null, `viewBox`, `0 0 1600 900`);
+  svg.setAttributeNS(null, `viewBox`, `0 0 ${SVG_VIEWBOX_WIDTH} ${SVG_VIEWBOX_HEIGHT}`);
   svg.classList.add(`bgSVG`, `bgSVG_${idx}`);
   svg.setAttribute(`active`, true);
   return svg;
@@ -67,7 +69,8 @@ function createIcon(symbol) {
     else {
       icon.classList.add(`icon`);
       if (icon.tagName === `svg`) {
-        icon.setAttributeNS(null, `viewBox`, `-0.5 -0.5 13 13`);
+        const viewBoxHeight = (symbol === `waermetauscher`) ? 25 : 13;
+        icon.setAttributeNS(null, `viewBox`, `-0.5 -0.5 13 ${viewBoxHeight}`);
       }
     }
     const el = (icon.matches(`.icon`)) ? document.createElementNS(SVG_NS, `path`) : undefined;
@@ -75,8 +78,9 @@ function createIcon(symbol) {
       icon.appendChild(el);
       const strokeColor = (symbol === `aggregat`) ? CYAN_HEX : STROKE_COLOR;
       el.setAttributeNS(null,`stroke`, strokeColor);
-      el.setAttributeNS(null, `stroke-width`, STROKE_WIDTH);
-      const fillColor = (symbol === `temperatur` || symbol === `aggregat` || symbol === `schalter`) ? `none` : FILL_COLOR;
+      const strokeWidth = (symbol === `aggregat`) ? 2.5 * STROKE_WIDTH : STROKE_WIDTH;
+      el.setAttributeNS(null, `stroke-width`, strokeWidth);
+      const fillColor = (symbol.match(/(temperatur)|(aggregat)|(schalter)/)) ? `none` : FILL_COLOR;
       el.setAttributeNS(null,`fill`, fillColor);
       
       const d = (symbol === `temperatur`) ? `M0 12 8 4M5 1 11 7` :
@@ -85,8 +89,8 @@ function createIcon(symbol) {
                 (symbol === `mischer`) ? `M8 6a1 1 0 014 0A1 1 0 018 6H6L1 9V3L6 6l3 5H3L9 1H3L6 6` : //`M8 6a1 1 0 013 0A1 1 0 018 6H6L2 8V4L6 6l2 4H4L8 2H4L6 6` : //`M6 6 3 0 9 0 3 12 9 12 6 6 0 3 0 9 6 6 9 6A1 1 0 0012 6 1 1 0 009 6` :
                 (symbol === `ventil`) ? `M8 6a1 1 0 014 0A1 1 0 018 6H6l3 5H3L9 1H3L6 6` : //`M9 6a1 1 0 013 0A1 1 0 019 6H6l3 6H3L9 0H3L6 6` :
                 (symbol === `aggregat`) ? `m2 9Q1 8 1 6T2 3m8 6q1-1 1-3T10 3M1 6H11` :
-                (symbol === `puffer`) ? `` :
-                (symbol === `waermetauscher`) ? `` :
+                (symbol === `puffer`) ? `` : //`M 0 12 C 0 5.4 5.4 0 12 0` :
+                (symbol === `waermetauscher`) ? `M 0 24 L 12 0 L 12 24 L 0 24 L 0 0 L 12 0` :
                 (symbol === `heizpatrone`) ? `M0 3V9H6V3H0M6 8h5c1 0 1-1 0-1 1 0 1-1 0-1 1 0 1-1 0-1 1 0 1-1 0-1H6M6 5h5M6 6h5M6 7h5` :
                 (symbol === `luefter`) ? `m2 9a1 1 0 008-6A1 1 0 002 9L3 2M9 2l1 7` : //M2 9A1 1 0 0010 3 1 1 0 002 9L3 2M9 2 10 9M6 6C6 4 5 2 3 2 3 4 4 6 6 6 8 6 9 8 9 10 7 10 6 8 6 6
                 (symbol === `lueftungsklappe`) ? `M5 6A1 1 0 007 6 1 1 0 005 6M6 1 6 5M6 7 6 11` :
@@ -145,13 +149,11 @@ function createVisuItem(...attributes) {
   visuItem.classList.add(`visuItem`);
   
   const divIcon = document.createElement(`div`);
-  visuItem.appendChild(divIcon);
   divIcon.classList.add(`divIcon`);
   
   const divSignals = document.createElement(`div`);
-  visuItem.appendChild(divSignals);
   divSignals.classList.add(`divSignals`);
-
+  
   //default attributes:
   visuItem.setAttribute(`iconPosition`, `left`);
   
@@ -184,10 +186,16 @@ function createVisuItem(...attributes) {
           //*/
         });
       }
-
+      
     });    
   });
-
+  
+  if (icon !== `puffer`) {
+    visuItem.appendChild(divIcon);
+    visuItem.appendChild(divSignals);
+  }
+  
+  
   if (icon !== `temperatur`) {
     const divIconSignals = [`Error`, `Freigabe`, `Betriebsart`, `Absenkung`];
     if (icon !== `button`) {
@@ -196,7 +204,7 @@ function createVisuItem(...attributes) {
     }
     divIconSignals.forEach(signal => {
       const div = document.createElement(`div`);
-      const parent = (!icon || (signal !== `Betrieb` &&  icon.match(/(aggregat)|(kessel)/))) ? visuItem : divIcon;
+      const parent = (!icon || (signal !== `Betrieb` &&  icon.match(/(aggregat)|(kessel)|(puffer)/))) ? visuItem : divIcon;
       parent.appendChild(div);
       div.classList.add(`div${signal}`, `divIconSignal`);
       div.toggleAttribute(`NA`, true);
@@ -785,7 +793,7 @@ function mouseDownEventHandler(ev) {
 }
 
 function divVisuClickEventHandler(ev) {
-  console.log(ev.target);
+  //console.log(ev.target);
   if (ev.target.type === `button`) {
     ev.target.type = `text`;
     ev.target.addEventListener(`blur`, linkBtnBlurHandler);
@@ -793,13 +801,13 @@ function divVisuClickEventHandler(ev) {
   
   let actionExecuted = false;
   const selectionArea = document.querySelector(`.selectionArea`);
-  if (!selectionArea) {
+  if (!actionExecuted & !selectionArea) {
     actionExecuted |= removeDivIconSignal(ev);
   }
 
   const visuItem = ev.target.closest(`.visuItem`);
 
-  if (visuItem) {
+  if (!actionExecuted & visuItem) {
     //cancelCurrentSelection();
     visuItem.setAttribute(`selected`, `true`);
   }
@@ -1034,7 +1042,11 @@ function keyDownEventHandler(ev) {
     if (activeSvg) {
       if (key.startsWith(`arrow`)) {
         ev.preventDefault();
-        if (ev.altKey) {
+        if (ev.altKey) {          
+          //resize Puffer
+          resizePufferEventHandler(ev);
+
+          //set IconPosition
           const iconPosition = (key.includes(`left`)) ? `right` :
                                (key.includes(`right`)) ? `left` :
                                (key.includes(`up`)) ? `bottom` :
@@ -1232,6 +1244,22 @@ function updateUsedCount() {
   document.querySelectorAll(`.txtSignalId`).forEach(signalId => {
     document.querySelector(`.${signalId.value}count`).innerText = divVisu.querySelectorAll(`[signalId=${signalId.value}]`).length;
   });
+}
+
+function resizePufferEventHandler(ev) {
+  if (ev.altKey && ev.key.match(/(ArrowUp)|(ArrowDown)/)) {
+    ev.preventDefault();
+    const pufferWidthInGridSteps = 4; //width is nailed to 4 gridsteps
+    const resizeGridSteps = (ev.key.match(/(ArrowUp)/)) ? 1 : -1;
+    document.querySelectorAll(`[selected][icon=puffer]`).forEach(puffer => {
+      const pufferBox = puffer.getBoundingClientRect();
+      const currentAspectRatio = pufferBox.width / pufferBox.height;
+
+      const currentHeightInGridSteps = Math.round(pufferWidthInGridSteps / currentAspectRatio);
+
+      puffer.style.aspectRatio = pufferWidthInGridSteps / Math.max(1, currentHeightInGridSteps + resizeGridSteps);      
+    });
+  }
 }
 
 function setIconPosition(visuItem, iconPosition) {

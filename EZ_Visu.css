@@ -103,7 +103,8 @@ body {
   display: grid;
 }
 .visuItem[icon = "aggregat"],
-.visuItem[icon = "kessel"] {
+.visuItem[icon = "kessel"],
+.visuItem[icon = "puffer"] {
   width: calc(2 * var(--iconSize));
   aspect-ratio: 2/3;
   border: 1px solid white;
@@ -119,7 +120,10 @@ body {
   grid-auto-columns: 1fr;
   grid-auto-rows: 1fr;
 }
-.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "button"]) {
+.visuItem[icon = "puffer"] {
+  border-radius: var(--controlsWidthOffset);
+}
+.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"]) {
   grid-template-areas: 
 	'icon signals';
 	grid-auto-columns: min-content;
@@ -131,19 +135,19 @@ body {
   padding: 2ch;
   */
 }
-.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "button"])[iconPosition = "right"] {
+.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"])[iconPosition = "right"] {
 	grid-template-areas:
 	'signals icon';
 }
-.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "button"])[iconPosition = "right"] input {
+.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"])[iconPosition = "right"] input {
   text-align: end;
 }
-.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "button"])[iconPosition = "top"] {
+.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"])[iconPosition = "top"] {
 	grid-template-areas: 
 	'icon'
 	'signals';
 }
-.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "button"])[iconPosition = "bottom"] {
+.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"])[iconPosition = "bottom"] {
 	grid-template-areas: 
 	'signals'
 	'icon';
@@ -241,15 +245,17 @@ body {
   /*
   */
 }
-.visuItem:not([icon = "aggregat"], [icon = "kessel"]) .divSignals {
+.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"]) .divSignals {
   grid-area: signals;
 }
 .visuItem[icon = "aggregat"] .divSignals,
-.visuItem[icon = "kessel"] .divSignals {
+.visuItem[icon = "kessel"] .divSignals,
+.visuItem[icon = "puffer"] .divSignals {
   grid-area: Error-start / Error-start / signalsEnd-end / signalsEnd-end;
 }
 .visuItem[icon = "aggregat"] [type = "text"],
-.visuItem[icon = "kessel"] [type = "text"] {
+.visuItem[icon = "kessel"] [type = "text"],
+.visuItem[icon = "puffer"] [type = "text"] {
   width: 100%;
   text-align: center;
 }
