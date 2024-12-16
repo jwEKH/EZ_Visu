@@ -935,6 +935,26 @@ function dragStartEventHandler(ev) {
   //console.log(ev);
   const target = (ev.target.matches(`[draggable]`)) ? ev.target : ev.target.closest(`.visuItem[draggable]`);
   if (target) {
+    target.setAttribute(`selected`, `true`);
+  }
+
+  const selectedElements = document.querySelectorAll(`[selected][draggable]`);
+  const offsets = [];
+  selectedElements.forEach(selectedEl => {
+    const targetBox = selectedEl.getBoundingClientRect();
+    const offset = {};
+    offset.x = ev.x - targetBox.x;
+    offset.y = ev.y - targetBox.y;
+    offsets.push(offset);    
+    selectedEl.setAttribute(`dragging`, `true`);
+  });
+  ev.dataTransfer.clearData();
+  ev.dataTransfer.setData(`offsets`, JSON.stringify(offsets));
+  
+
+  /*
+  const target = (ev.target.matches(`[draggable]`)) ? ev.target : ev.target.closest(`.visuItem[draggable]`);
+  if (target) {
     target.setAttribute(`dragging`, `true`);
     const targetBox = target.getBoundingClientRect();
     const offsetX = ev.x - targetBox.x;
@@ -943,6 +963,7 @@ function dragStartEventHandler(ev) {
     ev.dataTransfer.setData(`offsetX`, offsetX);
     ev.dataTransfer.setData(`offsetY`, offsetY);
   }
+  */
 }
 
 function divVisuDragEnterEventHandler(ev) {
@@ -963,6 +984,21 @@ function divVisuDragLeaveEventHandler(ev) {
 }
 
 function divVisuDragOverEventHandler(ev) {
+  const draggingItems = document.querySelectorAll(`[dragging]`);  //forEach when more than 1 item...
+  draggingItems.forEach(draggingItem => {
+    const visuItem = ev.target.closest(`.visuItem`);
+    const visuItemToDivVisu = (ev.target.closest(`.divVisu`) && draggingItem.matches(`.visuItem`));
+    const signalToVisuItem = draggingItem.type === `text` && visuItem && !ev.target.closest(`.visuEditElement`);
+    if (visuItemToDivVisu || signalToVisuItem) {
+      ev.preventDefault();
+      ev.dataTransfer.dropEffect = (ev.ctrlKey || draggingItem.closest(`.visuEditElement`)) ? `copy` : `move`;
+    }
+    if (signalToVisuItem) {
+      //console.log(ev.target);
+      //setTimeout(setIconPosition, 1000, ev);
+    }
+  });
+  /*
   const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
   if (draggingItem) {
     const visuItem = ev.target.closest(`.visuItem`);
@@ -977,6 +1013,7 @@ function divVisuDragOverEventHandler(ev) {
       //setTimeout(setIconPosition, 1000, ev);
     }
   }
+  */
 }
 
 function dragEndEventHandler(ev) {
@@ -984,9 +1021,53 @@ function dragEndEventHandler(ev) {
 }
 
 function divVisuDropEventHandler(ev) {
+  
+  const draggingItems = document.querySelectorAll(`[dragging]`);
+  const offsets = JSON.parse(ev.dataTransfer.getData(`offsets`));
+  draggingItems.forEach((draggingItem, idx) => {
+    const target = (draggingItem.type === `text`) ? ev.target : ev.target.closest(`.divVisu`);
+    if (target) {
+      const dropItem = (ev.dataTransfer.dropEffect === `copy`) ? draggingItem.cloneNode(true) : draggingItem;
+      
+      if (target.matches(`.divVisu`)) {
+        const targetBox = target.getBoundingClientRect();
+        
+        
+        dropItem.style.position = `absolute`;
+        const xRel = (ev.x - targetBox.x - offsets[idx].x)/targetBox.width;
+        const yRel = (ev.y - targetBox.y - offsets[idx].y)/targetBox.height;
+        const gridSnapActive = document.querySelector(`#cbGridSnap`).checked;
+        dropItem.style.left = (gridSnapActive) ? `${Math.round(GRIDSIZE_AS_PARTS_FROM_WIDTH * xRel) / GRIDSIZE_AS_PARTS_FROM_WIDTH * 100}%` : `${xRel*100}%`;
+        dropItem.style.top = (gridSnapActive) ? `${Math.round((GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * yRel) / (GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * 100}%` : `${yRel*100}%`;
+        target.appendChild(dropItem);
+      }
+      else {
+        if (target.closest(`.divIconSignal`)) {
+          Array.from(draggingItem.attributes).forEach(attr => {
+            if (attr.name.match(/(signalId)|(decPlace)|(unit)|(trueTxt)|(falseTxt)/i)) {
+              target.setAttribute(attr.name, attr.value);
+            }
+          });
+          target.title = `${draggingItem.value} (click to remove Signal)`;
+          dropItem.remove();
+        }
+        else {
+          const visuItem = target.closest(`.visuItem`);
+          const divSignals = visuItem.querySelector(`.divSignals`);
+          divSignals.appendChild(dropItem);
+        }
+      }
+      updateUnDoReDoStack();
+    }
+  });
+
+  removeAllDraggingAttributes();
+
+
+  /*  
   //ev.preventDefault();
   const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
-  const target = (draggingItem.type === `text`) ? ev.target/*.closest(`.visuItem`)/*.querySelector(`.divSignals`)*/ : ev.target.closest(`.divVisu`);
+  const target = (draggingItem.type === `text`) ? ev.target : ev.target.closest(`.divVisu`);
   if (target && draggingItem) {
     const dropItem = (ev.dataTransfer.dropEffect === `copy`) ? draggingItem.cloneNode(true) : draggingItem;
     
@@ -1023,6 +1104,7 @@ function divVisuDropEventHandler(ev) {
   }
 
   removeAllDraggingAttributes();
+  */
 }
 
 function dblClickEventHandler(ev) {
