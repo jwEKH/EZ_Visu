@@ -1,7 +1,7 @@
 :root {
   --visuAspectRatio: 16/9;
   --visuMaxWidth: 100vw;
-  --visuMaxHeight: 90vh;
+  --visuMaxHeight: 85vh;
   --visuWidth: min(var(--visuMaxWidth), calc(var(--visuMaxHeight) * var(--visuAspectRatio)));
 
   --GRIDSIZE_AS_PARTS_FROM_WIDTH: 32;
@@ -91,6 +91,33 @@ body {
   cursor: pointer;
 }
 */
+.visuTabs {
+  width: var(--visuWidth);
+  /*
+  background-color: var(--darkGrey);
+  height: calc(var(--iconSize)/2);
+  border-bottom-left-radius: var(--controlsWidthOffset);
+  */
+}
+.visuTab {
+  cursor: pointer;
+  float: left;
+  width: min-content;
+  background-color: var(--darkGrey);
+  border-bottom-left-radius: calc(var(--controlsWidthOffset)/2);
+  border-bottom-right-radius: calc(var(--controlsWidthOffset)/2);
+  padding: 0 calc(var(--controlsWidthOffset)/2);
+  /*
+  height: calc(var(--iconSize)/2);
+  */
+}
+.visuTab.active {
+  background-color: var(--darkestGrey);
+}
+
+.bgSVG:not(.active) {
+  display: none;
+}
 
 .visuItem {
   /*

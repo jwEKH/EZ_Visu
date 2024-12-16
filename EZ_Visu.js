@@ -53,8 +53,9 @@ window.addEventListener('load', function () {
 function createBackgroundSVG(idx) {
   const svg = document.createElementNS(SVG_NS, `svg`);
   svg.setAttributeNS(null, `viewBox`, `0 0 ${SVG_VIEWBOX_WIDTH} ${SVG_VIEWBOX_HEIGHT}`);
-  svg.classList.add(`bgSVG`, `bgSVG_${idx}`);
-  svg.setAttribute(`active`, true);
+  svg.classList.add(`bgSVG`, `active`);
+  svg.setAttribute(`tab-idx`, idx);
+  //svg.setAttribute(`active`, true);
   return svg;
 }
 
@@ -236,8 +237,10 @@ function addEditorEventHandler() {
   divVisu.addEventListener(`drop`, divVisuDropEventHandler);
   divVisu.addEventListener(`click`, divVisuClickEventHandler);
   divVisu.addEventListener(`contextmenu`, divVisuContextMenuEventHandler);
+
+  document.querySelector(`.visuTabs`).addEventListener(`click`, visuTabsClickEventHandler);
   
-  document.querySelectorAll(`.btnUnDo, .btnReDo`).forEach(btn => btn.addEventListener(`click`, unDoReDoEventListener));
+  document.querySelectorAll(`.btnUnDo, .btnReDo`).forEach(btn => btn.addEventListener(`click`, unDoReDoEventHandler));
   document.querySelector(`.btnSave`).addEventListener(`click`, saveBtnHandler);
   document.querySelector(`#openLocaleFile`).addEventListener(`input`, openLocalFileEventHandler);
   document.querySelector(`[type=color]`).addEventListener(`input`, colorInputEventHandler);
@@ -264,12 +267,12 @@ function removeEditorEventHandler() {
   divVisu.removeEventListener(`click`, divVisuClickEventHandler);
   divVisu.removeEventListener(`contextmenu`, divVisuContextMenuEventHandler);
 
-  
+  document.querySelector(`.visuTabs`).removeEventListener(`click`, visuTabsClickEventHandler);
 }
 
 function calcSvgCoordinates(ev) {
   //console.log(ev);
-  const activeSvg = document.querySelector(`svg[active]`);
+  const activeSvg = document.querySelector(`svg.active`);
   const activeSvgBox = activeSvg.getBoundingClientRect();
   let xSvg = (ev.x - activeSvgBox.x) / activeSvgBox.width * activeSvg.viewBox.baseVal.width;
   let ySvg = (ev.y - activeSvgBox.y) / activeSvgBox.height *  activeSvg.viewBox.baseVal.height;
@@ -313,7 +316,7 @@ function drawModeHoverEventHandler(ev) {
   if (!selectionArea) {
     const svgCoordinates = calcSvgCoordinates(ev);
 
-    const activeSvg = document.querySelector(`svg[active]`);
+    const activeSvg = document.querySelector(`svg.active`);
     let hoverMarker = activeSvg.querySelector(`.hoverMarker`);
     if (!hoverMarker) {
       hoverMarker = document.createElementNS(SVG_NS, `circle`);
@@ -357,7 +360,7 @@ function selectModeHoverEventHandler(ev) {
 }
 
 function drawModeClickEventHandler(ev) {
-  const activeSvg = document.querySelector(`svg[active]`);
+  const activeSvg = document.querySelector(`svg.active`);
   const hoverLine = activeSvg.querySelector(`.hoverLine`);
   if (hoverLine) {
     const x1 = hoverLine.getAttribute(`x1`);
@@ -393,7 +396,7 @@ function drawModeClickEventHandler(ev) {
 
 function selectModeClickEventHandler(ev) {
   //console.log(ev.target);
-  const activeSvg = document.querySelector(`svg[active]`);
+  const activeSvg = document.querySelector(`svg.active`);
   const svgCoordinates = calcSvgCoordinates(ev);
   const selectionArea = activeSvg.querySelector(`.selectionArea`);
   if (selectionArea) {
@@ -443,7 +446,7 @@ function createEditorTools() {
     btn.classList.add(`btn${el}`);
     btn.value = (el === `UnDo`) ? `↶` : `↷`;
     btn.title = (el === `UnDo`) ? `[Strg + z]` : `[Strg + y]`;
-    btn.addEventListener(`click`, unDoReDoEventListener);
+    btn.addEventListener(`click`, unDoReDoEventHandler);
   });
   updateUnDoReDoStack(true);
 
@@ -756,6 +759,38 @@ function updateUnDoReDoStack(reset) {
   updateUsedCount();
 }
 /*********************EventHandlers*********************/
+function visuTabsClickEventHandler(ev) {
+  console.log(ev.target);
+  const tabIdx = ev.target.getAttribute(`tab-idx`);
+  if (tabIdx) {
+    switchVisuTab(tabIdx);
+  }
+  else {
+    addVisuTab();
+  }
+}
+
+function addVisuTab() {
+  const visuTabs = document.querySelector(`.visuTabs`);
+  
+  document.querySelector(`.bgSVG.active`).classList.remove(`active`);
+  const divVisu = document.querySelector(`.divVisu`);
+  divVisu.appendChild(createBackgroundSVG(visuTabs.childElementCount));
+
+  const activeTab = visuTabs.querySelector(`.visuTab.active`);
+  const newTab = activeTab.cloneNode();
+  activeTab.classList.remove(`active`);
+  newTab.setAttribute(`tab-idx`, visuTabs.childElementCount);
+  newTab.innerText = `Tab${visuTabs.childElementCount}`;
+  visuTabs.insertBefore(newTab, visuTabs.querySelector(`.addTab`));
+
+}
+
+function switchVisuTab(tabIdx) {
+  document.querySelectorAll(`.active`).forEach(el => el.classList.remove(`active`));
+  document.querySelectorAll(`[tab-idx="${tabIdx}"]`).forEach(el => el.classList.add(`active`));
+}
+
 function divVisuContextMenuEventHandler(ev) {
   ev.preventDefault();
 
@@ -1048,7 +1083,7 @@ function keyDownEventHandler(ev) {
     else if (ev.ctrlKey) {
       if (key === `a`) {
         ev.preventDefault();
-        document.querySelectorAll(`.visuItem, svg[active] *`).forEach(el => el.setAttribute(`selected`, true));
+        document.querySelectorAll(`.visuItem, svg.active *`).forEach(el => el.setAttribute(`selected`, true));
       }
       if (key === `y`)
       document.querySelector(`.btnReDo`).click();
@@ -1056,7 +1091,7 @@ function keyDownEventHandler(ev) {
       document.querySelector(`.btnUnDo`).click();
     }
   
-    const activeSvg = document.querySelector(`svg[active]`);
+    const activeSvg = document.querySelector(`svg.active`);
     if (activeSvg) {
       if (key.startsWith(`arrow`)) {
         ev.preventDefault();
@@ -1114,7 +1149,7 @@ function keyDownEventHandler(ev) {
   }
 }
 
-function unDoReDoEventListener(ev) {
+function unDoReDoEventHandler(ev) {
   const divVisu = document.querySelector(`.divVisu`);
   if (divVisu) {
     const {unDoReDoStack} = divVisu;
