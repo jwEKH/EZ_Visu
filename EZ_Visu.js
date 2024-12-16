@@ -448,7 +448,7 @@ function createEditorTools() {
     btn.title = (el === `UnDo`) ? `[Strg + z]` : `[Strg + y]`;
     btn.addEventListener(`click`, unDoReDoEventHandler);
   });
-  updateUnDoReDoStack(true);
+  updateUnDoReDoStack(`reset`);
 
   const colorPicker = document.createElement(`input`);
   fsEditorTools.appendChild(colorPicker);
@@ -728,7 +728,7 @@ function enterVisuEditor(initialCall) {
     document.body.appendChild(createVisuItemPool());
     //document.body.appendChild(createEditorTools());
     document.querySelector(`#selStrokeDasharray`).style.color = document.querySelector(`.colorPicker`).value;
-    updateUnDoReDoStack(true);
+    updateUnDoReDoStack(`reset`);
   }
   else {
     document.querySelectorAll(`.visuEditElement`).forEach(el => el.removeAttribute(`cloaked`));
@@ -747,20 +747,23 @@ function leaveVisuEditor() {
 function updateUnDoReDoStack(reset) {
   //cancelCurrentDrawing();
   //cancelCurrentSelection();
-  const divVisu = document.querySelector(`.divVisu`);
-  if (reset) {
-    divVisu.unDoReDoStack = {idx: 0, stack: [divVisu.innerHTML]};
-  }
-  else {
-    const {unDoReDoStack} = divVisu;
-    unDoReDoStack.stack.length = ++unDoReDoStack.idx;
-    unDoReDoStack.stack.push(divVisu.innerHTML);
-  }
+  const elClassNames = [`divVisu`, `visuTabs`];
+  elClassNames.forEach(className => {
+    const el = document.querySelector(`.${className}`);
+    if (reset) {
+      el.unDoReDoStack = {idx: 0, stack: [el.innerHTML]};
+    }
+    else {
+      const {unDoReDoStack} = el;
+      unDoReDoStack.stack.length = ++unDoReDoStack.idx;
+      unDoReDoStack.stack.push(el.innerHTML);
+    }
+  });
   updateUsedCount();
 }
 /*********************EventHandlers*********************/
 function visuTabsClickEventHandler(ev) {
-  console.log(ev.target);
+  //console.log(ev.target);
   const tabIdx = ev.target.getAttribute(`tab-idx`);
   if (tabIdx) {
     switchVisuTab(tabIdx);
@@ -784,11 +787,17 @@ function addVisuTab() {
   newTab.innerText = `Tab${visuTabs.childElementCount}`;
   visuTabs.insertBefore(newTab, visuTabs.querySelector(`.addTab`));
 
+  updateUnDoReDoStack();
 }
 
 function switchVisuTab(tabIdx) {
-  document.querySelectorAll(`.active`).forEach(el => el.classList.remove(`active`));
-  document.querySelectorAll(`[tab-idx="${tabIdx}"]`).forEach(el => el.classList.add(`active`));
+  const targetElements = document.querySelectorAll(`[tab-idx="${tabIdx}"]`);
+  if (targetElements.length) {
+    document.querySelectorAll(`.active`).forEach(el => el.classList.remove(`active`));
+    targetElements.forEach(el => el.classList.add(`active`));
+  }
+
+  updateUnDoReDoStack();
 }
 
 function divVisuContextMenuEventHandler(ev) {
@@ -1061,12 +1070,21 @@ function keyDownEventHandler(ev) {
   if (!document.activeElement.matches(`.visuItem[icon=button] input`)) {
     const auxKeys = ev.altKey | ev.ctrlKey | ev.shiftKey;
     if (!auxKeys) {
-      if (key === `c`)
-      document.querySelector(`.colorPicker`).click();
-      if (key === `g`)
-      document.querySelector(`#cbGridSnap`).click();
-      if (key === `o`)
-      document.querySelector(`#cbOrthoMode`).click();
+      if (key === `c`) {
+        document.querySelector(`.colorPicker`).click();
+      }
+      if (key === `g`) {
+        document.querySelector(`#cbGridSnap`).click();
+      }
+      if (key === `o`) {
+        document.querySelector(`#cbOrthoMode`).click();
+      }
+      if (key === `s`) {
+        document.querySelector(`.signalPool`).toggleAttribute(`open`);
+      }
+      if (key === `v`) {
+        document.querySelector(`.visuItemPool`).toggleAttribute(`open`);
+      }
       if (key === `escape`) {
         cancelCurrentDrawing();
         cancelCurrentSelection();
@@ -1078,6 +1096,12 @@ function keyDownEventHandler(ev) {
         document.querySelectorAll(`[selected]`).forEach(el => el.remove());
         
         updateUnDoReDoStack();
+      }
+      if (key.match(/[1-9]/)) {
+        switchVisuTab(key);
+      }
+      if (key === `+`) {
+        addVisuTab();
       }
     }
     else if (ev.ctrlKey) {
@@ -1150,19 +1174,18 @@ function keyDownEventHandler(ev) {
 }
 
 function unDoReDoEventHandler(ev) {
-  const divVisu = document.querySelector(`.divVisu`);
-  if (divVisu) {
-    const {unDoReDoStack} = divVisu;
+  document.querySelectorAll(`.divVisu, .visuTabs`).forEach(el => {
+    const {unDoReDoStack} = el;
     if (ev.target.matches(`.btnUnDo`)) {
       unDoReDoStack.idx = Math.max(0, unDoReDoStack.idx - 1);
     }
     else {
       unDoReDoStack.idx = Math.min(unDoReDoStack.stack.length - 1, unDoReDoStack.idx + 1);
     }
-    divVisu.innerHTML = unDoReDoStack.stack.at(unDoReDoStack.idx); //todo...
+    el.innerHTML = unDoReDoStack.stack.at(unDoReDoStack.idx); //todo...
     console.log(`${unDoReDoStack.idx} of ${unDoReDoStack.stack.length - 1}`);
-    divVisu.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.value = txtEl.getAttribute(`signalId`));
-  }
+    el.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.value = txtEl.getAttribute(`signalId`));
+  });
   cancelCurrentDrawing();
   updateUsedCount();
 }
