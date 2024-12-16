@@ -112,7 +112,7 @@ function createIcon(symbol) {
       });
     }
     if (symbol === `button`) {
-      icon.value = `LinkButton`;
+      icon.value = `LinkButton;0`;
     }
     
     if (symbol === `path`) {
@@ -793,13 +793,16 @@ function mouseDownEventHandler(ev) {
 }
 
 function divVisuClickEventHandler(ev) {
-  //console.log(ev.target);
+  //console.log(ev);
+  let actionExecuted = false;
+  
   if (ev.target.type === `button`) {
-    ev.target.type = `text`;
+    ev.target.type = `text`; //convert button to text element
+    ev.target.fallbackVal = ev.target.value; //perceive current Text for cancelAction 
     ev.target.addEventListener(`blur`, linkBtnBlurHandler);
+    actionExecuted = true;
   }
   
-  let actionExecuted = false;
   const selectionArea = document.querySelector(`.selectionArea`);
   if (!actionExecuted & !selectionArea) {
     actionExecuted |= removeDivIconSignal(ev);
@@ -831,6 +834,16 @@ function linkBtnBlurHandler(ev) {
   //console.log(ev);
   ev.target.type = `button`;
   ev.target.removeEventListener(`blur`, linkBtnBlurHandler);
+  
+  if (ev.type === `keydown`) {
+    if(ev.key === `Escape`) {
+      ev.target.value = ev.target.fallbackVal; //cancelAction => fallbackVal
+    }
+    document.activeElement.blur();
+  }
+  else {
+    selectModeClickEventHandler(ev); //call Handler if not keyDown (Esc | Enter) to prevent selection starting on click
+  }
 }
 
 function cancelCurrentDrawing() {
@@ -1004,8 +1017,13 @@ function dblClickEventHandler(ev) {
 
 function keyDownEventHandler(ev) {
   //console.log(ev.key);
+  const key = ev.key.toLowerCase();
+  if (document.activeElement.matches(`.visuItem[icon=button] input`)) {
+    if (key.match((/(escape)|(enter)/))) {
+      linkBtnBlurHandler(ev);
+    }
+  }
   if (!document.activeElement.matches(`.visuItem[icon=button] input`)) {
-    const key = ev.key.toLowerCase();
     const auxKeys = ev.altKey | ev.ctrlKey | ev.shiftKey;
     if (!auxKeys) {
       if (key === `c`)

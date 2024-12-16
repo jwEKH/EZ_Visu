@@ -51,13 +51,11 @@ body {
 }
 .visuEditElement[open] {
   writing-mode: initial;
+  padding-right: var(--controlsWidthOffset);
 }
 .signalPool {
   left: 0;
   writing-mode: sideways-rl;
-}
-.signalPool[open] {
-  padding-right: var(--controlsWidthOffset);
 }
 .visuItemPool {
   right: 0;
@@ -65,7 +63,6 @@ body {
 }
 .visuItemPool[open] {
   height: 100vh;
-  padding-left: var(--controlsWidthOffset);
 }
 
 [stil = "sollwert"] {
@@ -291,7 +288,7 @@ label[for],
 select {
   cursor: pointer;
 }
-.divSignals input[type="button"] {
+.divVisu .divSignals input[type="button"] {
   cursor: text;
 }
 /*********************FlameStyle*********************/
