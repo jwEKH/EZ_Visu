@@ -79,7 +79,7 @@ function createIcon(symbol) {
       icon.appendChild(el);
       const strokeColor = (symbol === `aggregat`) ? CYAN_HEX : STROKE_COLOR;
       el.setAttributeNS(null,`stroke`, strokeColor);
-      const strokeWidth = (symbol === `aggregat`) ? 2.5 * STROKE_WIDTH : STROKE_WIDTH;
+      const strokeWidth = (symbol.match(/(temperatur)|(aggregat)/)) ? 2 * STROKE_WIDTH : STROKE_WIDTH;
       el.setAttributeNS(null, `stroke-width`, strokeWidth);
       const fillColor = (symbol.match(/(temperatur)|(aggregat)|(schalter)/)) ? `none` : FILL_COLOR;
       el.setAttributeNS(null,`fill`, fillColor);
@@ -208,7 +208,7 @@ function createVisuItem(...attributes) {
       const parent = (!icon || (signal !== `Betrieb` &&  icon.match(/(aggregat)|(kessel)|(puffer)/))) ? visuItem : divIcon;
       parent.appendChild(div);
       div.classList.add(`div${signal}`, `divIconSignal`);
-      div.toggleAttribute(`NA`, true);
+      div.toggleAttribute(`na`, true);
       div.innerText = (signal === `Error`)        ? `⚠`  :
                       (signal === `Freigabe`)     ? `⏺` :
                       (signal === `Betriebsart`)  ? `✋`  :
@@ -284,7 +284,7 @@ function calcSvgCoordinates(ev) {
     const dY = Math.abs(ySvg - hoverLine.getAttribute(`y1`));
     (dY === Math.max(dX, dY)) ? xSvg = hoverLine.getAttribute(`x1`) : ySvg = hoverLine.getAttribute(`y1`);
   }
-  const selectionEvent = (document.querySelector(`.selectionArea`) || ev.type === `contextmenu`)
+  const selectionEvent = (document.querySelector(`.selectionArea`) || ev.type === `click`);
   if (!selectionEvent && document.querySelector(`#cbGridSnap`).checked) {
     xSvg = Math.round(GRIDSIZE_AS_PARTS_FROM_WIDTH * (xSvg / activeSvg.viewBox.baseVal.width)) / GRIDSIZE_AS_PARTS_FROM_WIDTH * activeSvg.viewBox.baseVal.width;
     ySvg = Math.round((GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * (ySvg / activeSvg.viewBox.baseVal.height)) / (GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * activeSvg.viewBox.baseVal.height;
@@ -294,19 +294,17 @@ function calcSvgCoordinates(ev) {
 }
 
 function selectionAreaHandler() {
-  //console.log(`selectionAreaHandler`);
   const selectionArea = document.querySelector(`.selectionArea`);
   const selectionAreaBox = selectionArea.getBoundingClientRect();
   const {x, y, width, height} = selectionAreaBox;
   const divVisu = document.querySelector(`.divVisu`);
   divVisu.querySelectorAll(`line, .visuItem`).forEach(el => {
     elBox = el.getBoundingClientRect();
-    //if (el.matches(`.visuItem`)) console.log(elBox, selectionAreaBox);
 
     const match = (selectionArea.partialSelection) ? 
                   (!(x > elBox.x+elBox.width || y > elBox.y+elBox.height || width+x < elBox.x || height+y < elBox.y)) :
                   (x <= elBox.x) && (width+x >= elBox.width+elBox.x) && (y <= elBox.y) && (height+y >= elBox.height+elBox.y);
-    el.toggleAttribute(`selected`, match);
+    el.toggleAttribute(`highlighted`, match);
   });
 }
 
@@ -395,23 +393,22 @@ function drawModeClickEventHandler(ev) {
 
 
 function selectModeClickEventHandler(ev) {
-  //console.log(ev.target);
   const activeSvg = document.querySelector(`svg.active`);
   const svgCoordinates = calcSvgCoordinates(ev);
   const selectionArea = activeSvg.querySelector(`.selectionArea`);
   if (selectionArea) {
-    //selectionArea.setAttributeNS(null,`width`, 100);
-    //selectionArea.setAttributeNS(null,`height`, 100);
     selectionArea.remove();
+    document.querySelectorAll(`[highlighted]`).forEach(el => {
+      el.toggleAttribute(`selected`);
+      el.removeAttribute(`highlighted`);
+    });
   }
   else {
-    //console.log(`else`);
     const selectionArea = document.createElementNS(SVG_NS, `polygon`);
     activeSvg.appendChild(selectionArea);
     selectionArea.classList.add(`selectionArea`);
     selectionArea.setAttributeNS(null,`opacity`, `0.1`);
     selectionArea.svgCoordinates = svgCoordinates;
-    //selectionArea.setAttributeNS(null,`points`, `${svgCoordinates.xSvg},${svgCoordinates.ySvg}`);
   }
 }
 
@@ -565,11 +562,11 @@ function initSignalTable(visuLiveData) {
             input.type = `text`;
             if (col === `SignalId`) {
               input.value = `${signalGroup}${i}`;
-              input.setAttribute(`signalId`, `${signalGroup}${i}`);
+              input.setAttribute(`signal-id`, `${signalGroup}${i}`);
               input.readOnly = true;
               input.draggable = true;
               if (!signalGroup.match(/(DI)|(DO)/)) {
-                input.setAttribute(`decPlace`, 1);
+                input.setAttribute(`dec-place`, 1);
                 input.setAttribute(`unit`, `°C`);
               }
             }
@@ -806,19 +803,6 @@ function divVisuContextMenuEventHandler(ev) {
   if (!cancelCurrentSelection()) {
     drawModeClickEventHandler(ev); //drawing only starts when no selection was active
   }
-
-  /*
-  let actionExecuted = false;
-  actionExecuted |= cancelCurrentDrawing();
-  //console.log({actionExecuted});
-  const selectionArea = document.querySelector(`.selectionArea`);
-  if (!selectionArea) {
-    actionExecuted |= removeDivIconSignal(ev);
-  }
-  if (!actionExecuted) {
-    selectModeClickEventHandler(ev);  //selection only starts when no other action was executed
-  }
-  */
 }
 
 function divVisuMouseMoveEventHandler(ev) {  
@@ -828,50 +812,46 @@ function divVisuMouseMoveEventHandler(ev) {
 
 function mouseDownEventHandler(ev) {
   if (ev.buttons === 1) {
+    const visuItem = ev.target.closest(`.divVisu .visuItem`);
+    if (visuItem) {
+      if (!ev.shiftKey && !ev.ctrlKey) {
+        document.querySelectorAll(`[selected]`).forEach(el => {
+          if (el !== visuItem) {
+            el.removeAttribute(`selected`);
+          }
+        });
+      }
+      visuItem.toggleAttribute(`selected`);
+    }
+    else if (!ev.shiftKey && !ev.ctrlKey) {
+      document.querySelectorAll(`[selected]`).forEach(el => el.removeAttribute(`selected`));
+    }
+
     const target = (ev.target.matches(`[draggable]`)) ? ev.target : ev.target.closest(`.visuItem[draggable]`);
     if (target) {
       target.setAttribute(`dragging`, `true`);
-      //target.setAttribute(`selected`, `true`);
     }
   }
 }
 
 function divVisuClickEventHandler(ev) {
-  //console.log(ev);
   let actionExecuted = false;
-  
-  if (ev.target.type === `button`) {
-    ev.target.type = `text`; //convert button to text element
-    ev.target.fallbackVal = ev.target.value; //perceive current Text for cancelAction 
-    ev.target.addEventListener(`blur`, linkBtnBlurHandler);
-    actionExecuted = true;
-  }
-  
+    
   const selectionArea = document.querySelector(`.selectionArea`);
-  if (!actionExecuted & !selectionArea) {
+  if (!selectionArea) {
     actionExecuted |= removeDivIconSignal(ev);
-  }
-
-  const visuItem = ev.target.closest(`.visuItem`);
-
-  if (!actionExecuted & visuItem) {
-    //cancelCurrentSelection();
-    visuItem.setAttribute(`selected`, `true`);
-  }
-  else {
-    actionExecuted |= cancelCurrentDrawing();
-    //console.log({actionExecuted});
+    
     if (!actionExecuted) {
-      selectModeClickEventHandler(ev);  //selection only starts when no other action was executed
+      actionExecuted |= cancelCurrentDrawing();
     }
   }
   
-  
-  /*
-  if (!cancelCurrentSelection()) {
-    drawModeClickEventHandler(ev); //drawing only starts when no selection was active
-  }
-  */  
+  if (!actionExecuted) {
+    const visuItem = ev.target.closest(`.visuItem`);
+    if (selectionArea || !visuItem) {
+      selectModeClickEventHandler(ev);  //selection only starts when no other action was executed
+    }  
+  }  
 }
 
 function linkBtnBlurHandler(ev) {
@@ -913,10 +893,10 @@ function cancelCurrentSelection() {
 }
 
 function removeDivIconSignal(ev) {
-  if (ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
-    ev.target.removeAttribute(`signalId`);
+  if (ev.target.matches(`.divIconSignal[signal-id]`)) {
+    ev.target.removeAttribute(`signal-id`);
     ev.target.removeAttribute(`title`);
-    ev.target.setAttribute(`NA`, true);
+    ev.target.setAttribute(`na`, true);
     updateUsedCount();
     return true; //feedback that removeAction was executed
   }
@@ -935,10 +915,13 @@ function dragStartEventHandler(ev) {
   //console.log(ev);
   const target = (ev.target.matches(`[draggable]`)) ? ev.target : ev.target.closest(`.visuItem[draggable]`);
   if (target) {
-    target.setAttribute(`selected`, `true`);
+    if (target.matches(`.divVisu *`)) {
+      target.setAttribute(`selected`, `true`);
+    }
   }
 
   const selectedElements = document.querySelectorAll(`[selected][draggable]`);
+  console.log(selectedElements);
   const offsets = [];
   selectedElements.forEach(selectedEl => {
     const targetBox = selectedEl.getBoundingClientRect();
@@ -950,27 +933,13 @@ function dragStartEventHandler(ev) {
   });
   ev.dataTransfer.clearData();
   ev.dataTransfer.setData(`offsets`, JSON.stringify(offsets));
-  
-
-  /*
-  const target = (ev.target.matches(`[draggable]`)) ? ev.target : ev.target.closest(`.visuItem[draggable]`);
-  if (target) {
-    target.setAttribute(`dragging`, `true`);
-    const targetBox = target.getBoundingClientRect();
-    const offsetX = ev.x - targetBox.x;
-    const offsetY = ev.y - targetBox.y;
-    ev.dataTransfer.clearData();
-    ev.dataTransfer.setData(`offsetX`, offsetX);
-    ev.dataTransfer.setData(`offsetY`, offsetY);
-  }
-  */
 }
 
 function divVisuDragEnterEventHandler(ev) {
   const draggingItems = document.querySelectorAll(`[dragging]`);
   if (draggingItems.length === 1 & draggingItems[0].matches(`.txtSignalId`)) {    
     if (ev.target.matches(`.divError, .divFreigabe, .divBetriebsart, .divAbsenkung, .divBetrieb`)) {
-      ev.target.removeAttribute(`NA`);
+      ev.target.removeAttribute(`na`);
     }
   }
 }
@@ -978,8 +947,8 @@ function divVisuDragEnterEventHandler(ev) {
 function divVisuDragLeaveEventHandler(ev) {
   //console.log(ev);
   const target = (ev.target.nodeName === `#text`) ? ev.target.parentNode : ev.target; //workaround needed bc pressing Esc while dragover .divIconSignal leads to error...
-  if (!target.matches(`[signalId]`) && target.matches(`.divIconSignal`)) {
-    target.toggleAttribute(`NA`, true);
+  if (!target.matches(`[signal-id]`) && target.matches(`.divIconSignal`)) {
+    target.toggleAttribute(`na`, true);
   }
 }
 
@@ -1028,6 +997,7 @@ function divVisuDropEventHandler(ev) {
     const target = (draggingItem.type === `text`) ? ev.target : ev.target.closest(`.divVisu`);
     if (target) {
       const dropItem = (ev.dataTransfer.dropEffect === `copy`) ? draggingItem.cloneNode(true) : draggingItem;
+      draggingItem.toggleAttribute(`selected`, (ev.dataTransfer.dropEffect !== `copy`));
       
       if (target.matches(`.divVisu`)) {
         const targetBox = target.getBoundingClientRect();
@@ -1043,9 +1013,10 @@ function divVisuDropEventHandler(ev) {
       }
       else {
         if (target.closest(`.divIconSignal`)) {
-          Array.from(draggingItem.attributes).forEach(attr => {
-            if (attr.name.match(/(signalId)|(decPlace)|(unit)|(trueTxt)|(falseTxt)/i)) {
-              target.setAttribute(attr.name, attr.value);
+          console.log(draggingItem.getAttributeNames());
+          draggingItem.getAttributeNames().forEach(attributeName => {
+            if (attributeName.match(/(signal-id)|(dec-place)|(unit)|(true-txt)|(false-txt)/)) {
+              target.setAttribute(attributeName, draggingItem.getAttribute(attributeName));
             }
           });
           target.title = `${draggingItem.value} (click to remove Signal)`;
@@ -1062,52 +1033,37 @@ function divVisuDropEventHandler(ev) {
   });
 
   removeAllDraggingAttributes();
-
-
-  /*  
-  //ev.preventDefault();
-  const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
-  const target = (draggingItem.type === `text`) ? ev.target : ev.target.closest(`.divVisu`);
-  if (target && draggingItem) {
-    const dropItem = (ev.dataTransfer.dropEffect === `copy`) ? draggingItem.cloneNode(true) : draggingItem;
-    
-    if (target.matches(`.divVisu`)) {
-      const targetBox = target.getBoundingClientRect();
-      const offsetX = ev.dataTransfer.getData(`offsetX`);
-      const offsetY = ev.dataTransfer.getData(`offsetY`);
-      
-      dropItem.style.position = `absolute`;
-      const xRel = (ev.x - targetBox.x - offsetX)/targetBox.width;
-      const yRel = (ev.y - targetBox.y - offsetY)/targetBox.height;
-      const gridSnapActive = document.querySelector(`#cbGridSnap`).checked;
-      dropItem.style.left = (gridSnapActive) ? `${Math.round(GRIDSIZE_AS_PARTS_FROM_WIDTH * xRel) / GRIDSIZE_AS_PARTS_FROM_WIDTH * 100}%` : `${xRel*100}%`;
-      dropItem.style.top = (gridSnapActive) ? `${Math.round((GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * yRel) / (GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * 100}%` : `${yRel*100}%`;
-      target.appendChild(dropItem);
-    }
-    else {
-      if (target.closest(`.divIconSignal`)) {
-        Array.from(draggingItem.attributes).forEach(attr => {
-          if (attr.name.match(/(signalId)|(decPlace)|(unit)|(trueTxt)|(falseTxt)/i)) {
-            target.setAttribute(attr.name, attr.value);
-          }
-        });
-        target.title = `${draggingItem.value} (click to remove Signal)`;
-        dropItem.remove();
-      }
-      else {
-        const visuItem = target.closest(`.visuItem`);
-        const divSignals = visuItem.querySelector(`.divSignals`);
-        divSignals.appendChild(dropItem);
-      }
-    }
-    updateUnDoReDoStack();
-  }
-
-  removeAllDraggingAttributes();
-  */
 }
 
 function dblClickEventHandler(ev) {
+  if (ev.target.type === `button`) {
+    ev.target.type = `text`; //convert button to text element
+    ev.target.fallbackVal = ev.target.value; //perceive current Text for cancelAction 
+    ev.target.addEventListener(`blur`, linkBtnBlurHandler);
+  }
+  else {
+    const divIcon = ev.target.closest(`.divIcon`);
+    const svg = (divIcon) ? divIcon.querySelector(`svg`) : null;
+    if (svg) {
+      const rotation = parseInt(svg.getAttribute(`rotation`));
+      if (rotation < 270) {
+        svg.setAttribute(`rotation`, rotation + 90);
+      }
+      else if (rotation >= 270) {
+        svg.removeAttribute(`rotation`);
+      }
+      else {
+        svg.setAttribute(`rotation`, 90);
+      }
+      cancelCurrentDrawing(); //workaround for (drawing)-clickEventTriggers on dblClick as well!
+      if (svg.matches(`.divVisu *`)) {
+        updateUnDoReDoStack();
+      }
+    }
+  }
+}
+
+function rotateLinkBtn(ev) {
   const visuItem = ev.target.closest(`.visuItem`);
   const btn = (visuItem) ? visuItem.querySelector(`[type=button]`) : null;
   if (btn) {
@@ -1120,23 +1076,6 @@ function dblClickEventHandler(ev) {
     }
     else if (!current) {
       btn.setAttribute(`writing`, `upward`);
-    }
-  }
-  const svg = (visuItem) ? visuItem.querySelector(`svg`) : null;
-  if (svg) {
-    const rotation = parseInt(svg.getAttribute(`rotation`));
-    if (rotation < 270) {
-      svg.setAttribute(`rotation`, rotation + 90);
-    }
-    else if (rotation >= 270) {
-      svg.removeAttribute(`rotation`);
-    }
-    else {
-      svg.setAttribute(`rotation`, 90);
-    }
-    cancelCurrentDrawing(); //workaround for (drawing)-clickEventTriggers on dblClick as well!
-    if (svg.matches(`.divVisu *`)) {
-      updateUnDoReDoStack();
     }
   }
 }
@@ -1266,7 +1205,7 @@ function unDoReDoEventHandler(ev) {
     }
     el.innerHTML = unDoReDoStack.stack.at(unDoReDoStack.idx); //todo...
     console.log(`${unDoReDoStack.idx} of ${unDoReDoStack.stack.length - 1}`);
-    el.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.value = txtEl.getAttribute(`signalId`));
+    el.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.value = txtEl.getAttribute(`signal-id`));
   });
   cancelCurrentDrawing();
   updateUsedCount();
@@ -1330,7 +1269,7 @@ function signalTableInputEventHandler(ev) {
   const {target} = ev;
   const tr = target.closest(`tr`);
   const txtSignalId = tr.querySelector(`.txtSignalId`);
-  document.querySelectorAll(`[signalId = ${txtSignalId.value}]`).forEach(el => {
+  document.querySelectorAll(`[signal-id = ${txtSignalId.value}]`).forEach(el => {
     if (!el.matches(`.divIconSignal`)) {
       if (target.matches(`.txtTooltip`)) {
         if (target.value.trim().length) {
@@ -1342,10 +1281,10 @@ function signalTableInputEventHandler(ev) {
       }
       if (target.matches(`.selDecPlace`)) {
         if (target.value.trim().length) {
-          el.setAttribute(`decPlace`, target.value);
+          el.setAttribute(`dec-place`, target.value);
         }
         else {
-          el.removeAttribute(`decPlace`);
+          el.removeAttribute(`dec-place`);
         }
       }
       if (target.matches(`.selUnit`)) {
@@ -1369,18 +1308,18 @@ function signalTableInputEventHandler(ev) {
     }
     if (target.matches(`.txtTrueTxt`)) {
       if (target.value.trim().length) {
-        el.setAttribute(`trueTxt`, target.value);
+        el.setAttribute(`true-txt`, target.value);
       }
       else {
-        el.removeAttribute(`trueTxt`);
+        el.removeAttribute(`true-txt`);
       }
     }
     if (target.matches(`.txtFalseTxt`)) {
       if (target.value.trim().length) {
-        el.setAttribute(`falseTxt`, target.value);
+        el.setAttribute(`false-txt`, target.value);
       }
       else {
-        el.removeAttribute(`falseTxt`);
+        el.removeAttribute(`false-txt`);
       }
     }
   });
@@ -1400,7 +1339,7 @@ function signalTableColumnVisibilityHandler(ev) {
 function updateUsedCount() {
   const divVisu = document.querySelector(`.divVisu`)
   document.querySelectorAll(`.txtSignalId`).forEach(signalId => {
-    document.querySelector(`.${signalId.value}count`).innerText = divVisu.querySelectorAll(`[signalId=${signalId.value}]`).length;
+    document.querySelector(`.${signalId.value}count`).innerText = divVisu.querySelectorAll(`[signal-id=${signalId.value}]`).length;
   });
 }
 

@@ -233,7 +233,7 @@ body {
   line-height: 1;
   z-index: 1;
 }
-.divIconSignal:not([NA]) {
+.divIconSignal:not([na]) {
   cursor: pointer;
 }
 
@@ -296,11 +296,14 @@ body {
 [cloaked] {
   display: none;
 }
-[NA] {
+[na] {
   opacity: 0;
 }
 [selected] {
   outline: 1px solid var(--green);
+}
+[highlighted] {
+  outline: 1px solid var(--yellow);
 }
 /*********************CursorStylez*********************/
 [draggable = "true"] {
