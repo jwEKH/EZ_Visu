@@ -1273,14 +1273,41 @@ function unDoReDoEventHandler(ev) {
 
 function openLocalFileEventHandler(ev) {
   const reader = new FileReader();
-  reader.readAsText(ev.target.files[0]);
-  reader.addEventListener(`load`, () => {
-    const divVisu = document.querySelector(`.divVisu`);
-    divVisu.innerHTML = reader.result;
-    divVisu.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.value = txtEl.getAttribute(`signal-id`));
-    updateUnDoReDoStack();
-    console.log(reader.result);
+  const file = ev.target.files[0];
+  if (file) {
+    reader.readAsText(file);
+    reader.addEventListener(`load`, () => {
+      console.log(file.name);
+      if (file.name.match(/(\.txt)/i)) {
+        const divVisu = document.querySelector(`.divVisu`);
+        divVisu.innerHTML = reader.result;
+        divVisu.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.value = txtEl.getAttribute(`signal-id`));
+        updateUnDoReDoStack();
+      }
+      else if (file.name.match(/(\.p)/i)) {
+        parseVisuSkript(reader.result);
+        
+      }
+      //console.log(reader.result);
+    });
+  }
+}
+
+function parseVisuSkript(txt) {
+  console.log(txt);
+  const data = txt.replaceAll(` `,``).match(/([A-Z]+\d+),\d,\d+',.+\*\//g);
+  //console.log(data);
+  
+  const dataArray = [];
+  data.forEach(dataset => {
+    const result = dataset.match(/(?<id>[A-Z]+\d+),(?<nk>\d),(?<unit>\d+)',(?<rtos>.+)(?:TOTEMPBY).*\/\*(?<tooltip>.+)\*\//);
+    //console.log(result);
+
+    dataArray.push(result.groups);
+
   });
+
+  console.log(dataArray);
 }
 
 function colorInputEventHandler(ev) {
