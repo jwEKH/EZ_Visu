@@ -43,14 +43,14 @@ const STROKE_WIDTH = .3;
 
 /*********************VanillaDocReady*********************/
 window.addEventListener('load', function () {
-  document.querySelector(`.divVisu`).appendChild(createBackgroundSVG(1));
+  document.querySelector(`.divVisu`).appendChild(createBackgroundSVG());
   window.reloadLiveDataIntervalId = setInterval(getLiveData, 1000, window.visuLiveData, window.projectNo);
   
   enterVisuEditor(true);
   
 }, false);
 /*********************GenericFunctions*********************/
-function createBackgroundSVG(idx) {
+function createBackgroundSVG(idx=1) {
   const svg = document.createElementNS(SVG_NS, `svg`);
   svg.setAttributeNS(null, `viewBox`, `0 0 ${SVG_VIEWBOX_WIDTH} ${SVG_VIEWBOX_HEIGHT}`);
   svg.classList.add(`bgSVG`, `active`);

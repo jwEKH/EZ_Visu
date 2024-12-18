@@ -104,9 +104,9 @@ body {
   float: left;
   width: min-content;
   background-color: var(--darkGrey);
-  border-bottom-left-radius: calc(var(--controlsWidthOffset)/2);
-  border-bottom-right-radius: calc(var(--controlsWidthOffset)/2);
-  padding: 0 calc(var(--controlsWidthOffset)/2);
+  border-bottom-left-radius: calc(var(--iconSize)/4);
+  border-bottom-right-radius: calc(var(--iconSize)/4);
+  padding: 0 calc(var(--iconSize)/4);
   /*
   height: calc(var(--iconSize)/2);
   */
@@ -145,7 +145,7 @@ body {
   grid-auto-rows: 1fr;
 }
 .visuItem[icon = "puffer"] {
-  border-radius: var(--controlsWidthOffset);
+  border-radius: calc(var(--iconSize)/2);
 }
 .visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"], [icon = "text"]) {
   grid-template-areas: 
