@@ -1305,6 +1305,15 @@ function parseVisuSkript(txt) {
 
     dataArray.push(result.groups);
 
+    //update rtos term
+    const tr = document.querySelector(`tr [signal-id=${result.groups.id}]`).closest(`tr`);
+    const txtRtosTerm = tr.querySelector(`.txtRtosTerm`);
+    txtRtosTerm.setAttribute(`rtos-id`, result.groups.rtos);
+    txtRtosTerm.value = result.groups.rtos;
+
+    const txtTooltip = tr.querySelector(`.txtTooltip`);
+    txtTooltip.setAttribute(`tooltip`, result.groups.tooltip);
+    txtTooltip.value = result.groups.tooltip;
   });
 
   console.log(dataArray);
