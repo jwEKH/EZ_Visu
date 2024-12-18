@@ -1,5 +1,7 @@
 //Testbench
-const ATTRIBUTES = {icon: `heizkreis`, iconPosition: `left`};//, signals: `AI1, AI17`};
+const PROJECT_NO = `P2033`;
+const VISU_LIVE_DATA = `{"Projektnummer":"P2033","Stoerungen":[],"Items":[{"Bezeichnung":"HKNA","Kanal":1,"iEinheit":0,"EinheitText":null,"Nachkommastellen":0,"isBool":false,"BoolVal":false,"Wert":0.0,"sWert":" HK1 Nordtrasse    "},{"Bezeichnung":"HKNA","Kanal":2,"iEinheit":0,"EinheitText":null,"Nachkommastellen":0,"isBool":false,"BoolVal":false,"Wert":0.0,"sWert":" HK2 Westtrasse    "},{"Bezeichnung":"HKNA","Kanal":3,"iEinheit":0,"EinheitText":null,"Nachkommastellen":0,"isBool":false,"BoolVal":false,"Wert":0.0,"sWert":" HK3 Suedtrasse    "},{"Bezeichnung":"KES","Kanal":1,"iEinheit":0,"EinheitText":null,"Nachkommastellen":0,"isBool":false,"BoolVal":false,"Wert":0.0,"sWert":"CLICK0"},{"Bezeichnung":"KES","Kanal":2,"iEinheit":0,"EinheitText":null,"Nachkommastellen":0,"isBool":false,"BoolVal":false,"Wert":0.0,"sWert":"CLICK0"},{"Bezeichnung":"KES","Kanal":3,"iEinheit":0,"EinheitText":null,"Nachkommastellen":0,"isBool":false,"BoolVal":false,"Wert":0.0,"sWert":"CLICK0"},{"Bezeichnung":"HK ","Kanal":1,"iEinheit":0,"EinheitText":null,"Nachkommastellen":0,"isBool":false,"BoolVal":false,"Wert":0.0,"sWert":"CLICK0"},{"Bezeichnung":"HK ","Kanal":2,"iEinheit":0,"EinheitText":null,"Nachkommastellen":0,"isBool":false,"BoolVal":false,"Wert":0.0,"sWert":"CLICK0"},{"Bezeichnung":"HK ","Kanal":3,"iEinheit":0,"EinheitText":null,"Nachkommastellen":0,"isBool":false,"BoolVal":false,"Wert":0.0,"sWert":"CLICK0"},{"Bezeichnung":"HK ","Kanal":4,"iEinheit":0,"EinheitText":null,"Nachkommastellen":0,"isBool":false,"BoolVal":false,"Wert":0.0,"sWert":"CLICK0"},{"Bezeichnung":"PMK","Kanal":1,"iEinheit":4,"EinheitText":"kW","Nachkommastellen":0,"isBool":false,"BoolVal":false,"Wert":499.0,"sWert":null},{"Bezeichnung":"PMK","Kanal":2,"iEinheit":4,"EinheitText":"kW","Nachkommastellen":0,"isBool":false,"BoolVal":false,"Wert":800.0,"sWert":null},{"Bezeichnung":"PMK","Kanal":3,"iEinheit":4,"EinheitText":"kW","Nachkommastellen":0,"isBool":false,"BoolVal":false,"Wert":436.0,"sWert":null},{"Bezeichnung":"PMB","Kanal":1,"iEinheit":4,"EinheitText":"kW","Nachkommastellen":0,"isBool":false,"BoolVal":false,"Wert":365.0,"sWert":null},{"Bezeichnung":"AI","Kanal":0,"iEinheit":11,"EinheitText":"°Cø","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":10.06,"sWert":null},{"Bezeichnung":"AI","Kanal":1,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":11.82,"sWert":null},{"Bezeichnung":"AI","Kanal":2,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":89.04,"sWert":null},{"Bezeichnung":"AI","Kanal":3,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":85.460000000000008,"sWert":null},{"Bezeichnung":"AI","Kanal":4,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":85.210000000000008,"sWert":null},{"Bezeichnung":"AI","Kanal":5,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":70.39,"sWert":null},{"Bezeichnung":"AI","Kanal":6,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":54.64,"sWert":null},{"Bezeichnung":"AI","Kanal":7,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":47.870000000000005,"sWert":null},{"Bezeichnung":"AI","Kanal":8,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":86.94,"sWert":null},{"Bezeichnung":"AI","Kanal":9,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":79.31,"sWert":null},{"Bezeichnung":"AI","Kanal":10,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":75.9,"sWert":null},{"Bezeichnung":"AI","Kanal":11,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":58.1,"sWert":null},{"Bezeichnung":"AI","Kanal":12,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":55.58,"sWert":null},{"Bezeichnung":"AI","Kanal":13,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":81.710000000000008,"sWert":null},{"Bezeichnung":"AI","Kanal":14,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":56.160000000000004,"sWert":null},{"Bezeichnung":"AI","Kanal":15,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":77.72,"sWert":null},{"Bezeichnung":"AI","Kanal":16,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":57.9,"sWert":null},{"Bezeichnung":"AI","Kanal":17,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":77.9,"sWert":null},{"Bezeichnung":"AI","Kanal":18,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":65.37,"sWert":null},{"Bezeichnung":"AI","Kanal":19,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":77.33,"sWert":null},{"Bezeichnung":"AI","Kanal":20,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":56.9,"sWert":null},{"Bezeichnung":"AI","Kanal":21,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":34.54,"sWert":null},{"Bezeichnung":"AI","Kanal":22,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":82.43,"sWert":null},{"Bezeichnung":"AI","Kanal":23,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":57.95,"sWert":null},{"Bezeichnung":"AI","Kanal":24,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":88.08,"sWert":null},{"Bezeichnung":"AI","Kanal":25,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":81.210000000000008,"sWert":null},{"Bezeichnung":"AI","Kanal":26,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":67.570000000000007,"sWert":null},{"Bezeichnung":"AI","Kanal":27,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":57.06,"sWert":null},{"Bezeichnung":"AI","Kanal":28,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":56.95,"sWert":null},{"Bezeichnung":"AI","Kanal":30,"iEinheit":7,"EinheitText":"%","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"AI","Kanal":32,"iEinheit":2,"EinheitText":"bar","Nachkommastellen":2,"isBool":false,"BoolVal":false,"Wert":-1.0,"sWert":null},{"Bezeichnung":"TH","Kanal":1,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":75.9,"sWert":null},{"Bezeichnung":"TH","Kanal":2,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":77.89,"sWert":null},{"Bezeichnung":"PKT","Kanal":1,"iEinheit":4,"EinheitText":"kW","Nachkommastellen":0,"isBool":false,"BoolVal":false,"Wert":120.51,"sWert":null},{"Bezeichnung":"PKT","Kanal":2,"iEinheit":4,"EinheitText":"kW","Nachkommastellen":0,"isBool":false,"BoolVal":false,"Wert":778.47,"sWert":null},{"Bezeichnung":"PKT","Kanal":3,"iEinheit":4,"EinheitText":"kW","Nachkommastellen":0,"isBool":false,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"PT","Kanal":1,"iEinheit":4,"EinheitText":"kW","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":239.0,"sWert":null},{"Bezeichnung":"PT","Kanal":2,"iEinheit":4,"EinheitText":"kW","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":25.240000000000002,"sWert":null},{"Bezeichnung":"PT","Kanal":3,"iEinheit":4,"EinheitText":"kW","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":669.69,"sWert":null},{"Bezeichnung":"PT","Kanal":4,"iEinheit":4,"EinheitText":"kW","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"PT","Kanal":5,"iEinheit":4,"EinheitText":"kW","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":344.56,"sWert":null},{"Bezeichnung":"PT","Kanal":6,"iEinheit":4,"EinheitText":"kW","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":77.600000000000009,"sWert":null},{"Bezeichnung":"PT","Kanal":7,"iEinheit":4,"EinheitText":"kW","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":438.21000000000004,"sWert":null},{"Bezeichnung":"DF","Kanal":1,"iEinheit":5,"EinheitText":"m^3/h","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":7.5,"sWert":null},{"Bezeichnung":"DF","Kanal":2,"iEinheit":5,"EinheitText":"m^3/h","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":6.8500000000000005,"sWert":null},{"Bezeichnung":"DF","Kanal":3,"iEinheit":5,"EinheitText":"m^3/h","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":22.11,"sWert":null},{"Bezeichnung":"DF","Kanal":4,"iEinheit":5,"EinheitText":"m^3/h","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"DF","Kanal":5,"iEinheit":5,"EinheitText":"m^3/h","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":13.86,"sWert":null},{"Bezeichnung":"DF","Kanal":6,"iEinheit":5,"EinheitText":"m^3/h","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":5.3,"sWert":null},{"Bezeichnung":"DF","Kanal":7,"iEinheit":5,"EinheitText":"m^3/h","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":18.0,"sWert":null},{"Bezeichnung":"PBH","Kanal":1,"iEinheit":4,"EinheitText":"kW","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":365.0,"sWert":null},{"Bezeichnung":"AA","Kanal":1,"iEinheit":7,"EinheitText":"%","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"AA","Kanal":2,"iEinheit":7,"EinheitText":"%","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":28.29,"sWert":null},{"Bezeichnung":"AA","Kanal":4,"iEinheit":7,"EinheitText":"%","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":100.0,"sWert":null},{"Bezeichnung":"AA","Kanal":5,"iEinheit":7,"EinheitText":"%","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"AA","Kanal":6,"iEinheit":7,"EinheitText":"%","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":62.910000000000004,"sWert":null},{"Bezeichnung":"AA","Kanal":7,"iEinheit":7,"EinheitText":"%","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":49.31,"sWert":null},{"Bezeichnung":"AA","Kanal":8,"iEinheit":7,"EinheitText":"%","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":73.75,"sWert":null},{"Bezeichnung":"MS","Kanal":1,"iEinheit":7,"EinheitText":"%","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":61.67,"sWert":null},{"Bezeichnung":"MS","Kanal":2,"iEinheit":7,"EinheitText":"%","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":70.83,"sWert":null},{"Bezeichnung":"MS","Kanal":3,"iEinheit":7,"EinheitText":"%","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":10.83,"sWert":null},{"Bezeichnung":"MS","Kanal":4,"iEinheit":7,"EinheitText":"%","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"MS","Kanal":11,"iEinheit":7,"EinheitText":"%","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":35.0,"sWert":null},{"Bezeichnung":"MS","Kanal":12,"iEinheit":7,"EinheitText":"%","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":100.0,"sWert":null},{"Bezeichnung":"MS","Kanal":13,"iEinheit":7,"EinheitText":"%","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"PH","Kanal":1,"iEinheit":0,"EinheitText":"","Nachkommastellen":0,"isBool":true,"BoolVal":true,"Wert":1.0,"sWert":null},{"Bezeichnung":"PH","Kanal":2,"iEinheit":0,"EinheitText":"","Nachkommastellen":0,"isBool":true,"BoolVal":true,"Wert":1.0,"sWert":null},{"Bezeichnung":"PH","Kanal":3,"iEinheit":0,"EinheitText":"","Nachkommastellen":0,"isBool":true,"BoolVal":true,"Wert":1.0,"sWert":null},{"Bezeichnung":"PH","Kanal":11,"iEinheit":0,"EinheitText":"","Nachkommastellen":0,"isBool":true,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"PH","Kanal":12,"iEinheit":0,"EinheitText":"","Nachkommastellen":0,"isBool":true,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"KPU","Kanal":1,"iEinheit":0,"EinheitText":"","Nachkommastellen":0,"isBool":true,"BoolVal":true,"Wert":1.0,"sWert":null},{"Bezeichnung":"KPU","Kanal":2,"iEinheit":0,"EinheitText":"","Nachkommastellen":0,"isBool":true,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"KPU","Kanal":3,"iEinheit":0,"EinheitText":"","Nachkommastellen":0,"isBool":true,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"KL","Kanal":1,"iEinheit":0,"EinheitText":"","Nachkommastellen":0,"isBool":true,"BoolVal":true,"Wert":1.0,"sWert":null},{"Bezeichnung":"KL","Kanal":2,"iEinheit":0,"EinheitText":"","Nachkommastellen":0,"isBool":true,"BoolVal":true,"Wert":1.0,"sWert":null},{"Bezeichnung":"KL","Kanal":3,"iEinheit":0,"EinheitText":"","Nachkommastellen":0,"isBool":true,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"BPU","Kanal":1,"iEinheit":0,"EinheitText":"","Nachkommastellen":0,"isBool":true,"BoolVal":true,"Wert":1.0,"sWert":null},{"Bezeichnung":"BL","Kanal":1,"iEinheit":0,"EinheitText":"","Nachkommastellen":0,"isBool":true,"BoolVal":true,"Wert":1.0,"sWert":null},{"Bezeichnung":"SG","Kanal":1,"iEinheit":0,"EinheitText":"","Nachkommastellen":0,"isBool":true,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"BI","Kanal":35,"iEinheit":0,"EinheitText":"","Nachkommastellen":0,"isBool":true,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"BI","Kanal":36,"iEinheit":0,"EinheitText":"","Nachkommastellen":0,"isBool":true,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"BI","Kanal":37,"iEinheit":0,"EinheitText":"","Nachkommastellen":0,"isBool":true,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"BI","Kanal":111,"iEinheit":0,"EinheitText":"","Nachkommastellen":0,"isBool":true,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"BI","Kanal":112,"iEinheit":0,"EinheitText":"","Nachkommastellen":0,"isBool":true,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"BI","Kanal":113,"iEinheit":0,"EinheitText":"","Nachkommastellen":0,"isBool":true,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"HKT","Kanal":1,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":76.88,"sWert":null},{"Bezeichnung":"HKT","Kanal":2,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":76.75,"sWert":null},{"Bezeichnung":"HKT","Kanal":3,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":76.850000000000009,"sWert":null},{"Bezeichnung":"HKT","Kanal":4,"iEinheit":1,"EinheitText":"°C","Nachkommastellen":1,"isBool":false,"BoolVal":false,"Wert":0.0,"sWert":null},{"Bezeichnung":"GR","Kanal":1,"iEinheit":2,"EinheitText":"bar","Nachkommastellen":2,"isBool":false,"BoolVal":false,"Wert":1.5,"sWert":null}],"VisuJsonItems":[]}`;
+
 
 
 /*********************Konstanten*********************/
@@ -44,6 +46,7 @@ const STROKE_WIDTH = .3;
 /*********************VanillaDocReady*********************/
 window.addEventListener('load', function () {
   document.querySelector(`.divVisu`).appendChild(createBackgroundSVG());
+  window.visuLiveData = JSON.parse(VISU_LIVE_DATA).Items;
   window.reloadLiveDataIntervalId = setInterval(getLiveData, 1000, window.visuLiveData, window.projectNo);
   
   enterVisuEditor(true);
@@ -541,6 +544,75 @@ function initSignalTable(visuLiveData) {
   const signalTableBody = document.querySelector(`.signalTable tbody`);
   if (visuLiveData) {
     //create table according to liveSignals
+    console.log(visuLiveData);
+    visuLiveData.filter(signal => signal.Bezeichnung.trim() !== `HK` && signal.Bezeichnung.trim() !== `BHK` && signal.Bezeichnung.trim() !== `KES` && signal.Bezeichnung.trim() !== `WWL`).forEach(signal => {
+      const {Bezeichnung, Kanal, Nachkommastellen, iEinheit, sWert} = signal;
+      const tr = document.createElement(`tr`);
+      signalTableBody.appendChild(tr);
+      [`UsageCount`, `RtosTerm`, `SignalId`, `Tooltip`, `DecPlace`, `Unit`, `Style`, `TrueTxt`, `FalseTxt`].forEach(col => {
+        const td = document.createElement(`td`);
+        tr.appendChild(td);
+        if (col === `UsageCount`) {
+          td.innerText = 0;
+          td.classList.add(`${Bezeichnung.trim()}${Kanal}count`);
+        }
+        else if (col.match(/(Rtos)|(SignalId)|(Tooltip)|(Txt)/)) {
+          const input = document.createElement(`input`);
+          td.appendChild(input);
+          input.classList.add(`txt${col}`);
+          input.type = `text`;
+          if (col === `SignalId`) {
+            input.value = `${Bezeichnung.trim()}${Kanal}`;
+            input.setAttribute(`signal-id`, `${Bezeichnung.trim()}${Kanal}`);
+            input.readOnly = true;
+            input.draggable = true;
+          }
+          else if (col.match(/(Txt)/)) {
+            input.setAttribute(`list`, `favBoolTxtList`);
+            if (sWert && col.match(/(TrueTxt)/)) {
+              input.value = sWert.trim();
+            }
+          }
+        }
+        else {
+          const select = document.createElement(`select`);
+          td.appendChild(select);
+          select.classList.add(`sel${col}`);
+
+          if (col === `DecPlace`) {
+            [0, 1, 2, 3, 4].forEach(decPlace => {
+              const option = document.createElement(`option`);
+              select.appendChild(option);
+              option.innerText = decPlace;
+              option.value = decPlace;
+              option.selected = (decPlace === Nachkommastellen);
+            });
+          }
+
+          if (col === `Unit`) {
+            [``, `°C`, `bar`, `V`, `kW`, `m³/h`, `mWS`, `%`, `kWh`, `Bh`, `m³`, `°Cø`, `mV`, `UPM`, `s`, `mbar`, `A`, `Hz`, `l/h`, `l`].forEach((unit, idx) => {
+              const option = document.createElement(`option`);
+              select.appendChild(option);
+              option.innerText = unit;
+              option.value = unit;
+              option.selected = (idx === iEinheit);
+            });
+          }
+
+          if (col === `Style`) {
+            [``, `sollwert`, `grenzwert`].forEach(style => {
+              const option = document.createElement(`option`);
+              select.appendChild(option);
+              //select.setAttribute(`stil`, style);
+              option.innerText = style;
+              option.value = style;
+              option.setAttribute(`stil`, style);
+              option.selected = (Bezeichnung.trim() === `HKT` && style === `sollwert` || Bezeichnung.trim() === `GR` && style === `grenzwert`);
+            });
+          }
+        }
+      });
+    });
   }
   else {
     //create basic table (32 DI, 32 AI, 32 DO, 8 AO, CAN?)
@@ -611,15 +683,7 @@ function initSignalTable(visuLiveData) {
                 option.setAttribute(`stil`, style);
               });
             }
-
-
-
           }
-
-
-
-
-          
         });
 
 
@@ -724,7 +788,7 @@ function createVisuItemPool() {
 function enterVisuEditor(initialCall) {
   if (initialCall) {
     //document.body.appendChild(createSignalTable());
-    initSignalTable();
+    initSignalTable(window.visuLiveData);
     document.body.appendChild(createVisuItemPool());
     //document.body.appendChild(createEditorTools());
     document.querySelector(`#selStrokeDasharray`).style.color = document.querySelector(`.colorPicker`).value;
@@ -975,22 +1039,6 @@ function divVisuDragOverEventHandler(ev) {
       //setTimeout(setIconPosition, 1000, ev);
     }
   });
-  /*
-  const draggingItem = document.querySelector(`[dragging]`);  //forEach when more than 1 item...
-  if (draggingItem) {
-    const visuItem = ev.target.closest(`.visuItem`);
-    const visuItemToDivVisu = (ev.target.closest(`.divVisu`) && draggingItem.matches(`.visuItem`));
-    const signalToVisuItem = draggingItem.type === `text` && visuItem && !ev.target.closest(`.visuEditElement`);
-    if (visuItemToDivVisu || signalToVisuItem) {
-      ev.preventDefault();
-      ev.dataTransfer.dropEffect = (ev.ctrlKey || draggingItem.closest(`.visuEditElement`)) ? `copy` : `move`;
-    }
-    if (signalToVisuItem) {
-      //console.log(ev.target);
-      //setTimeout(setIconPosition, 1000, ev);
-    }
-  }
-  */
 }
 
 function dragEndEventHandler(ev) {
@@ -1229,7 +1277,7 @@ function openLocalFileEventHandler(ev) {
   reader.addEventListener(`load`, () => {
     const divVisu = document.querySelector(`.divVisu`);
     divVisu.innerHTML = reader.result;
-    divVisu.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.value = txtEl.className);
+    divVisu.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.value = txtEl.getAttribute(`signal-id`));
     updateUnDoReDoStack();
     console.log(reader.result);
   });
@@ -1351,6 +1399,7 @@ function signalTableColumnVisibilityHandler(ev) {
 function updateUsedCount() {
   const divVisu = document.querySelector(`.divVisu`)
   document.querySelectorAll(`.txtSignalId`).forEach(signalId => {
+    //console.log(signalId);
     document.querySelector(`.${signalId.value}count`).innerText = divVisu.querySelectorAll(`[signal-id=${signalId.value}]`).length;
   });
 }
