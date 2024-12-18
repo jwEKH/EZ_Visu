@@ -800,7 +800,12 @@ function switchVisuTab(tabIdx) {
 function divVisuContextMenuEventHandler(ev) {
   ev.preventDefault();
 
-  if (!cancelCurrentSelection()) {
+  const msSinceLastBlurEvent = ev.timeStamp - window.lastBlurEventTimeStamp;
+  let actionExecuted = (msSinceLastBlurEvent < 700) ? true : false; //block contexmenuEvent for 700ms after blurEvent
+
+  actionExecuted |= cancelCurrentSelection();
+
+  if (!actionExecuted) {
     drawModeClickEventHandler(ev); //drawing only starts when no selection was active
   }
 }
@@ -814,12 +819,14 @@ function mouseDownEventHandler(ev) {
   if (ev.buttons === 1) {
     const visuItem = ev.target.closest(`.divVisu .visuItem`);
     if (visuItem) {
-      if (!ev.shiftKey && !ev.ctrlKey) {
-        document.querySelectorAll(`[selected]`).forEach(el => {
-          if (el !== visuItem) {
-            el.removeAttribute(`selected`);
-          }
-        });
+      if (!visuItem.matches(`[selected]`)) {
+        if (!ev.shiftKey && !ev.ctrlKey) {
+          document.querySelectorAll(`[selected]`).forEach(el => {
+            if (el !== visuItem) {
+              el.removeAttribute(`selected`);
+            }
+          });
+        }
       }
       visuItem.toggleAttribute(`selected`);
     }
@@ -835,7 +842,8 @@ function mouseDownEventHandler(ev) {
 }
 
 function divVisuClickEventHandler(ev) {
-  let actionExecuted = false;
+  const msSinceLastBlurEvent = ev.timeStamp - window.lastBlurEventTimeStamp;
+  let actionExecuted = (msSinceLastBlurEvent < 700) ? true : false; //block clickEvent for 700ms after blurEvent
     
   const selectionArea = document.querySelector(`.selectionArea`);
   if (!selectionArea) {
@@ -855,7 +863,7 @@ function divVisuClickEventHandler(ev) {
 }
 
 function linkBtnBlurHandler(ev) {
-  //console.log(ev);
+  window.lastBlurEventTimeStamp = ev.timeStamp; //save timeStamp to avoid click- contextmenuEvent (selection/drawing) afterwards
   ev.target.type = `button`;
   ev.target.removeEventListener(`blur`, linkBtnBlurHandler);
   
@@ -864,9 +872,6 @@ function linkBtnBlurHandler(ev) {
       ev.target.value = ev.target.fallbackVal; //cancelAction => fallbackVal
     }
     document.activeElement.blur();
-  }
-  else {
-    selectModeClickEventHandler(ev); //call Handler if not keyDown (Esc | Enter) to prevent selection starting on click
   }
 }
 
@@ -990,7 +995,6 @@ function dragEndEventHandler(ev) {
 }
 
 function divVisuDropEventHandler(ev) {
-  
   const draggingItems = document.querySelectorAll(`[dragging]`);
   const offsets = JSON.parse(ev.dataTransfer.getData(`offsets`));
   draggingItems.forEach((draggingItem, idx) => {
@@ -1036,7 +1040,7 @@ function divVisuDropEventHandler(ev) {
 }
 
 function dblClickEventHandler(ev) {
-  if (ev.target.type === `button`) {
+  if (ev.target.matches(`.divVisu [type = button]`)) {
     ev.target.type = `text`; //convert button to text element
     ev.target.fallbackVal = ev.target.value; //perceive current Text for cancelAction 
     ev.target.addEventListener(`blur`, linkBtnBlurHandler);
