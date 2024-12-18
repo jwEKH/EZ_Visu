@@ -147,7 +147,7 @@ body {
 .visuItem[icon = "puffer"] {
   border-radius: var(--controlsWidthOffset);
 }
-.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"]) {
+.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"], [icon = "text"]) {
   grid-template-areas: 
 	'icon signals';
 	grid-auto-columns: min-content;
@@ -159,19 +159,19 @@ body {
   padding: 2ch;
   */
 }
-.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"])[iconPosition = "right"] {
+.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"], [icon = "text"])[iconPosition = "right"] {
 	grid-template-areas:
 	'signals icon';
 }
-.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"])[iconPosition = "right"] input {
+.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"], [icon = "text"])[iconPosition = "right"] input {
   text-align: end;
 }
-.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"])[iconPosition = "top"] {
+.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"], [icon = "text"])[iconPosition = "top"] {
 	grid-template-areas: 
 	'icon'
 	'signals';
 }
-.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"])[iconPosition = "bottom"] {
+.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"], [icon = "text"])[iconPosition = "bottom"] {
 	grid-template-areas: 
 	'signals'
 	'icon';

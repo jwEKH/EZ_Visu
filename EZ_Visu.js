@@ -62,10 +62,10 @@ function createBackgroundSVG(idx) {
 function createIcon(symbol) {
   if (symbol) {
     const icon =  (symbol === `kessel`) ? document.createElement(`div`) : 
-                  (symbol === `button`) ? document.createElement(`input`) : 
+                  (symbol === `button` || symbol === `text`) ? document.createElement(`input`) : 
                   document.createElementNS(SVG_NS, `svg`);
     if (icon.tagName === `INPUT`) {
-      icon.type = `button`;
+      icon.type = symbol;
     }
     else {
       icon.classList.add(`icon`);
@@ -114,6 +114,9 @@ function createIcon(symbol) {
     }
     if (symbol === `button`) {
       icon.value = `LinkButton;0`;
+    }
+    if (symbol === `text`) {
+      icon.value = `Text`;
     }
     
     if (symbol === `path`) {
@@ -167,7 +170,7 @@ function createVisuItem(...attributes) {
       visuItem.setAttribute(key, value);
       
       if (key.toLowerCase() === `icon`) {
-        const target = (value === `button`) ? divSignals : divIcon ;
+        const target = (value === `button` || value === `text`) ? divSignals : divIcon ;
         target.appendChild(createIcon(value));       
         icon = value;
       }
@@ -199,7 +202,7 @@ function createVisuItem(...attributes) {
   
   if (icon !== `temperatur`) {
     const divIconSignals = [`Error`, `Freigabe`, `Betriebsart`, `Absenkung`];
-    if (icon !== `button`) {
+    if (icon !== `button` && icon !== `text`) {
       divIconSignals.push(`Betrieb`);
       divIconSignals.reverse();
     }
@@ -711,7 +714,7 @@ function createVisuItemPool() {
   const summary = document.createElement(`summary`);
   summary.innerText = `visuItems`;
   visuItemPool.appendChild(summary);
-  [`temperatur`, `heizkreis`, `pumpe`, `mischer`, `ventil`, `aggregat`, `kessel`, `puffer`, `waermetauscher`, `heizpatrone`, `luefter`, `lueftungsklappe`, `button`, `gassensor`, `schalter`, `zaehler`].forEach(el => {
+  [`temperatur`, `heizkreis`, `pumpe`, `mischer`, `ventil`, `aggregat`, `kessel`, `puffer`, `waermetauscher`, `heizpatrone`, `luefter`, `lueftungsklappe`, `button`, `gassensor`, `schalter`, `zaehler`, `text`].forEach(el => {
     visuItemPool.appendChild(createVisuItem({icon: el}));
   });
   
@@ -925,8 +928,8 @@ function dragStartEventHandler(ev) {
     }
   }
 
-  const selectedElements = document.querySelectorAll(`[selected][draggable]`);
-  console.log(selectedElements);
+  const selectedElements = document.querySelectorAll(`[dragging], [selected][draggable]`);
+  //console.log(selectedElements);
   const offsets = [];
   selectedElements.forEach(selectedEl => {
     const targetBox = selectedEl.getBoundingClientRect();
@@ -1092,7 +1095,12 @@ function keyDownEventHandler(ev) {
       linkBtnBlurHandler(ev);
     }
   }
-  if (!document.activeElement.matches(`.visuItem[icon=button] input`)) {
+  else if (document.activeElement.matches(`.visuItem[icon=text] input`)) {
+    if (key.match((/(escape)|(enter)/))) {
+      document.activeElement.blur();
+    }
+  }
+  else {
     const auxKeys = ev.altKey | ev.ctrlKey | ev.shiftKey;
     if (!auxKeys) {
       if (key === `c`) {
