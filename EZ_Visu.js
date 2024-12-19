@@ -699,6 +699,8 @@ function initSignalTable(visuLiveData) {
     });
   }
 
+  signalTableAddRow();
+
   [`RtosTerm`, `SignalParameters`].forEach(colName => {
     const cb = document.querySelector(`#cbShow${colName}`);
     const col = document.querySelector(`.col${colName}`);
@@ -1378,6 +1380,77 @@ function saveSvg(svgEl, name) {
   document.body.appendChild(downloadLink);
   downloadLink.click();
   document.body.removeChild(downloadLink);
+}
+
+function signalTableAddRow() {
+  const signalGroup = `dummy`;
+  const idx = 0;
+
+  const signalTableBody = document.querySelector(`.signalPool tbody`);
+  const tr = document.createElement(`tr`);
+  signalTableBody.appendChild(tr);
+  [`UsageCount`, `RtosTerm`, `SignalId`, `Tooltip`, `DecPlace`, `Unit`, `Style`, `TrueTxt`, `FalseTxt`].forEach(col => {
+    const td = document.createElement(`td`);
+    tr.appendChild(td);
+    if (col === `UsageCount`) {
+      td.innerText = 0;
+      td.classList.add(`${signalGroup}${idx}count`);
+    }
+    else if (col.match(/(Rtos)|(SignalId)|(Tooltip)|(Txt)/)) {
+      const input = document.createElement(`input`);
+      td.appendChild(input);
+      input.classList.add(`txt${col}`);
+      input.type = `text`;
+      if (col === `SignalId`) {
+        input.value = `${signalGroup}${idx}`;
+        input.setAttribute(`signal-id`, `${signalGroup}${idx}`);
+        input.readOnly = true;
+        input.draggable = true;
+        if (!signalGroup.match(/(DI)|(DO)|(dummy)/)) {
+          input.setAttribute(`dec-place`, 1);
+          input.setAttribute(`unit`, `°C`);
+        }
+      }
+      else if (col.match(/(Txt)/)) {
+        input.setAttribute(`list`, `favBoolTxtList`);
+      }
+    }
+    else {
+      const select = document.createElement(`select`);
+      td.appendChild(select);
+      select.classList.add(`sel${col}`);
+
+      if (col === `DecPlace`) {
+        [0, 1, 2, 3, 4].forEach(decPlace => {
+          const option = document.createElement(`option`);
+          select.appendChild(option);
+          option.innerText = decPlace;
+          option.value = decPlace;
+          option.selected = (decPlace === 1 && !signalGroup.match(/(DI)|(DO)|(dummy)/));
+        });
+      }
+
+      if (col === `Unit`) {
+        [``, `°C`, `bar`, `V`, `kW`, `m³/h`, `mWS`, `%`, `kWh`, `Bh`, `m³`, `°Cø`, `mV`, `UPM`, `s`, `mbar`, `A`, `Hz`, `l/h`, `l`].forEach(unit => {
+          const option = document.createElement(`option`);
+          select.appendChild(option);
+          option.innerText = unit;
+          option.value = unit;
+          option.selected = (unit === `°C` && !signalGroup.match(/(DI)|(DO)|(dummy)/));
+        });
+      }
+
+      if (col === `Style`) {
+        [``, `sollwert`, `grenzwert`].forEach(style => {
+          const option = document.createElement(`option`);
+          select.appendChild(option);
+          option.innerText = style;
+          option.value = style;
+          option.setAttribute(`stil`, style);
+        });
+      }
+    }
+  });
 }
 
 function signalTableInputEventHandler(ev) {
