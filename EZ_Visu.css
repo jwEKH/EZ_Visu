@@ -276,6 +276,7 @@ body {
 .visuItem[icon = "kessel"] .divSignals,
 .visuItem[icon = "puffer"] .divSignals {
   grid-area: Error-start / Error-start / signalsEnd-end / signalsEnd-end;
+  grid-auto-rows: min-content;
 }
 .visuItem[icon = "aggregat"] [type = "text"],
 .visuItem[icon = "kessel"] [type = "text"],

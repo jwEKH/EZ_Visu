@@ -884,7 +884,8 @@ function divVisuMouseMoveEventHandler(ev) {
 
 function mouseDownEventHandler(ev) {
   if (ev.buttons === 1) {
-    const visuItem = ev.target.closest(`.divVisu .visuItem`);
+    const visuItem = (ev.target.matches(`.txtSignalId`)) ? null : ev.target.closest(`.divVisuaa .visuItem`);
+    //console.log(visuItem);
     if (visuItem) {
       if (!visuItem.matches(`[selected]`)) {
         if (!ev.shiftKey && !ev.ctrlKey) {
@@ -956,6 +957,7 @@ function cancelCurrentDrawing() {
 
 function cancelCurrentSelection() {
   document.querySelectorAll(`[selected]`).forEach(el => el.removeAttribute(`selected`));
+  document.querySelectorAll(`[highlighted]`).forEach(el => el.removeAttribute(`highlighted`));
   const selectionArea = document.querySelector(`.selectionArea`);
   if (selectionArea) {
     selectionArea.remove();
@@ -1294,29 +1296,35 @@ function openLocalFileEventHandler(ev) {
 }
 
 function parseVisuSkript(txt) {
-  console.log(txt);
-  const data = txt.replaceAll(` `,``).match(/([A-Z]+\d+),\d,\d+',.+\*\//g);
+  //console.log(txt);
+  const data = txt.match(/([A-Z]+\s*\d+),\d,\s*\d+',.+\*\//g);
   //console.log(data);
   
   const dataArray = [];
   data.forEach(dataset => {
-    const result = dataset.match(/(?<id>[A-Z]+\d+),(?<nk>\d),(?<unit>\d+)',(?<rtos>.+)(?:TOTEMPBY).*\/\*(?<tooltip>.+)\*\//);
+    const result = dataset.match(/(?<name>[A-Z]+)\s*(?<idx>\d+),(?<nk>\d),\s*(?<unit>\d+)',(?<rtos>.+)(?:TO\s*TEMP\s*BY).*\/\*\s*(?<tooltip>.+)\*\//);
     //console.log(result);
 
-    dataArray.push(result.groups);
+    //dataArray.push(result.groups);
 
-    //update rtos term
-    const tr = document.querySelector(`tr [signal-id=${result.groups.id}]`).closest(`tr`);
-    const txtRtosTerm = tr.querySelector(`.txtRtosTerm`);
-    txtRtosTerm.setAttribute(`rtos-id`, result.groups.rtos);
-    txtRtosTerm.value = result.groups.rtos;
-
-    const txtTooltip = tr.querySelector(`.txtTooltip`);
-    txtTooltip.setAttribute(`tooltip`, result.groups.tooltip);
-    txtTooltip.value = result.groups.tooltip;
+    //update rtos term & tooltip/title
+    const txtSignalIds = document.querySelectorAll(`[signal-id=${result.groups.name}${result.groups.idx}]`);
+    txtSignalIds.forEach(txtSignalId => {
+      txtSignalId.setAttribute(`rtos-id`, result.groups.rtos.trim());
+      txtSignalId.setAttribute(`title`, result.groups.tooltip.trim());
+      const tr = txtSignalId.closest(`tr`);
+      if (tr) {
+        const txtRtosTerm = tr.querySelector(`.txtRtosTerm`);
+        //txtRtosTerm.setAttribute(`rtos-id`, result.groups.rtos.trim());
+        txtRtosTerm.value = result.groups.rtos;
+        const txtTooltip = tr.querySelector(`.txtTooltip`);
+        //txtTooltip.setAttribute(`tooltip`, result.groups.tooltip.trim());
+        txtTooltip.value = result.groups.tooltip;
+      }
+    });
   });
 
-  console.log(dataArray);
+  //console.log(dataArray);
 }
 
 function colorInputEventHandler(ev) {
