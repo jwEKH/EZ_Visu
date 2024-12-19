@@ -943,6 +943,17 @@ function linkBtnBlurHandler(ev) {
   }
 }
 
+function txtElBlurHandler(ev) {
+  ev.target.removeEventListener(`blur`, txtElBlurHandler);
+  
+  if (ev.type === `keydown`) {
+    if(ev.key === `Escape`) {
+      ev.target.value = ev.target.fallbackVal; //cancelAction => fallbackVal
+    }
+    document.activeElement.blur();
+  }
+}
+
 function cancelCurrentDrawing() {
   const hoverMarker = document.querySelector(`.hoverMarker`);
   if (hoverMarker)
@@ -1150,7 +1161,7 @@ function keyDownEventHandler(ev) {
       document.activeElement.blur();
     }
   }
-  else {
+  else if (!document.activeElement.matches(`[type=text]:not([readonly])`)) {
     const auxKeys = ev.altKey | ev.ctrlKey | ev.shiftKey;
     if (!auxKeys) {
       if (key === `c`) {
