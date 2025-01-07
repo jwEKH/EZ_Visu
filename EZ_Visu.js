@@ -1070,15 +1070,24 @@ function divVisuDropEventHandler(ev) {
       draggingItem.toggleAttribute(`selected`, (ev.dataTransfer.dropEffect !== `copy`));
       
       if (target.matches(`.divVisu`)) {
-        const targetBox = target.getBoundingClientRect();
-        
+        const divVisuBox = target.getBoundingClientRect();
+        const dropItemBox = dropItem.getBoundingClientRect();
+        const iconPosition = dropItem.getAttribute(`iconPosition`);
         
         dropItem.style.position = `absolute`;
-        const xRel = (ev.x - targetBox.x - offsets[idx].x)/targetBox.width;
-        const yRel = (ev.y - targetBox.y - offsets[idx].y)/targetBox.height;
+        const xRel = (iconPosition === `right`) ? (ev.x - divVisuBox.x - offsets[idx].x + dropItemBox.width)/divVisuBox.width : (ev.x - divVisuBox.x - offsets[idx].x)/divVisuBox.width;
+        const yRel = (iconPosition === `bottom`) ? (ev.y - divVisuBox.y - offsets[idx].y + dropItemBox.height)/divVisuBox.height : (ev.y - divVisuBox.y - offsets[idx].y)/divVisuBox.height;
+        
         const gridSnapActive = document.querySelector(`#cbGridSnap`).checked;
-        dropItem.style.left = (gridSnapActive) ? `${Math.round(GRIDSIZE_AS_PARTS_FROM_WIDTH * xRel) / GRIDSIZE_AS_PARTS_FROM_WIDTH * 100}%` : `${xRel*100}%`;
-        dropItem.style.top = (gridSnapActive) ? `${Math.round((GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * yRel) / (GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * 100}%` : `${yRel*100}%`;
+        const left = (iconPosition === `right`) ? undefined : (gridSnapActive) ? `${Math.round(GRIDSIZE_AS_PARTS_FROM_WIDTH * xRel) / GRIDSIZE_AS_PARTS_FROM_WIDTH * 100}%` : `${xRel*100}%`;
+        const top = (iconPosition === `bottom`) ? undefined : (gridSnapActive) ? `${Math.round((GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * yRel) / (GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * 100}%` : `${yRel*100}%`;
+        const right = (iconPosition === `right`) ? (gridSnapActive) ? `${100 - Math.round(GRIDSIZE_AS_PARTS_FROM_WIDTH * xRel) / GRIDSIZE_AS_PARTS_FROM_WIDTH * 100}%` : `${100 - xRel*100}%` : undefined;
+        const bottom = (iconPosition === `bottom`) ? (gridSnapActive) ? `${100 - Math.round((GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * yRel) / (GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * 100}%` : `${100 - yRel*100}%` : undefined;
+
+        dropItem.style.left = left;
+        dropItem.style.top = top;
+        dropItem.style.right = right;
+        dropItem.style.bottom = bottom;
         target.appendChild(dropItem);
       }
       else {
@@ -1253,12 +1262,23 @@ function keyDownEventHandler(ev) {
               }
             }
             else if (el.matches(`.visuItem`)) {
+              const iconPosition = el.getAttribute(`iconPosition`);
               if (dxRel) {
-                console.log(`match`);
-                el.style.left = `${parseFloat(el.style.left) + 100 * dxRel}%`;
+                //console.log(`match`);
+                if (iconPosition === `right`) {
+                  el.style.right = `${parseFloat(el.style.right) - 100 * dxRel}%`;
+                }
+                else {
+                  el.style.left = `${parseFloat(el.style.left) + 100 * dxRel}%`;
+                }
               }
               if (dyRel) {
-                el.style.top = `${parseFloat(el.style.top) + 100 * dyRel}%`;
+                if (iconPosition === `bottom`) {
+                  el.style.bottom = `${parseFloat(el.style.bottom) - 100 * dyRel}%`;
+                }
+                else {
+                  el.style.top = `${parseFloat(el.style.top) + 100 * dyRel}%`;
+                }
               }
             }
           });
