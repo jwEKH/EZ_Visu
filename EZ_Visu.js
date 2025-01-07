@@ -699,6 +699,8 @@ function initSignalTable(visuLiveData) {
     });
   }
 
+  signalTableTxtSignalIdsAddAttributes();
+
   signalTableAddRow();
 
   [`RtosTerm`, `SignalParameters`].forEach(colName => {
@@ -711,66 +713,40 @@ function initSignalTable(visuLiveData) {
 
 }
 
-function createSignalTableOLD(visuLiveData) {
-  const signalTable = document.createElement(`details`);
-  signalTable.classList.add(`signalTable`, `visuEditElement`);
-  //signalTable.setAttribute(`open`, `true`);
-  [`Drag`, `Edit`].forEach(option => {
-    const radioBtn = document.createElement(`input`);
-    radioBtn.type = `radio`;
-    radioBtn.id = `radioBtn${option}`;
-    radioBtn.name = `radioGroupSignalTable`;
-    radioBtn.value = option.toLowerCase();
-    radioBtn.checked = (option === `Drag`);
-    radioBtn.addEventListener(`change`, (ev) => {
-      console.log(ev.target.value);
-      const inpSignals = document.querySelectorAll(`.signalTable input[type=text]`);
-      //console.log(inpSignals);
-      inpSignals.forEach(el => {
-        el.readOnly = !el.readOnly;//, (ev.target.value === `drag`)));
-        el.draggable = !el.draggable;//, (ev.target.value === `drag`)));
-      });
-    });
-    const lbl = document.createElement(`label`);
-    lbl.setAttribute(`for`, radioBtn.id);
-    lbl.innerText = option;
-    signalTable.appendChild(radioBtn);
-    signalTable.appendChild(lbl);
+function signalTableTxtSignalIdsAddAttributes() {
+  document.querySelectorAll(`.signalTable tbody tr`).forEach(tr => {
+    const txtSignalId = tr.querySelector(`.txtSignalId`);
+    
+    const txtRtosTermVal = tr.querySelector(`.txtRtosTerm`).value;
+    const txtTooltipVal = tr.querySelector(`.txtTooltip`).value;
+    const selDecPlaceVal = tr.querySelector(`.selDecPlace`).value;
+    const selUnitVal = tr.querySelector(`.selUnit`).value;
+    const selStyleVal = tr.querySelector(`.selStyle`).value;
+    const txtTrueTxtVal = tr.querySelector(`.txtTrueTxt`).value;
+    const txtFalseTxtVal = tr.querySelector(`.txtFalseTxt`).value;
+    
+    if (txtRtosTermVal !== ``) {
+      txtSignalId.setAttribute(`rtos-id`, txtRtosTermVal);
+    }
+    if (txtTooltipVal !== ``) {
+      txtSignalId.setAttribute(`title`, txtTooltipVal);
+    }
+    if (selDecPlaceVal !== ``) {
+      txtSignalId.setAttribute(`dec-place`, selDecPlaceVal);
+    }
+    if (selUnitVal !== ``) {
+      txtSignalId.setAttribute(`unit`, selUnitVal);
+    }
+    if (selStyleVal !== ``) {
+      txtSignalId.setAttribute(`stil`, selStyleVal);
+    }
+    if (txtTrueTxtVal !== ``) {
+      txtSignalId.setAttribute(`true-txt`, txtTrueTxtVal);
+    }
+    if (txtFalseTxtVal !== ``) {
+      txtSignalId.setAttribute(`false-txt`, txtFalseTxtVal);
+    }
   });
-  const summary = document.createElement(`summary`);
-  summary.innerText = `Signale`;
-  signalTable.appendChild(summary);
-  
-  if (visuLiveData) {
-    //create table according to liveSignals
-  }
-  else {
-    //create basic table (32 DI, 32 AI, 32 DO, 8 AO, CAN?)
-    [`DI`, `AI`, `DO`, `AO`, `CAN`].forEach(signalGroup => {
-      const details = document.createElement(`details`);
-      details.classList.add(`signalGroup`, `${signalGroup}signals`);
-      details.setAttribute(`open`, `true`);
-      const summary = document.createElement(`summary`);
-      summary.innerText = signalGroup;
-      details.appendChild(summary);
-
-      const channels =  (signalGroup === `AO`) ? 8 :
-                        (signalGroup === `CAN`) ? 4 :
-                        32;
-      for (let i=1; i<=channels; i++) {
-        const entry = document.createElement(`input`);
-        details.appendChild(entry);
-        entry.type = `text`;
-        entry.classList.add(`${signalGroup}${i}`);
-        entry.readOnly = true;
-        entry.draggable = true;
-        entry.value = `${signalGroup}${i}`;
-        entry.toggleAttribute(`isBool`, signalGroup.match(/(DI)|(DO)/));
-      }
-      signalTable.appendChild(details);
-    });
-  }
-  return signalTable;
 }
 
 function createVisuItemPool() {
@@ -1092,12 +1068,18 @@ function divVisuDropEventHandler(ev) {
       }
       else {
         if (target.closest(`.divIconSignal`)) {
-          console.log(draggingItem.getAttributeNames());
-          draggingItem.getAttributeNames().forEach(attributeName => {
+          getRelevantAttributesAsMap(draggingItem).forEach((val, key) => {
+            console.log(key, val);
+            target.setAttribute(key, val);
+          });
+          /*
+          console.log(getUniqueAttributeNames(draggingItem));
+          getUniqueAttributeNames(draggingItem).forEach(attributeName => {
             if (attributeName.match(/(signal-id)|(dec-place)|(unit)|(true-txt)|(false-txt)/)) {
               target.setAttribute(attributeName, draggingItem.getAttribute(attributeName));
             }
           });
+          */
           target.title = `${draggingItem.value} (click to remove Signal)`;
           dropItem.remove();
         }
@@ -1316,12 +1298,27 @@ function openLocalFileEventHandler(ev) {
       if (file.name.match(/(\.txt)/i)) {
         const divVisu = document.querySelector(`.divVisu`);
         divVisu.innerHTML = reader.result;
-        divVisu.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.value = txtEl.getAttribute(`signal-id`));
+        const signalTable = document.querySelector(`.signalTable`);
+        divVisu.querySelectorAll(`[type=text]`).forEach(visuSignal => {
+          const signalId = visuSignal.getAttribute(`signal-id`);
+          visuSignal.value = signalId;
+          //add information from visu to signalTable
+          /*
+          const txtSignalId = signalTable.querySelector(`[signal-id = ${signalId}]`);
+          if (txtSignalId) {
+            getRelevantAttributesAsMap(visuSignal).forEach((val, key) => {
+              txtSignalId.setAttribute(key, val);
+            });
+          }
+          else {
+            console.warn(`signal-id ${signalId} not in signalTable included needs to be added! todo...`);
+          }
+          */
+        });
         updateUnDoReDoStack();
       }
       else if (file.name.match(/(\.p)/i)) {
         parseVisuSkript(reader.result);
-        
       }
       //console.log(reader.result);
     });
@@ -1333,12 +1330,9 @@ function parseVisuSkript(txt) {
   const data = txt.match(/([A-Z]+\s*\d+),\d,\s*\d+',.+\*\//g);
   //console.log(data);
   
-  const dataArray = [];
   data.forEach(dataset => {
     const result = dataset.match(/(?<name>[A-Z]+)\s*(?<idx>\d+),(?<nk>\d),\s*(?<unit>\d+)',(?<rtos>.+)(?:TO\s*TEMP\s*BY).*\/\*\s*(?<tooltip>.+)\*\//);
     //console.log(result);
-
-    //dataArray.push(result.groups);
 
     //update rtos term & tooltip/title
     const txtSignalIds = document.querySelectorAll(`[signal-id=${result.groups.name}${result.groups.idx}]`);
@@ -1357,7 +1351,7 @@ function parseVisuSkript(txt) {
     });
   });
 
-  //console.log(dataArray);
+  
 }
 
 function colorInputEventHandler(ev) {
@@ -1607,19 +1601,24 @@ function fetchData() {
 }
 
 /*********************AuxFunctions*********************/
+function getUniqueAttributeNames(el) {
+  //using MapConstructor to ensure that no duplicates included!
+  return [...new Set(el.getAttributeNames())];
+}
+
+function getRelevantAttributesAsMap(el, relevantAtributeNames = [`signal-id`, `rtos-id`, `title`, `tooltip`, `dec-place`, `unit`, `stil`, `true-txt`, `false-txt`]) {
+  const map = new Map();
+  getUniqueAttributeNames(el).forEach(name => {
+    if (relevantAtributeNames.includes(name)) {
+      map.set(name, el.getAttribute(name));
+    }
+  });
+  return map;
+}
+
 function constrain(val, min, max) {
   return Math.min(max, Math.max(min, val));
 }
-
-function cosDeg(deg) {
-  const pi = Math.PI;
-  return Math.cos(deg/180*pi);
-}
-function sinDeg(deg) {
-  const pi = Math.PI;
-  return Math.sin(deg/180*pi);
-}
-
 
 function eventIsWithin(ev, cssSelector) { //necessary bc fn.closest() fails 4 svg ancestors bc they don't have parents...
   if (ev.isTrusted) { //don't check for untrusted events, like using fn.click(), but return false! 
