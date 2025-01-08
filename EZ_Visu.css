@@ -57,6 +57,7 @@ body {
 .signalPool {
   left: 0;
   writing-mode: sideways-rl;
+  overflow-x: hidden;
 }
 .visuItemPool {
   right: 0;
