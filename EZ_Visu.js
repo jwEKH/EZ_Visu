@@ -1337,6 +1337,8 @@ function openLocalFileEventHandler(ev) {
           }
         });
 
+        resizeSignalTableTxtInputs();
+
 
         //divVisuData
         const divVisu = document.querySelector(`.divVisu`);
@@ -1634,6 +1636,19 @@ function setIconPosition(visuItem, iconPosition) {
       visuItem.style.right = right;
     }
   }
+}
+
+function resizeSignalTableTxtInputs() {
+  const signalTable = document.querySelector(`.signalTable`);
+  [`txtRtosTerm`, `txtSignalId`, `txtTooltip`, `txtTrueTxt`, `txtFalseTxt`].forEach(col => {
+    const colElements = signalTable.querySelectorAll(`.${col}`);
+    const maxChar = Math.max(...Array.from(colElements, (el) => el.value.length));
+    if (maxChar) {
+      colElements.forEach(el => {
+        el.style.width = `${maxChar}ch`;
+      });
+    }
+  });
 }
 
 /*********************ComFunctions*********************/
