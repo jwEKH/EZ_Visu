@@ -1296,8 +1296,51 @@ function openLocalFileEventHandler(ev) {
     reader.addEventListener(`load`, () => {
       console.log(file.name);
       if (file.name.match(/(\.txt)/i)) {
+        const jsonData = JSON.parse(reader.result);
+        //signalTableData
+        //console.log(jsonData.signalTableData);
+        jsonData.signalTableData.forEach(entry => {
+          console.log(entry[`signal-id`]);
+          const txtSignalId = document.querySelector(`.signalTable [signal-id = ${entry[`signal-id`]}]`);
+          if (txtSignalId) {
+            const tr = txtSignalId.closest(`tr`);
+            Object.entries(entry).forEach(([key, value]) => {
+              if (key !== `signal-id`) {
+                txtSignalId.setAttribute(key, value);
+              }
+
+              if (key === `rtos-id`) {
+                tr.querySelector(`.txtRtosTerm`).value = value;
+              }
+              else if (key === `title` || key === `tooltip`) {
+                tr.querySelector(`.txtTooltip`).value = value;
+              }
+              else if (key === `dec-place`) {
+                tr.querySelector(`.selDecPlace`).value = value;
+              }
+              else if (key === `unit`) {
+                tr.querySelector(`.selUnit`).value = value;
+              }
+              else if (key === `stil`) {
+                tr.querySelector(`.selStyle`).value = value;
+              }
+              else if (key === `true-txt`) {
+                tr.querySelector(`.txtTrueTxt`).value = value;
+              }
+              else if (key === `false-txt`) {
+                tr.querySelector(`.txtFalseTxt`).value = value;
+              }
+            });
+          }
+          else {
+            console.warn(`signal-id ${entry[`signal-id`]} not in current signalTable included...`)
+          }
+        });
+
+
+        //divVisuData
         const divVisu = document.querySelector(`.divVisu`);
-        divVisu.innerHTML = reader.result;
+        divVisu.innerHTML = jsonData.divVisuHTML;
         const signalTable = document.querySelector(`.signalTable`);
         divVisu.querySelectorAll(`[type=text]`).forEach(visuSignal => {
           const signalId = visuSignal.getAttribute(`signal-id`);
@@ -1338,7 +1381,7 @@ function parseVisuSkript(txt) {
     const txtSignalIds = document.querySelectorAll(`[signal-id=${result.groups.name}${result.groups.idx}]`);
     txtSignalIds.forEach(txtSignalId => {
       txtSignalId.setAttribute(`rtos-id`, result.groups.rtos.trim());
-      txtSignalId.setAttribute(`title`, result.groups.tooltip.trim());
+      txtSignalId.setAttribute(`title`, result.groups.tooltip.replace(`<<<`, ``).trim());
       const tr = txtSignalId.closest(`tr`);
       if (tr) {
         const txtRtosTerm = tr.querySelector(`.txtRtosTerm`);
@@ -1346,7 +1389,7 @@ function parseVisuSkript(txt) {
         txtRtosTerm.value = result.groups.rtos;
         const txtTooltip = tr.querySelector(`.txtTooltip`);
         //txtTooltip.setAttribute(`tooltip`, result.groups.tooltip.trim());
-        txtTooltip.value = result.groups.tooltip;
+        txtTooltip.value = result.groups.tooltip.replace(`<<<`, ``).trim();
       }
     });
   });
@@ -1366,13 +1409,20 @@ function saveBtnHandler() {
 }
 
 function saveVisu() {
-  const data = document.querySelector(`.divVisu`).innerHTML;
-  
+  const signalTableSignalIds = document.querySelectorAll(`.signalTable .txtSignalId`);
+  const data = {};
+  data.signalTableData = [];
+  signalTableSignalIds.forEach(signalId => {
+    data.signalTableData.push(getRelevantAttributesAsObjectArray(signalId));
+  });
+
+  data.divVisuHTML = document.querySelector(`.divVisu`).innerHTML;
   console.log(data);
 
+  const jsonData = JSON.stringify(data);
+  console.log(jsonData);
   
-  
-  const blob = new Blob([data], {type:"text/html;charset=utf-8"});
+  const blob = new Blob([jsonData], {type:"text/html;charset=utf-8"});
   const url = URL.createObjectURL(blob);
   const downloadLink = document.createElement("a");
   document.body.appendChild(downloadLink);
@@ -1614,6 +1664,16 @@ function getRelevantAttributesAsMap(el, relevantAtributeNames = [`signal-id`, `r
     }
   });
   return map;
+}
+
+function getRelevantAttributesAsObjectArray(el, relevantAtributeNames = [`signal-id`, `rtos-id`, `title`, `tooltip`, `dec-place`, `unit`, `stil`, `true-txt`, `false-txt`]) {
+  const obj = {};
+  getUniqueAttributeNames(el).forEach(name => {
+    if (relevantAtributeNames.includes(name)) {
+      obj[`${name}`] = el.getAttribute(name);
+    }
+  });
+  return obj;
 }
 
 function constrain(val, min, max) {
