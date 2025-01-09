@@ -658,9 +658,23 @@ VISUAL: TASK PRIO 30; ! Visualisierungsdaten,...
         PUT ',AT_10:',FL_SOLLATM10(I) TO TEMP BY A,F(8,1);
         PUT '}' TO TEMP BY A;						/* end JSON-Object*/
 
+        PUT ',Wochenkalender:"' TO TEMP BY A;
+        FOR INDEX TO 1008 REPEAT  /* 7[tage]*24[std]*6[10min] = 1008 */
+          PUT B_ZONE1((I-1)//16+1,INDEX).BIT((I-1) REM 16+1) TO TEMP BY B(1);
+        END;
+        PUT '"' TO TEMP BY A;
+
+        PUT ',Jahreskalender:"' TO TEMP BY A;
+        FOR MONAT TO 12 REPEAT
+          FOR TAG TO 31 REPEAT
+            PUT B_JAHRAB(MONAT,TAG).BIT(I) TO TEMP BY B(1);
+          END;
+        END;
+        PUT '"' TO TEMP BY A;
+
         PUT '}' TO TEMP BY A;						/* end JSON-Object*/
 
-        PUT B_ZONE1 TO TEMP BY A;       /*INP_ABS(I+100,3);*/
+        
       END;
 
       PUT '}' TO TEMP BY A;						/* end JSON-Object*/
