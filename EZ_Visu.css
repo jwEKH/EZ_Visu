@@ -117,6 +117,15 @@ body {
   background-color: var(--darkestGrey);
 }
 
+.divReloadLiveData {
+  width: var(--visuWidth);
+  display: grid;
+  grid-template-columns: min-content auto max-content;
+}
+.liveDataTimeStamp {
+  align-self: end;
+}
+
 .bgSVG:not(.active) {
   display: none;
 }
@@ -293,6 +302,16 @@ body {
   width: var(--inputTextWidth);
 }
 /*********************EditorTools*********************/
+.editorTools {
+  grid-auto-flow: column;
+  display: grid;
+  align-items: center;
+  justify-items: center;
+}
+.editorTools fieldset {
+  margin: 5px;
+  padding: 2px;
+}
 .strokeWidth {
   width: calc(3ch + var(--controlsWidthOffset));
 }

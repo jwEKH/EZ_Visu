@@ -177,7 +177,8 @@ VISUAL: TASK PRIO 30; ! Visualisierungsdaten,...
       PUT '"prjNo":',NR_PRJ TO TEMP BY A,F(4);
       PUT ',"prjName":"',IDPI,'"' TO TEMP BY A,A,A;
     
-      PUT ',"date":"',DA_DAT,'.',DA_MON,'.',DA_JAH,' ',ZP_NOW,'"' TO TEMP BY A,F(2),A,F(2),A,F(4),A,T(8),A;
+      PUT ',"date":"',DA_DAT,'.',DA_MON,'.',DA_JAH,'"' TO TEMP BY A,F(2),A,F(2),A,F(4),A;
+      PUT ',"time":"',ZP_NOW,'"' TO TEMP BY A,T(8),A;
     PUT '}' TO TEMP BY A;						/* end header-Object*/
 
     PUT ',"liveData":{' TO TEMP BY A;    /* start liveData-Object*/
@@ -389,7 +390,8 @@ VISUAL: TASK PRIO 30; ! Visualisierungsdaten,...
 	    PUT '"prjNo":',NR_PRJ TO TEMP BY A,F(4);
       PUT ',"prjName":"',IDPI,'"' TO TEMP BY A,A,A;
 	  
-      PUT ',"date":"',DA_DAT,'.',DA_MON,'.',DA_JAH,' ',ZP_NOW,'"' TO TEMP BY A,F(2),A,F(2),A,F(4),A,T(8),A;
+      PUT ',"date":"',DA_DAT,'.',DA_MON,'.',DA_JAH,'"' TO TEMP BY A,F(2),A,F(2),A,F(4),A;
+      PUT ',"time":"',ZP_NOW,'"' TO TEMP BY A,T(8),A;
     
       PUT ',"AI":' TO TEMP BY A;
       PUT '[' TO TEMP BY A;						/* start JSON-Array*/
