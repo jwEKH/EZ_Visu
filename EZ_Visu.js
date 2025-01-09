@@ -540,6 +540,81 @@ function createEditorTools() {
   return fsEditorTools;
 }
 
+function addSignalTableRow(attributes) {
+  const signalTableBody = document.querySelector(`.signalTable tbody`);
+  const tr = document.createElement(`tr`);
+  signalTableBody.appendChild(tr);
+  [`UsageCount`, `RtosTerm`, `SignalId`, `Tooltip`, `DecPlace`, `Unit`, `Style`, `TrueTxt`, `FalseTxt`].forEach(col => {
+    const td = document.createElement(`td`);
+    tr.appendChild(td);
+    if (col === `UsageCount`) {
+      td.innerText = 0;
+      td.classList.add(`${attributes[`signal-id`]}count`);
+    }
+    else if (col.match(/(Rtos)|(SignalId)|(Tooltip)|(Txt)/)) {
+      const input = document.createElement(`input`);
+      td.appendChild(input);
+      input.classList.add(`txt${col}`);
+      input.type = `text`;
+      input.value = (col === `SignalId` && attributes[`signal-id`]) ? `${attributes[`signal-id`]}` :
+                    (col === `RtosTerm` && attributes[`rtos-id`]) ? `${attributes[`rtos-id`]}` :
+                    (col === `Tooltip` && attributes.title) ? `${attributes.title}` :
+                    ``;
+      if (col === `SignalId`) {
+        input.readOnly = true;
+        input.draggable = true;
+        Object.entries(attributes).forEach(([key, value]) => {
+          input.setAttribute(key, value);
+        });
+        //input.addEventListener(`focus`, highlightSignalsHandler);
+      }
+      else if (col.match(/(Txt)/)) {
+        input.setAttribute(`list`, `favBoolTxtList`);
+        if (attributes[`true-txt`] && col.match(/(TrueTxt)/)) {
+          input.value = attributes[`true-txt`].trim();
+        }
+      }
+    }
+    else {
+      const select = document.createElement(`select`);
+      td.appendChild(select);
+      select.classList.add(`sel${col}`);
+
+      if (col === `DecPlace`) {
+        [0, 1, 2, 3, 4].forEach(decPlace => {
+          const option = document.createElement(`option`);
+          select.appendChild(option);
+          option.innerText = decPlace;
+          option.value = decPlace;
+          option.selected = (decPlace == attributes[`dec-place`]);
+        });
+      }
+
+      if (col === `Unit`) {
+        [``, `°C`, `bar`, `V`, `kW`, `m³/h`, `mWS`, `%`, `kWh`, `Bh`, `m³`, `°Cø`, `mV`, `UPM`, `s`, `mbar`, `A`, `Hz`, `l/h`, `l`].forEach(unit => {
+          const option = document.createElement(`option`);
+          select.appendChild(option);
+          option.innerText = unit;
+          option.value = unit;
+          option.selected = (unit === attributes.unit);
+        });
+      }
+
+      if (col === `Style`) {
+        [``, `sollwert`, `grenzwert`].forEach(style => {
+          const option = document.createElement(`option`);
+          select.appendChild(option);
+          //select.setAttribute(`stil`, style);
+          option.innerText = style;
+          option.value = style;
+          option.setAttribute(`stil`, style);
+          option.selected = (style === attributes.stil);
+        });
+      }
+    }
+  });
+}
+
 function initSignalTable(visuLiveData) {
   const signalTableBody = document.querySelector(`.signalTable tbody`);
   if (visuLiveData) {
@@ -1307,7 +1382,7 @@ function openVisuFile(visuData) {
   //signalTableData
   //console.log(jsonData.signalTableData);
   jsonData.signalTableData.forEach(entry => {
-    //console.log(entry[`signal-id`]);
+    //console.log(entry);
     const txtSignalId = document.querySelector(`.signalTable [signal-id = ${entry[`signal-id`]}]`);
     if (txtSignalId) {
       const tr = txtSignalId.closest(`tr`);
@@ -1340,7 +1415,8 @@ function openVisuFile(visuData) {
       });
     }
     else {
-      console.warn(`signal-id ${entry[`signal-id`]} not in current signalTable included...`)
+      //console.warn(`signal-id ${entry[`signal-id`]} not in current signalTable included...`)
+      addSignalTableRow(entry);
     }
   });
 
@@ -1649,7 +1725,7 @@ function resizeSignalTableTxtInputs() {
     const maxChar = Math.max(...Array.from(colElements, (el) => el.value.length));
     if (maxChar) {
       colElements.forEach(el => {
-        el.style.width = `${maxChar}ch`;
+        el.style.width = `${maxChar+1}ch`;
       });
     }
   });
