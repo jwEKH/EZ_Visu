@@ -302,6 +302,10 @@ body {
   width: var(--inputTextWidth);
 }
 /*********************EditorTools*********************/
+.tmpInputEl {
+  position: absolute;
+}
+
 .editorTools {
   grid-auto-flow: column;
   display: grid;
@@ -341,9 +345,11 @@ label[for],
 select {
   cursor: pointer;
 }
+/*
 .divVisu .divSignals input[type="button"] {
   cursor: text;
 }
+*/
 /*********************FlameStyle*********************/
 .flame {
   position:relative;

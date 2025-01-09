@@ -53,7 +53,7 @@ window.addEventListener('load', function () {
   addGenericEventHandler();
 
   const cbEditMode = document.querySelector(`#cbEditMode`);
-  cbEditMode.checked = false;
+  cbEditMode.checked = true;
 
   document.querySelector(`.divVisu`).appendChild(createBackgroundSVG());
   
@@ -1174,10 +1174,23 @@ function divVisuDropEventHandler(ev) {
 }
 
 function dblClickEventHandler(ev) {
-  if (ev.target.matches(`.divVisu [type = button]`)) {
+  if (ev.target.matches(`.divVisu [type = button], .visuTab[tab-idx]`)) {
+    inputEl = document.createElement(`input`);
+    document.body.appendChild(inputEl);
+    inputEl.classList.add(`tmpInputEl`);
+    inputEl.addEventListener(`blur`, (ev) => {
+      inputEl.remove();
+    });
+    inputEl.value = (ev.target.value) ? ev.target.value : ev.target.innerText;
+    inputEl.callerEl = ev.target;
+    inputEl.focus();
+    inputEl.style.left = `${ev.x}px`;
+    inputEl.style.top = `${ev.y}px`;
+    /*
     ev.target.type = `text`; //convert button to text element
     ev.target.fallbackVal = ev.target.value; //perceive current Text for cancelAction 
     ev.target.addEventListener(`blur`, linkBtnBlurHandler);
+    */
   }
   else {
     const divIcon = ev.target.closest(`.divIcon`);
@@ -1221,17 +1234,31 @@ function rotateLinkBtn(ev) {
 function keyDownEventHandler(ev) {
   //console.log(ev.key);
   const key = ev.key.toLowerCase();
-  if (document.activeElement.matches(`.visuItem[icon=button] input`)) {
+  const {activeElement} = document;
+  if (activeElement.matches(`.tmpInputEl`)) {
+    if (key.match((/(escape)|(enter)/))) {
+      if (key === `enter`) {
+        if (activeElement.callerEl.type === `button`) {
+          activeElement.callerEl.value = activeElement.value;
+        }
+        else {
+          activeElement.callerEl.innerText = activeElement.value;
+        }
+      }
+      activeElement.blur();
+    }
+  }
+  else if (activeElement.matches(`.visuItem[icon=button] input`)) {
     if (key.match((/(escape)|(enter)/))) {
       linkBtnBlurHandler(ev);
     }
   }
-  else if (document.activeElement.matches(`.visuItem[icon=text] input`)) {
+  else if (activeElement.matches(`.visuItem[icon=text] input`)) {
     if (key.match((/(escape)|(enter)/))) {
-      document.activeElement.blur();
+      activeElement.blur();
     }
   }
-  else if (!document.activeElement.matches(`[type=text]:not([readonly])`)) {
+  else if (!activeElement.matches(`[type=text]:not([readonly])`)) {
     const auxKeys = ev.altKey | ev.ctrlKey | ev.shiftKey;
     if (!auxKeys) {
       if (key === `c`) {
@@ -1254,8 +1281,8 @@ function keyDownEventHandler(ev) {
         cancelCurrentSelection();
       }
       if (key.match(/(delete)|(backspace)/)) {
-        if (document.activeElement.matches(`.divVisu [readonly]`)) {
-          document.activeElement.remove();
+        if (activeElement.matches(`.divVisu [readonly]`)) {
+          activeElement.remove();
         }
         document.querySelectorAll(`[selected]`).forEach(el => el.remove());
         
