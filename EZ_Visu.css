@@ -120,7 +120,7 @@ body {
 .divReloadLiveData {
   width: var(--visuWidth);
   display: grid;
-  grid-template-columns: min-content auto max-content;
+  justify-items: end;
 }
 .liveDataTimeStamp {
   align-self: end;
