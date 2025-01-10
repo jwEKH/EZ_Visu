@@ -85,7 +85,7 @@ body {
   aspect-ratio: var(--visuAspectRatio);
   position: relative;
 }
-.divVisu {
+.divVisu[editMode] {
   cursor: crosshair;
 }
 /*
@@ -120,10 +120,19 @@ body {
 .divReloadLiveData {
   width: var(--visuWidth);
   display: grid;
-  justify-items: end;
+  grid-template-areas: 'editMode reloadLiveData'
+                       '.        timeStamp';
+}
+.cbEditModeContainer {
+  grid-area: editMode;
+}
+.cbReloadLiveDataContainer {
+  grid-area: reloadLiveData;
+  justify-self: end;
 }
 .liveDataTimeStamp {
-  align-self: end;
+  grid-area: timeStamp;
+  justify-self: end;
 }
 
 .bgSVG:not(.active) {
@@ -302,8 +311,10 @@ body {
   width: var(--inputTextWidth);
 }
 /*********************EditorTools*********************/
-.tmpInputEl {
+#tmpInputEl {
   position: absolute;
+  cursor: text;
+  z-index: 99;
 }
 
 .editorTools {

@@ -53,7 +53,8 @@ window.addEventListener('load', function () {
   addGenericEventHandler();
 
   const cbEditMode = document.querySelector(`#cbEditMode`);
-  cbEditMode.checked = true;
+  cbEditMode.checked = false;
+  editModeSwitchHandler();
 
   document.querySelector(`.divVisu`).appendChild(createBackgroundSVG());
   
@@ -61,13 +62,13 @@ window.addEventListener('load', function () {
     window.reloadLiveDataIntervalId = setInterval(getLiveData, 2000, window.visuLiveData, window.projectNo);
   }
   
-  if (cbEditMode.checked) {
-    enterVisuEditor(true);
-  }
+  
+  
   
 }, false);
 /*********************GenericFunctions*********************/
 function addGenericEventHandler() {
+  document.querySelector(`#cbEditMode`).addEventListener(`input`, (ev) => editModeSwitchHandler());
   document.querySelector(`#cbReloadLiveData`).addEventListener(`input`, (ev) => {
     if (ev.target.checked) {
       getLiveData(window.visuLiveData, window.projectNo);
@@ -839,8 +840,10 @@ function createVisuItemPool() {
   return visuItemPool;
 }
 
-function enterVisuEditor(initialCall) {
-  if (initialCall) {
+function editModeSwitchHandler() {
+  const editModeActive = document.querySelector(`#cbEditMode`).checked;
+
+  if (editModeActive && !document.querySelector(`.visuItemPool`)) {
     //document.body.appendChild(createSignalTable());
     //console.log(window.visuLiveData);
     initSignalTable(window.visuLiveData);
@@ -849,18 +852,11 @@ function enterVisuEditor(initialCall) {
     document.querySelector(`#selStrokeDasharray`).style.color = document.querySelector(`.colorPicker`).value;
     updateUnDoReDoStack(`reset`);
   }
-  else {
-    document.querySelectorAll(`.visuEditElement`).forEach(el => el.removeAttribute(`cloaked`));
-  }
-
-  document.querySelectorAll(`.visuItem`).forEach(el => el.setAttribute(`draggable`, `true`));
-  addEditorEventHandler();
-}
-
-function leaveVisuEditor() {
-  document.querySelectorAll(`.visuEditElement`).forEach(el => el.setAttribute(`cloaked`, `true`));
-  document.querySelectorAll(`[draggable]`).forEach(el => el.removeAttribute(`draggable`));
-  removeEditorEventHandler();
+  
+  document.querySelectorAll(`.visuEditElement, .visuTabs, .editorTools`).forEach(el => el.toggleAttribute(`cloaked`, !editModeActive));
+  document.querySelectorAll(`.visuItem`).forEach(el => el.setAttribute(`draggable`, (editModeActive) ? `true` : `false`));
+  document.querySelector(`.divVisu`).toggleAttribute(`editMode`, editModeActive);
+  (editModeActive) ? addEditorEventHandler() : removeEditorEventHandler();
 }
 
 function updateUnDoReDoStack(reset) {
@@ -1174,10 +1170,10 @@ function divVisuDropEventHandler(ev) {
 }
 
 function dblClickEventHandler(ev) {
-  if (ev.target.matches(`.divVisu [type = button], .visuTab[tab-idx]`)) {
+  if (ev.target.matches(`.divVisu [type = button], .visuTab[tab-idx], [readonly]`)) {
     inputEl = document.createElement(`input`);
     document.body.appendChild(inputEl);
-    inputEl.classList.add(`tmpInputEl`);
+    inputEl.id = `tmpInputEl`;
     inputEl.addEventListener(`blur`, (ev) => {
       inputEl.remove();
     });
@@ -1235,10 +1231,10 @@ function keyDownEventHandler(ev) {
   //console.log(ev.key);
   const key = ev.key.toLowerCase();
   const {activeElement} = document;
-  if (activeElement.matches(`.tmpInputEl`)) {
+  if (activeElement.matches(`#tmpInputEl`)) {
     if (key.match((/(escape)|(enter)/))) {
       if (key === `enter`) {
-        if (activeElement.callerEl.type === `button`) {
+        if (activeElement.callerEl.type) {
           activeElement.callerEl.value = activeElement.value;
         }
         else {

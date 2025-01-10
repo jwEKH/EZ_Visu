@@ -9,24 +9,24 @@
   </head>
   <body>
     <div class="divVisu"></div>
-    <div class="visuTabs">
+    <div class="visuTabs" cloaked="">
       <div class="visuTab active" tab-idx="1">Tab1</div>
       <div class="visuTab addTab">+</div>
     </div>
     <div class="divReloadLiveData">
+      <div class="cbEditModeContainer">
+        <input type="checkbox" id="cbEditMode" title="[e?]" checked>
+        <label for="cbEditMode" title="[e?]">Edit Mode</label>
+      </div>
       <div class="cbReloadLiveDataContainer">
         <input type="checkbox" id="cbReloadLiveData" title="[r?]" checked>
         <label for="cbReloadLiveData" title="[r?]">Reload LiveData</label>
       </div>
       <label class="liveDataTimeStamp" title="MPC Zeitstempel"></label>
       
-      <div class="cbEditModeContainer">
-        <input type="checkbox" id="cbEditMode" title="[e?]" checked>
-        <label for="cbEditMode" title="[e?]">Edit Mode</label>
-      </div>
     </div>
 
-    <fieldset class="editorTools">
+    <fieldset class="editorTools" cloaked="">
       <legend>Editor Tools</legend>
       
       <fieldset class="genericTools">
@@ -79,7 +79,7 @@
       </fieldset>
     </fieldset>
 
-    <details class="signalPool visuEditElement">
+    <details class="signalPool visuEditElement" cloaked="">
       <summary>Signale</summary>
       <input type="checkbox" id="cbShowSignalParameters" class="cbSignalTableColumnVisibility" checked>
       <label for="cbShowSignalParameters">showSignalParameters</label>
