@@ -85,7 +85,7 @@ body {
   aspect-ratio: var(--visuAspectRatio);
   position: relative;
 }
-.divVisu[editMode] {
+.divVisu[edit-mode] {
   cursor: crosshair;
 }
 /*
@@ -355,6 +355,10 @@ input:not([type="text"]):not([type="number"]),
 label[for],
 select {
   cursor: pointer;
+}
+
+.divVisu:not([edit-mode]) input[type="text"] {
+  cursor: default;
 }
 /*
 .divVisu .divSignals input[type="button"] {

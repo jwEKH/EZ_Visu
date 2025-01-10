@@ -43,27 +43,33 @@ const FILL_COLOR = DARKESTGREY_HSL;
 const STROKE_WIDTH = .3;
 
 /*********************VanillaDocReady*********************/
-window.addEventListener('load', function () {
+window.addEventListener('load', async function () {
 
-  window.projectNo = PROJECT_NO;
-  
-  //setTimeout(document.querySelector(`#openLocaleFile`).click(), 1000);
-  
-  
+  //window.projectNo = PROJECT_NO;
+  const projectNo = getProjectNoFromLocation();
+  //console.log(window.projectNo);
+  const visuData = await fetchVisuServerFile(projectNo);
+  //console.log(visuData);
+  if (visuData) {
+    openVisuFile(visuData);
+  }
+  else {
+    document.querySelector(`.divVisu`).appendChild(createBackgroundSVG());
+  }
   addGenericEventHandler();
+  
+  const cbReloadLiveData = document.querySelector(`#cbReloadLiveData`);
+  cbReloadLiveData.checked = (visuData) ? true : false;
+  if (cbReloadLiveData.checked) {
+    refreshLiveData();
+    window.reloadLiveDataIntervalId = setInterval(refreshLiveData, 2000);
+  }
 
   const cbEditMode = document.querySelector(`#cbEditMode`);
-  cbEditMode.checked = false;
-  editModeSwitchHandler();
-
-  document.querySelector(`.divVisu`).appendChild(createBackgroundSVG());
-  
-  if (document.querySelector(`#cbReloadLiveData`).checked) {
-    window.reloadLiveDataIntervalId = setInterval(getLiveData, 2000, window.visuLiveData, window.projectNo);
-  }
-  
-  
-  
+  if (cbEditMode) {
+    cbEditMode.checked = false;
+    editModeSwitchHandler();
+  }  
   
 }, false);
 /*********************GenericFunctions*********************/
@@ -71,8 +77,8 @@ function addGenericEventHandler() {
   document.querySelector(`#cbEditMode`).addEventListener(`input`, (ev) => editModeSwitchHandler());
   document.querySelector(`#cbReloadLiveData`).addEventListener(`input`, (ev) => {
     if (ev.target.checked) {
-      getLiveData(window.visuLiveData, window.projectNo);
-      window.reloadLiveDataIntervalId = setInterval(getLiveData, 2000, window.visuLiveData, window.projectNo);
+      refreshLiveData();
+      window.reloadLiveDataIntervalId = setInterval(refreshLiveData, 2000);
     }
     else {
       clearInterval(window.reloadLiveDataIntervalId);
@@ -842,6 +848,17 @@ function createVisuItemPool() {
 
 function editModeSwitchHandler() {
   const editModeActive = document.querySelector(`#cbEditMode`).checked;
+  
+  const divVisu = document.querySelector(`.divVisu`);
+  divVisu.toggleAttribute(`edit-mode`, editModeActive);
+  
+  if (editModeActive) {
+    clearInterval(window.reloadLiveDataIntervalId);
+    document.querySelector(`#cbReloadLiveData`).checked = false;
+
+    divVisu.querySelectorAll(`.txtSignalId[signal-id]`).forEach(txtSignalId => txtSignalId.value = txtSignalId.getAttribute(`signal-id`));
+    divVisu.querySelectorAll(`.divIconSignal[signal-id]`).forEach(divIconSignal => divIconSignal.removeAttribute(`cloaked`));
+  }
 
   if (editModeActive && !document.querySelector(`.visuItemPool`)) {
     //document.body.appendChild(createSignalTable());
@@ -854,9 +871,10 @@ function editModeSwitchHandler() {
   }
   
   document.querySelectorAll(`.visuEditElement, .visuTabs, .editorTools`).forEach(el => el.toggleAttribute(`cloaked`, !editModeActive));
-  document.querySelectorAll(`.visuItem`).forEach(el => el.setAttribute(`draggable`, (editModeActive) ? `true` : `false`));
-  document.querySelector(`.divVisu`).toggleAttribute(`editMode`, editModeActive);
+  document.querySelectorAll(`[draggable]`).forEach(el => el.setAttribute(`draggable`, (editModeActive) ? `true` : `false`));
   (editModeActive) ? addEditorEventHandler() : removeEditorEventHandler();
+  cancelCurrentDrawing();
+  cancelCurrentSelection();
 }
 
 function updateUnDoReDoStack(reset) {
@@ -865,7 +883,7 @@ function updateUnDoReDoStack(reset) {
   const elClassNames = [`divVisu`, `visuTabs`];
   elClassNames.forEach(className => {
     const el = document.querySelector(`.${className}`);
-    if (reset) {
+    if (reset || !el.unDoReDoStack) {
       el.unDoReDoStack = {idx: 0, stack: [el.innerHTML]};
     }
     else {
@@ -1408,54 +1426,56 @@ function openLocalFileEventHandler(ev) {
 
 function openVisuFile(visuData) {
   const jsonData = JSON.parse(visuData);
-  //signalTableData
-  //console.log(jsonData.signalTableData);
-  jsonData.signalTableData.forEach(entry => {
-    //console.log(entry);
-    const txtSignalId = document.querySelector(`.signalTable [signal-id = ${entry[`signal-id`]}]`);
-    if (txtSignalId) {
-      const tr = txtSignalId.closest(`tr`);
-      Object.entries(entry).forEach(([key, value]) => {
-        if (key !== `signal-id`) {
-          txtSignalId.setAttribute(key, value);
-        }
-
-        if (key === `rtos-id`) {
-          tr.querySelector(`.txtRtosTerm`).value = value;
-        }
-        else if (key === `title` || key === `tooltip`) {
-          tr.querySelector(`.txtTooltip`).value = value;
-        }
-        else if (key === `dec-place`) {
-          tr.querySelector(`.selDecPlace`).value = value;
-        }
-        else if (key === `unit`) {
-          tr.querySelector(`.selUnit`).value = value;
-        }
-        else if (key === `stil`) {
-          tr.querySelector(`.selStyle`).value = value;
-        }
-        else if (key === `true-txt`) {
-          tr.querySelector(`.txtTrueTxt`).value = value;
-        }
-        else if (key === `false-txt`) {
-          tr.querySelector(`.txtFalseTxt`).value = value;
-        }
-      });
-    }
-    else {
-      //console.warn(`signal-id ${entry[`signal-id`]} not in current signalTable included...`)
-      addSignalTableRow(entry);
-    }
-  });
-
-  resizeSignalTableTxtInputs();
-
+  const signalTable = document.querySelector(`.signalTable`);
+  if (signalTable) {
+    //signalTableData
+    //console.log(jsonData.signalTableData);
+    
+    jsonData.signalTableData.forEach(entry => {
+      //console.log(entry);
+      const txtSignalId = signalTable.querySelector(`[signal-id = ${entry[`signal-id`]}]`);
+      if (txtSignalId) {
+        const tr = txtSignalId.closest(`tr`);
+        Object.entries(entry).forEach(([key, value]) => {
+          if (key !== `signal-id`) {
+            txtSignalId.setAttribute(key, value);
+          }
+          
+          if (key === `rtos-id`) {
+            tr.querySelector(`.txtRtosTerm`).value = value;
+          }
+          else if (key === `title` || key === `tooltip`) {
+            tr.querySelector(`.txtTooltip`).value = value;
+          }
+          else if (key === `dec-place`) {
+            tr.querySelector(`.selDecPlace`).value = value;
+          }
+          else if (key === `unit`) {
+            tr.querySelector(`.selUnit`).value = value;
+          }
+          else if (key === `stil`) {
+            tr.querySelector(`.selStyle`).value = value;
+          }
+          else if (key === `true-txt`) {
+            tr.querySelector(`.txtTrueTxt`).value = value;
+          }
+          else if (key === `false-txt`) {
+            tr.querySelector(`.txtFalseTxt`).value = value;
+          }
+        });
+      }
+      else {
+        //console.warn(`signal-id ${entry[`signal-id`]} not in current signalTable included...`)
+        addSignalTableRow(entry);
+      }
+    });
+    
+    resizeSignalTableTxtInputs();
+  }
 
   //divVisuData
   const divVisu = document.querySelector(`.divVisu`);
   divVisu.innerHTML = jsonData.divVisuHTML;
-  const signalTable = document.querySelector(`.signalTable`);
   divVisu.querySelectorAll(`[type=text]`).forEach(visuSignal => {
     const signalId = visuSignal.getAttribute(`signal-id`);
     visuSignal.value = signalId;
@@ -1472,7 +1492,10 @@ function openVisuFile(visuData) {
     }
     */
   });
-  updateUnDoReDoStack();
+
+  if (isAdmin()) {
+    updateUnDoReDoStack();
+  }
 }
 
 function parseVisuSkript(txt) {
@@ -1767,8 +1790,9 @@ function highlightSignalsHandler(ev) {
 }
 
 /*********************ComFunctions*********************/
-function getLiveData(visuLiveData, projectNo) {
-  visuLiveData = (!projectNo) ? undefined : fetchData(projectNo);
+async function refreshLiveData() {
+  const visuLiveData = reformatLiveData(await fetchLiveData(getProjectNoFromLocation()));
+  //console.log(visuLiveData);
   if (visuLiveData) {
     //console.log(visuLiveData);
     const divVisu = document.querySelector(`.divVisu`);
@@ -1800,13 +1824,6 @@ function getLiveData(visuLiveData, projectNo) {
   }
 }
 
-function fetchData(projectNo) {
-  console.log(`fetchDataStyle: ${projectNo}`);
-  //console.log(JSON.parse(VISU_LIVE_DATA_NEW));
-  const fetchedData = (projectNo === `old`) ? VISU_LIVE_DATA_OLD : (projectNo === `new`) ? VISU_LIVE_DATA_NEW : undefined;
-  return reformatLiveData(fetchedData);
-}
-
 function reformatLiveData(fetchedData) {
   const liveData = JSON.parse(fetchedData.replaceAll(` `,``));
   if (liveData.header) {
@@ -1827,6 +1844,10 @@ function reformatLiveData(fetchedData) {
 }
 
 /*********************AuxFunctions*********************/
+function getProjectNoFromLocation() {
+  return window.location.search.replace(`?Id=`,``);
+}
+
 function getUniqueAttributeNames(el) {
   //using MapConstructor to ensure that no duplicates included!
   return [...new Set(el.getAttributeNames())];

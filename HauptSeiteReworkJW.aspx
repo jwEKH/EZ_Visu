@@ -72,7 +72,7 @@
     </style>
 
     <script src="Scripts/jquery-3.5.1.min.js"></script>
-    <script src="Scripts/VisuItemStyle-WebserviceCall.js"></script>
+    <script src="Scripts/EZ_Visu-Webservices.js"></script>
     <script>
         var Steuerungen;
         var isAscending = true;
@@ -500,7 +500,26 @@
             window.open('/QHView.aspx?Id=' + this.id.substring(0, 5) + '', '', 'width=1135, height=800, titlebar = no, toolbar = no, location = no, status = no, menubar = no')
         }
 
-        function openVisu() {
+        async function openVisu(ev) {
+
+            const projectNo = ev.target.id.match(/P\s*\d+/).at(0).replaceAll(` `,`_`);
+            //console.log(projectNo);
+            //loadVisuFileFromServer
+            const visuData = await fetchVisuServerFile(projectNo);
+            //console.log(visuData);
+
+
+            if (isAdmin) {
+                const visuWindow = window.open(`/EZ_Visu.html?Id=${projectNo}`, ``, `width=1500, height=840, location = yes,scrollbars = yes`);
+                //visuWindow.projectNo = projectNo;
+                //visuWindow.visuData = visuData;
+            }
+            else if (visuData) {
+                //const visuWindow = window.open(`/EZ_Visu.html?Id=${projectNo}`, ``, `width=1500, height=840, location = yes,scrollbars = yes`);
+            }
+
+
+            /*
             window.visuDataRaw = undefined;
             const prjNo = this.id.substring(1, 5).trim();
             const pseudoDeployedVisuItemStyleFile = loadVisuFileFromServer(`D${prjNo.padStart(4, '_')}`);
@@ -522,6 +541,7 @@
             else {
                 window.open(`/VisuView.aspx?Id=${this.id.substring(0, 5)}`, ``, `width=1300, height=820, location = yes,scrollbars = yes`);
             }
+            */
         }
 
         function openProjektVerwaltung() {
