@@ -311,6 +311,15 @@ body {
   width: var(--inputTextWidth);
 }
 /*********************EditorTools*********************/
+.divEditSignal {
+  position: absolute;
+  display: grid;
+  grid-template-columns: max-content min-content;
+  background-color: var(--darkerGrey);
+}
+.divEditSignal label{
+  text-align: end;
+}
 #tmpInputEl {
   position: absolute;
   cursor: text;

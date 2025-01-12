@@ -23,6 +23,9 @@ function fetchVisuServerFile(projectNo) {
 }
 
 function isAdmin() {
+  if (window.DEBUG) {
+      return true;
+  }
   const url = `WebServiceEK.asmx/isAdmin`;
   const options = {};
   options.method = `POST`;

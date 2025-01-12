@@ -45,10 +45,12 @@ const STROKE_WIDTH = .3;
 /*********************VanillaDocReady*********************/
 window.addEventListener('load', async function () {
 
+  window.DEBUG = confirm(`DEBUGmode?`);
+
   //window.projectNo = PROJECT_NO;
-  const projectNo = getProjectNoFromLocation();
+  const projectNo = (window.DEBUG) ? PROJECT_NO : getProjectNoFromLocation();
   //console.log(window.projectNo);
-  const visuData = await fetchVisuServerFile(projectNo);
+  const visuData = (window.DEBUG) ? false : await fetchVisuServerFile(projectNo);
   //console.log(visuData);
   if (visuData) {
     openVisuFile(visuData);
@@ -61,8 +63,9 @@ window.addEventListener('load', async function () {
   const cbReloadLiveData = document.querySelector(`#cbReloadLiveData`);
   cbReloadLiveData.checked = (visuData) ? true : false;
   if (cbReloadLiveData.checked) {
-    refreshLiveData();
-    window.reloadLiveDataIntervalId = setInterval(refreshLiveData, 2000);
+    const simulatedLiveData = (window.DEBUG) ? VISU_LIVE_DATA_OLD : undefined;
+    refreshLiveData(simulatedLiveData);
+    window.reloadLiveDataIntervalId = setInterval(refreshLiveData, 2000, simulatedLiveData);
   }
 
   const cbEditMode = document.querySelector(`#cbEditMode`);
@@ -77,8 +80,9 @@ function addGenericEventHandler() {
   document.querySelector(`#cbEditMode`).addEventListener(`input`, (ev) => editModeSwitchHandler());
   document.querySelector(`#cbReloadLiveData`).addEventListener(`input`, (ev) => {
     if (ev.target.checked) {
-      refreshLiveData();
-      window.reloadLiveDataIntervalId = setInterval(refreshLiveData, 2000);
+      const simulatedLiveData = (window.DEBUG) ? VISU_LIVE_DATA_OLD : undefined;
+      refreshLiveData(simulatedLiveData);
+      window.reloadLiveDataIntervalId = setInterval(refreshLiveData, 2000, simulatedLiveData);
     }
     else {
       clearInterval(window.reloadLiveDataIntervalId);
@@ -551,6 +555,89 @@ function createEditorTools() {
   });
 
   return fsEditorTools;
+}
+
+function createSignal(attributes) {
+  const inputEl = document.createElement(`input`);
+  inputEl.value = attributes[`signal-id`];
+  inputEl.readOnly = true;
+  inputEl.addEventListener(`contextmenu`, editSignalAttributes);
+  Object.entries(attributes).forEach(([key, value]) => {
+    (key === `tooltip`) ? inputEl.setAttribute(`title`, value) : inputEl.setAttribute(key, value);
+  });
+
+  return inputEl;
+}
+
+function editSignalAttributes(ev) {
+  ev.preventDefault();
+  console.log(ev);
+  const divEditSignal = document.createElement(`div`);
+  document.body.appendChild(divEditSignal);
+  divEditSignal.classList.add(`divEditSignal`);
+  divEditSignal.style.left = `${ev.pageX}px`;
+  divEditSignal.style.top = `${ev.pageY}px`;
+  const selectAddAttribute = createSelectElement([`addAttribute...`, `icon`]);
+  divEditSignal.appendChild(selectAddAttribute);
+  const btnConfirm = document.createElement(`input`);
+  btnConfirm.type = `button`;
+  btnConfirm.value = `Apply Changes`;
+  divEditSignal.appendChild(btnConfirm);
+  getAttributesAsMap(ev.target, [`class`, `readonly`]).forEach((value, key) => {
+    //console.log(key, value);
+    /*
+    const lbl = document.createElement(`label`);
+    lbl.innerText = `${key}:`;
+    divEditSignal.insertBefore(lbl, selectAddAttribute);
+    const input = (key.match(/(unit)|(dec-place)|(stil)|(icon)/)) ? createSelectElement(key) : document.createElement(`input`);
+    divEditSignal.insertBefore(input, selectAddAttribute);
+    input.value = value;
+    */
+
+    createEditSignalRow(key, value).forEach(el => divEditSignal.insertBefore(el, selectAddAttribute));
+
+  });
+}
+
+function createEditSignalRow(key, value) {
+  const lbl = document.createElement(`label`);
+  lbl.innerText = `${key}:`;
+  const input = (key.match(/(unit)|(dec-place)|(stil)|(icon)/)) ? createSelectElement(key) : document.createElement(`input`);
+  if (value) {
+    input.value = value;
+  }
+  else {
+    input.placeholder = key;
+  }
+
+  return [lbl, input];
+}
+
+function createSelectElement(type) {
+  const options = (type === `unit`) ? [``, `°C`, `bar`, `V`, `kW`, `m³/h`, `mWS`, `%`, `kWh`, `Bh`, `m³`, `°Cø`, `mV`, `UPM`, `s`, `mbar`, `A`, `Hz`, `l/h`, `l`] :
+                  (type === `dec-place`) ? [0, 1, 2, 3, 4] :
+                  (type === `stil`) ? [``, `sollwert`, `grenzwert`] :
+                  (type === `icon`) ? [`temperatur`, `heizkreis`, `pumpe`, `mischer`, `ventil`, `aggregat`, `puffer`, `waermetauscher`, `heizpatrone`, `luefter`, `lueftungsklappe`, `gassensor`, `schalter`, `zaehler`] :
+                  type;
+  
+  const select = document.createElement(`select`);
+  if (Array.isArray(type)) {
+    select.addEventListener(`input`, (ev) => {
+      const divEditSignal = ev.target.closest(`.divEditSignal`);
+      if (!Array.from(divEditSignal.querySelectorAll(`label`)).find(lbl => lbl.innerText.match(`${ev.target.value}:`))) {
+        createEditSignalRow(ev.target.value).forEach(el => divEditSignal.insertBefore(el, ev.target));
+      }
+      ev.target.value = `addAttribute...`;
+    });
+  }
+  options.forEach(value => {
+    const option = document.createElement(`option`);
+    select.appendChild(option);
+    option.innerText = value;
+    option.value = value;
+  });
+
+  return select;                
 }
 
 function addSignalTableRow(attributes) {
@@ -1467,6 +1554,7 @@ function openVisuFile(visuData) {
       else {
         //console.warn(`signal-id ${entry[`signal-id`]} not in current signalTable included...`)
         addSignalTableRow(entry);
+        document.body.appendChild(createSignal(entry));
       }
     });
     
@@ -1543,7 +1631,7 @@ function saveVisu() {
   const data = {};
   data.signalTableData = [];
   signalTableSignalIds.forEach(signalId => {
-    data.signalTableData.push(getRelevantAttributesAsObjectArray(signalId));
+    data.signalTableData.push(getRelevantAttributesAsObject(signalId));
   });
 
   data.divVisuHTML = document.querySelector(`.divVisu`).innerHTML;
@@ -1790,8 +1878,8 @@ function highlightSignalsHandler(ev) {
 }
 
 /*********************ComFunctions*********************/
-async function refreshLiveData() {
-  const visuLiveData = reformatLiveData(await fetchLiveData(getProjectNoFromLocation()));
+async function refreshLiveData(simulatedLiveData) {
+  const visuLiveData = (simulatedLiveData) ? reformatLiveData(simulatedLiveData) : reformatLiveData(await fetchLiveData(getProjectNoFromLocation()));
   //console.log(visuLiveData);
   if (visuLiveData) {
     //console.log(visuLiveData);
@@ -1853,20 +1941,40 @@ function getUniqueAttributeNames(el) {
   return [...new Set(el.getAttributeNames())];
 }
 
-function getRelevantAttributesAsMap(el, relevantAtributeNames = [`signal-id`, `rtos-id`, `title`, `tooltip`, `dec-place`, `unit`, `stil`, `true-txt`, `false-txt`]) {
+function getRelevantAttributesAsMap(el, relevantAttributeNames = [`signal-id`, `rtos-id`, `title`, `tooltip`, `dec-place`, `unit`, `stil`, `true-txt`, `false-txt`]) {
   const map = new Map();
   getUniqueAttributeNames(el).forEach(name => {
-    if (relevantAtributeNames.includes(name)) {
+    if (relevantAttributeNames.includes(name)) {
       map.set(name, el.getAttribute(name));
     }
   });
   return map;
 }
 
-function getRelevantAttributesAsObjectArray(el, relevantAtributeNames = [`signal-id`, `rtos-id`, `title`, `tooltip`, `dec-place`, `unit`, `stil`, `true-txt`, `false-txt`]) {
+function getRelevantAttributesAsObject(el, relevantAttributeNames = [`signal-id`, `rtos-id`, `title`, `tooltip`, `dec-place`, `unit`, `stil`, `true-txt`, `false-txt`]) {
   const obj = {};
   getUniqueAttributeNames(el).forEach(name => {
-    if (relevantAtributeNames.includes(name)) {
+    if (relevantAttributeNames.includes(name)) {
+      obj[`${name}`] = el.getAttribute(name);
+    }
+  });
+  return obj;
+}
+
+function getAttributesAsMap(el, exclusiveAttributeNames = []) { //[`class`, `rtos-id`, `title`, `tooltip`, `dec-place`, `unit`, `stil`, `true-txt`, `false-txt`]) {
+  const map = new Map();
+  getUniqueAttributeNames(el).forEach(name => {
+    if (!exclusiveAttributeNames.includes(name)) {
+      map.set(name, el.getAttribute(name));
+    }
+  });
+  return map;
+}
+
+function getAttributesAsObject(el, exclusiveAttributeNames = []) { //[`class`, `rtos-id`, `title`, `tooltip`, `dec-place`, `unit`, `stil`, `true-txt`, `false-txt`]) {
+  const obj = {};
+  getUniqueAttributeNames(el).forEach(name => {
+    if (!exclusiveAttributeNames.includes(name)) {
       obj[`${name}`] = el.getAttribute(name);
     }
   });
