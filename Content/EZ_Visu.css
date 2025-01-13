@@ -37,35 +37,24 @@ body {
   background-color: var(--darkerGrey);
   color: white;
   display: grid;
-  justify-items: center;
+  justify-items: end;
   /*
   align-items: center;
   */
 }
 
-.visuEditElement {
+.signalTable {
   position: fixed;
+  display: grid;
+  grid-template-columns: max-content max-content;
   background-color: var(--grey);
   max-height: 100vh;
   overflow-y: auto;
-  z-index: 1;
-}
-.visuEditElement[open] {
-  writing-mode: initial;
   padding-right: var(--controlsWidthOffset);
-}
-.signalPool {
   left: 0;
-  writing-mode: sideways-rl;
   overflow-x: hidden;
 }
-.visuItemPool {
-  right: 0;
-  writing-mode: sideways-lr;
-}
-.visuItemPool[open] {
-  height: 100vh;
-}
+
 
 [stil = "sollwert"] {
   color: white;
@@ -77,9 +66,6 @@ body {
 }
 
 .divVisu {
-  /*
-  overflow: hidden;
-  */
   background-color: var(--darkestGrey);
   width: var(--visuWidth);
   aspect-ratio: var(--visuAspectRatio);
