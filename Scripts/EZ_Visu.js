@@ -43,41 +43,42 @@ const FILL_COLOR = DARKESTGREY_HSL;
 const STROKE_WIDTH = .3;
 
 /*********************VanillaDocReady*********************/
-window.addEventListener('load', async function () {
+window.addEventListener('load', function () {
 
   window.DEBUG = confirm(`DEBUGmode?`);
 
-  //window.projectNo = PROJECT_NO;
-  const projectNo = (window.DEBUG) ? PROJECT_NO : getProjectNoFromLocation();
-  //console.log(window.projectNo);
-  const visuData = (window.DEBUG) ? false : await fetchVisuServerFile(projectNo);
-  //console.log(visuData);
-  if (visuData) {
-    openVisuFile(visuData);
-  }
-  else {
-    document.querySelector(`.divVisu`).appendChild(createBackgroundSVG());
-  }
-  addGenericEventHandler();
+  initVisu();
   
+}, false);
+/*********************GenericFunctions*********************/
+async function initVisu() {
+  //getProjectNo
+  const projectNo = (window.DEBUG) ? PROJECT_NO : getProjectNoFromLocation();
+  
+  //fetchVisuServerFile
+  const visuData = (window.DEBUG) ? false : await fetchVisuServerFile(projectNo);
+  //getLiveData
+  const liveData = (window.DEBUG) ? VISU_LIVE_DATA_OLD : await fetchLiveData(projectNo); 
+  
+  buildVisu(visuData);
+
+  addGenericEventHandler();
+
   const cbReloadLiveData = document.querySelector(`#cbReloadLiveData`);
-  cbReloadLiveData.checked = (visuData) ? true : false;
-  if (cbReloadLiveData.checked) {
-    const simulatedLiveData = (window.DEBUG) ? VISU_LIVE_DATA_OLD : undefined;
-    refreshLiveData(simulatedLiveData);
-    window.reloadLiveDataIntervalId = setInterval(refreshLiveData, 2000, simulatedLiveData);
+  cbReloadLiveData.checked = true;
+  if (!window.DEBUG && cbReloadLiveData.checked) {
+    window.reloadLiveDataIntervalId = setInterval(refreshLiveData, 2000);
   }
 
   const cbEditMode = document.querySelector(`#cbEditMode`);
   if (cbEditMode) {
     cbEditMode.checked = false;
-    editModeSwitchHandler();
+    //editModeSwitchHandler();
   }  
-  
-}, false);
-/*********************GenericFunctions*********************/
+}
+
 function addGenericEventHandler() {
-  document.querySelector(`#cbEditMode`).addEventListener(`input`, (ev) => editModeSwitchHandler());
+  document.querySelector(`#cbEditMode`).addEventListener(`input`, editModeSwitchHandler);
   document.querySelector(`#cbReloadLiveData`).addEventListener(`input`, (ev) => {
     if (ev.target.checked) {
       const simulatedLiveData = (window.DEBUG) ? VISU_LIVE_DATA_OLD : undefined;
@@ -1540,7 +1541,7 @@ function openLocalFileEventHandler(ev) {
     reader.addEventListener(`load`, () => {
       console.log(file.name);
       if (file.name.match(/(\.txt)/i)) {
-        openVisuFile(reader.result);
+        buildVisu(reader.result);
       }
       else if (file.name.match(/(\.p)/i)) {
         parseVisuSkript(reader.result);
@@ -1550,78 +1551,84 @@ function openLocalFileEventHandler(ev) {
   }
 }
 
-function openVisuFile(visuData) {
-  const jsonData = JSON.parse(visuData);
-  const signalTable = document.querySelector(`.signalTable`);
-  if (signalTable) {
-    //signalTableData
-    //console.log(jsonData.signalTableData);
+function buildVisu(visuData) {
+  if (visuData) {
+    const jsonData = JSON.parse(visuData);
+    const signalTable = document.querySelector(`.signalTable`);
     
-    jsonData.signalTableData.forEach(entry => {
-      //console.log(entry);
-      const txtSignalId = signalTable.querySelector(`[signal-id = ${entry[`signal-id`]}]`);
+    if (signalTable) {
+      //signalTableData
+      //console.log(jsonData.signalTableData);
+      
+      jsonData.signalTableData.forEach(entry => {
+        //console.log(entry);
+        const txtSignalId = signalTable.querySelector(`[signal-id = ${entry[`signal-id`]}]`);
+        if (txtSignalId) {
+          const tr = txtSignalId.closest(`tr`);
+          Object.entries(entry).forEach(([key, value]) => {
+            if (key !== `signal-id`) {
+              txtSignalId.setAttribute(key, value);
+            }
+            
+            if (key === `rtos-id`) {
+              tr.querySelector(`.txtRtosTerm`).value = value;
+            }
+            else if (key === `title` || key === `tooltip`) {
+              tr.querySelector(`.txtTooltip`).value = value;
+            }
+            else if (key === `dec-place`) {
+              tr.querySelector(`.selDecPlace`).value = value;
+            }
+            else if (key === `unit`) {
+              tr.querySelector(`.selUnit`).value = value;
+            }
+            else if (key === `stil`) {
+              tr.querySelector(`.selStyle`).value = value;
+            }
+            else if (key === `true-txt`) {
+              tr.querySelector(`.txtTrueTxt`).value = value;
+            }
+            else if (key === `false-txt`) {
+              tr.querySelector(`.txtFalseTxt`).value = value;
+            }
+          });
+        }
+        else {
+          //console.warn(`signal-id ${entry[`signal-id`]} not in current signalTable included...`)
+          addSignalTableRow(entry);
+          document.body.appendChild(createSignal(entry));
+        }
+      });
+      
+      resizeSignalTableTxtInputs();
+    }
+  
+    //divVisuData
+    const divVisu = document.querySelector(`.divVisu`);
+    divVisu.innerHTML = jsonData.divVisuHTML;
+    divVisu.querySelectorAll(`[type=text]`).forEach(visuSignal => {
+      const signalId = visuSignal.getAttribute(`signal-id`);
+      visuSignal.value = signalId;
+      //add information from visu to signalTable
+      /*
+      const txtSignalId = signalTable.querySelector(`[signal-id = ${signalId}]`);
       if (txtSignalId) {
-        const tr = txtSignalId.closest(`tr`);
-        Object.entries(entry).forEach(([key, value]) => {
-          if (key !== `signal-id`) {
-            txtSignalId.setAttribute(key, value);
-          }
-          
-          if (key === `rtos-id`) {
-            tr.querySelector(`.txtRtosTerm`).value = value;
-          }
-          else if (key === `title` || key === `tooltip`) {
-            tr.querySelector(`.txtTooltip`).value = value;
-          }
-          else if (key === `dec-place`) {
-            tr.querySelector(`.selDecPlace`).value = value;
-          }
-          else if (key === `unit`) {
-            tr.querySelector(`.selUnit`).value = value;
-          }
-          else if (key === `stil`) {
-            tr.querySelector(`.selStyle`).value = value;
-          }
-          else if (key === `true-txt`) {
-            tr.querySelector(`.txtTrueTxt`).value = value;
-          }
-          else if (key === `false-txt`) {
-            tr.querySelector(`.txtFalseTxt`).value = value;
-          }
+        getRelevantAttributesAsMap(visuSignal).forEach((val, key) => {
+          txtSignalId.setAttribute(key, val);
         });
       }
       else {
-        //console.warn(`signal-id ${entry[`signal-id`]} not in current signalTable included...`)
-        addSignalTableRow(entry);
-        document.body.appendChild(createSignal(entry));
+        console.warn(`signal-id ${signalId} not in signalTable included needs to be added! todo...`);
       }
+      */
     });
     
-    resizeSignalTableTxtInputs();
+    if (isAdmin()) {
+      updateUnDoReDoStack();
+    }
   }
-
-  //divVisuData
-  const divVisu = document.querySelector(`.divVisu`);
-  divVisu.innerHTML = jsonData.divVisuHTML;
-  divVisu.querySelectorAll(`[type=text]`).forEach(visuSignal => {
-    const signalId = visuSignal.getAttribute(`signal-id`);
-    visuSignal.value = signalId;
-    //add information from visu to signalTable
-    /*
-    const txtSignalId = signalTable.querySelector(`[signal-id = ${signalId}]`);
-    if (txtSignalId) {
-      getRelevantAttributesAsMap(visuSignal).forEach((val, key) => {
-        txtSignalId.setAttribute(key, val);
-      });
-    }
-    else {
-      console.warn(`signal-id ${signalId} not in signalTable included needs to be added! todo...`);
-    }
-    */
-  });
-
-  if (isAdmin()) {
-    updateUnDoReDoStack();
+  else {
+    document.querySelector(`.divVisu`).appendChild(createBackgroundSVG());
   }
 }
 
@@ -1917,8 +1924,8 @@ function highlightSignalsHandler(ev) {
 }
 
 /*********************ComFunctions*********************/
-async function refreshLiveData(simulatedLiveData) {
-  const visuLiveData = (simulatedLiveData) ? reformatLiveData(simulatedLiveData) : reformatLiveData(await fetchLiveData(getProjectNoFromLocation()));
+async function refreshLiveData() {
+  const visuLiveData = reformatLiveData(await fetchLiveData(getProjectNoFromLocation()));
   //console.log(visuLiveData);
   if (visuLiveData) {
     //console.log(visuLiveData);
