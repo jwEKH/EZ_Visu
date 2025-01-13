@@ -561,7 +561,7 @@ function createSignal(attributes) {
   const inputEl = document.createElement(`input`);
   inputEl.value = attributes[`signal-id`];
   inputEl.readOnly = true;
-  inputEl.addEventListener(`contextmenu`, editSignalAttributes);
+  inputEl.addEventListener(`contextmenu`, editSignalAttributesEventHandler);
   Object.entries(attributes).forEach(([key, value]) => {
     (key === `tooltip`) ? inputEl.setAttribute(`title`, value) : inputEl.setAttribute(key, value);
   });
@@ -569,41 +569,71 @@ function createSignal(attributes) {
   return inputEl;
 }
 
-function editSignalAttributes(ev) {
-  ev.preventDefault();
-  console.log(ev);
+function editSignalAttributesEventHandler(ev) {
+  if (ev.type === `contextmenu`) {
+    ev.preventDefault();
+  }
+  const existingDivEditSignal = document.querySelector(`.divEditSignal`);
+  if (existingDivEditSignal) {
+    existingDivEditSignal.remove();
+  }
+
   const divEditSignal = document.createElement(`div`);
   document.body.appendChild(divEditSignal);
+  divEditSignal.signalEl = ev.target;
   divEditSignal.classList.add(`divEditSignal`);
   divEditSignal.style.left = `${ev.pageX}px`;
   divEditSignal.style.top = `${ev.pageY}px`;
-  const selectAddAttribute = createSelectElement([`addAttribute...`, `icon`]);
+
+  getAttributesAsMap(ev.target, [`class`, `readonly`]).forEach((value, key) => {
+    createEditSignalRow(key, value).forEach(el => divEditSignal.appendChild(el));
+  });
+
+  const selectAddAttribute = createSelectAddAttribute(ev.target.getAttributeNames());
   divEditSignal.appendChild(selectAddAttribute);
+
   const btnConfirm = document.createElement(`input`);
   btnConfirm.type = `button`;
-  btnConfirm.value = `Apply Changes`;
+  btnConfirm.value = `Confirm Changes`;
+  btnConfirm.addEventListener(`click`, confirmSignalAttributeEditEventHandler);
   divEditSignal.appendChild(btnConfirm);
-  getAttributesAsMap(ev.target, [`class`, `readonly`]).forEach((value, key) => {
-    //console.log(key, value);
-    /*
-    const lbl = document.createElement(`label`);
-    lbl.innerText = `${key}:`;
-    divEditSignal.insertBefore(lbl, selectAddAttribute);
-    const input = (key.match(/(unit)|(dec-place)|(stil)|(icon)/)) ? createSelectElement(key) : document.createElement(`input`);
-    divEditSignal.insertBefore(input, selectAddAttribute);
-    input.value = value;
-    */
+}
 
-    createEditSignalRow(key, value).forEach(el => divEditSignal.insertBefore(el, selectAddAttribute));
-
+function confirmSignalAttributeEditEventHandler(ev) {
+  const divEditSignal = ev.target.closest(`.divEditSignal`);
+  divEditSignal.querySelectorAll(`input:not([type=button]), select:not(.selectAddAttribute)`).forEach(attributeInput => {
+    const key = attributeInput.getAttribute(`attribute-name`);
+    //console.log(key);
+    if (attributeInput.type === `checkbox`) {
+      divEditSignal.signalEl.toggleAttribute(key, attributeInput.checked);
+    }
+    else if (attributeInput.value) {
+      divEditSignal.signalEl.setAttribute(key, attributeInput.value);
+    }
+    else {
+      divEditSignal.signalEl.removeAttribute(key);
+    }
   });
+  
+  document.querySelector(`.divEditSignal`).remove();
 }
 
 function createEditSignalRow(key, value) {
   const lbl = document.createElement(`label`);
   lbl.innerText = `${key}:`;
   const input = (key.match(/(unit)|(dec-place)|(stil)|(icon)/)) ? createSelectElement(key) : document.createElement(`input`);
-  if (value) {
+  input.setAttribute(`attribute-name`, key);
+  if (key.match(/(toggle)/)) {
+    input.type = `checkbox`
+  }
+  else if (key.match(/(true-txt)|(false-txt)/)) {
+    input.setAttribute(`list`, `favBoolTxtList`);
+  }
+
+  if (input.type === `checkbox`) {
+    input.checked = true;
+  }
+  else if (value) {
     input.value = value;
   }
   else {
@@ -613,28 +643,37 @@ function createEditSignalRow(key, value) {
   return [lbl, input];
 }
 
-function createSelectElement(type) {
+function selectAddAttributeInputEventHandler(ev) {
+  const divEditSignal = ev.target.closest(`.divEditSignal`);
+  createEditSignalRow(ev.target.value).forEach(el => divEditSignal.insertBefore(el, ev.target));
+  const selectedOption = ev.target.querySelector(`option[value=${ev.target.value}]`);
+  ev.target.removeChild(selectedOption);
+  ev.target.disabled = (ev.target.childElementCount <= 1);
+}
+
+function createSelectAddAttribute(existingAttributeNames) {
+  const selectAddAttribute = createSelectElement(`addAttribute`, existingAttributeNames);
+  selectAddAttribute.classList.add(`selectAddAttribute`);
+  selectAddAttribute.addEventListener(`input`, selectAddAttributeInputEventHandler);
+  return selectAddAttribute;
+}
+
+function createSelectElement(type, excludedOptions = []) {
   const options = (type === `unit`) ? [``, `°C`, `bar`, `V`, `kW`, `m³/h`, `mWS`, `%`, `kWh`, `Bh`, `m³`, `°Cø`, `mV`, `UPM`, `s`, `mbar`, `A`, `Hz`, `l/h`, `l`] :
-                  (type === `dec-place`) ? [0, 1, 2, 3, 4] :
+                  (type === `dec-place`) ? [``, 0, 1, 2, 3, 4] :
                   (type === `stil`) ? [``, `sollwert`, `grenzwert`] :
-                  (type === `icon`) ? [`temperatur`, `heizkreis`, `pumpe`, `mischer`, `ventil`, `aggregat`, `puffer`, `waermetauscher`, `heizpatrone`, `luefter`, `lueftungsklappe`, `gassensor`, `schalter`, `zaehler`] :
-                  type;
+                  (type === `icon`) ? [``, `temperatur`, `heizkreis`, `pumpe`, `mischer`, `ventil`, `aggregat`, `puffer`, `waermetauscher`, `heizpatrone`, `luefter`, `lueftungsklappe`, `gassensor`, `schalter`, `zaehler`] :
+                  (type === `addAttribute`) ? [`addAttribute...`, `signal-id`, `rtos-id`, `unit`, `title`, `stil`, `toggle`, `dec-place`, `icon`, `true-txt`, `false-txt`, `range-max`, `range-min`] :
+                  [];
   
   const select = document.createElement(`select`);
-  if (Array.isArray(type)) {
-    select.addEventListener(`input`, (ev) => {
-      const divEditSignal = ev.target.closest(`.divEditSignal`);
-      if (!Array.from(divEditSignal.querySelectorAll(`label`)).find(lbl => lbl.innerText.match(`${ev.target.value}:`))) {
-        createEditSignalRow(ev.target.value).forEach(el => divEditSignal.insertBefore(el, ev.target));
-      }
-      ev.target.value = `addAttribute...`;
-    });
-  }
   options.forEach(value => {
-    const option = document.createElement(`option`);
-    select.appendChild(option);
-    option.innerText = value;
-    option.value = value;
+    if (!excludedOptions.includes(value)) {
+      const option = document.createElement(`option`);
+      select.appendChild(option);
+      option.innerText = value;
+      option.value = value;
+    }
   });
 
   return select;                
