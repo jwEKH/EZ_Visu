@@ -308,9 +308,9 @@ function selectionAreaHandler() {
 
   const selectDrawnElements = document.querySelector(`#cbSelectDrawnElements`).checked;
   const selectVisuItems = document.querySelector(`#cbSelectVisuItems`).checked;
-  const elSelector = (selectDrawnElements & selectVisuItems) ? `line, .visuItem` :
-                     (selectDrawnElements) ? `line` :
-                     (selectVisuItems) ? `.visuItem` :
+  const elSelector = (selectDrawnElements & selectVisuItems) ? `svg *, div , input` :
+                     (selectDrawnElements) ? `svg *` :
+                     (selectVisuItems) ? `div , input` :
                      undefined;
   divVisu.querySelectorAll(elSelector).forEach(el => {
     elBox = el.getBoundingClientRect();
@@ -519,18 +519,6 @@ function createEditorTools() {
   });
 
   return fsEditorTools;
-}
-
-function createSignal(attributes) {
-  const inputEl = document.createElement(`input`);
-  inputEl.value = attributes[`signal-id`];
-  inputEl.readOnly = true;
-  inputEl.addEventListener(`contextmenu`, editSignalAttributesEventHandler);
-  Object.entries(attributes).forEach(([key, value]) => {
-    (key === `tooltip`) ? inputEl.setAttribute(`title`, value) : inputEl.setAttribute(key, value);
-  });
-
-  return inputEl;
 }
 
 function editSignalAttributesEventHandler(ev) {
@@ -1046,7 +1034,7 @@ function divVisuMouseMoveEventHandler(ev) {
 
 function mouseDownEventHandler(ev) {
   if (ev.buttons === 1) {
-    const visuItem = (ev.target.matches(`.txtSignalId`)) ? null : ev.target.closest(`.divVisu .visuItem`);
+    const visuItem = ev.target.closest(`.divVisu input, .divVisu div`);
     //console.log(visuItem);
     if (visuItem) {
       if (!visuItem.matches(`[selected]`)) {
@@ -1196,11 +1184,19 @@ function snapToGrid(xRel, yRel) {
 }
 
 function handleItemAppearance(_item) {
+  let item = _item;
   if (_item.matches(`.signalEl[icon]`)) {
     //convert to icon
+    item = createDivIcon(item.getAttribute(`icon`));
+    getAttributesAsMap(_item, [`class`, `type`]).forEach((value, key) => item.setAttribute(key, value));
   }
   else if (_item.matches(`.divIcon:not([icon])`)) {
-    //convert to signalEl
+    //convert to signalEl    
+    item = document.createElement(`input`)
+    item.type = `text`;
+    item.classList.add(`signalEl`);
+    getAttributesAsMap(_item, [`class`]).forEach((value, key) => item.setAttribute(key, value));
+    item.value = item.getAttribute(`signal-id`);
   }
   
 
@@ -1225,20 +1221,19 @@ function divVisuDropEventHandler(ev) {
     
     divVisu.appendChild(dropItem);
 
-    /*
-    if (draggingItem.closest(`.signalTable`)) {
-      const icon = draggingItem.getAttribute(`icon`);
+    //
+    if (draggingItem.closest(`.signalTable`) && dropItem.matches(`[unit=°C]:not([icon])`)) {
+      const icon = dropItem.cloneNode(true);
+      icon.setAttribute(`icon`, `temperatur`);
+      const dropIcon = handleItemAppearance(icon);
 
-      const symbol = (icon) ? icon : (draggingItem.getAttribute(`unit`) === `°C`) ? `temperatur` : undefined;
-      const divIcon = (symbol) ? createDivIcon(symbol) : undefined;
+      GRIDSIZE_AS_PARTS_FROM_WIDTH
+      const iconPosition = snapToGrid(xRel-1/GRIDSIZE_AS_PARTS_FROM_WIDTH, yRel);
+      dropIcon.style.left = `${100* iconPosition.xRel}%`;
 
-      if (divIcon) {
-        divIcon.style.left = `${100* position.xRel}%`;
-        divIcon.style.top = `${100* position.yRel}%`;
-        divVisu.appendChild(divIcon);
-      }
+      divVisu.appendChild(dropIcon);
     }
-    */
+    
 
 
       
@@ -1249,7 +1244,7 @@ function divVisuDropEventHandler(ev) {
 }
 
 function dblClickEventHandler(ev) {
-  if (ev.target.matches(`.divVisu [type = button], .visuTab[tab-idx], [readonly]`)) {
+  if (ev.target.matches(`.divVisu [type = button], .visuTab[tab-idx]`)) {
     inputEl = document.createElement(`input`);
     document.body.appendChild(inputEl);
     inputEl.id = `tmpInputEl`;
@@ -1559,33 +1554,66 @@ function buildVisu(visuDataJson) {
   }
 }
 
+function unitFromInt(int) {
+  const unit = [``, `°C`, `bar`, `V`, `kW`, `m³/h`, `mWS`, `%`, `kWh`, `Bh`, `m³`, `°Cø`, `mV`, `UPM`, `s`, `mbar`, `A`, `Hz`, `l/h`, `l`].at(int);
+  return (unit) ? unit : ``;
+}
+
 function parseVisuSkript(txt) {
-  //console.log(txt);
   const data = txt.match(/([A-Z]+\s*\d+),\d,\s*\d+',.+\*\//g);
   //console.log(data);
   
   data.forEach(dataset => {
-    const result = dataset.match(/(?<name>[A-Z]+)\s*(?<idx>\d+),(?<nk>\d),\s*(?<unit>\d+)',(?<rtos>.+)(?:TO\s*TEMP\s*BY).*\/\*\s*(?<tooltip>.+)\*\//);
-    //console.log(result);
-
-    //update rtos term & tooltip/title
-    const txtSignalIds = document.querySelectorAll(`[signal-id=${result.groups.name}${result.groups.idx}]`);
-    txtSignalIds.forEach(txtSignalId => {
-      txtSignalId.setAttribute(`rtos-id`, result.groups.rtos.trim());
-      txtSignalId.setAttribute(`title`, result.groups.tooltip.replace(`<<<`, ``).trim());
-      const tr = txtSignalId.closest(`tr`);
-      if (tr) {
-        const txtRtosTerm = tr.querySelector(`.txtRtosTerm`);
-        //txtRtosTerm.setAttribute(`rtos-id`, result.groups.rtos.trim());
-        txtRtosTerm.value = result.groups.rtos;
-        const txtTooltip = tr.querySelector(`.txtTooltip`);
-        //txtTooltip.setAttribute(`tooltip`, result.groups.tooltip.trim());
-        txtTooltip.value = result.groups.tooltip.replace(`<<<`, ``).trim();
+    const result = dataset.match(/(?<name>[A-Z]+)\s*(?<idx>\d+),(?<nk>\d),\s*(?<unitAsInt>\d+)',(?<rtos>.+)(?:TO\s*TEMP\s*BY).*\/\*\s*(?<title>.+)\*\//);
+    const {name, idx, nk, unitAsInt, rtos, title} = result.groups;
+    
+    //update attributes
+    const signalElements = document.querySelectorAll(`[signal-id=${name}${idx}]`);
+    signalElements.forEach(signalEl => {
+      signalEl.setAttribute(`rtos-id`, rtos.trim());
+      signalEl.setAttribute(`title`, title.replace(`<<<`, ``).trim());
+      signalEl.setAttribute(`dec-place`, parseInt(nk));
+      const unit = unitFromInt(unitAsInt);
+      if (unit) {
+        signalEl.setAttribute(`unit`, unit);
       }
-    });
-  });
+      
+      const icon = (name.match(/(PH)|(KPU)|(BPU)/)) ? `pumpe` :
+                   (name.match(/(KL)/)) ? `flamme` :
+                   (name.match(/(BL)/)) ? `aggregat` :
+                   undefined;
+      if (icon) {
+        signalEl.setAttribute(`icon`, icon);
+      }
 
-  
+      const trueTxt = (idx > 110 && name.match(/(BI)/)) ? `🌜` :
+                      (name.match(/(BI)|(SG)/)) ? `⚠` :
+                      undefined;
+      if (trueTxt) {
+        signalEl.setAttribute(`true-txt`, trueTxt);
+      }
+      
+      const stil = (name.match(/(HKT)/)) ? `sollwert` :
+                   (name.match(/(GR)/)) ? `grenzwert` :
+                   undefined;
+      if (stil) {
+        signalEl.setAttribute(`stil`, stil);
+      }
+
+      const msr = (unit.match(/(°C)/)) ? `TI${idx}` :
+                  (name.match(/(PMK)|(PKT)|(KL)/)) ? `KES${idx}` :
+                  (name.match(/(PMB)|(PBH)|(BL)/)) ? `BHKW${idx}` :
+                  (name.match(/(HKT)/)) ? `HK${idx}` : (idx > 110 && name.match(/(BI)/)) ? `HK${idx - 110}` :
+                  undefined;
+      if (msr) {
+        signalEl.setAttribute(`msr`, msr);
+      }
+
+    });
+
+
+
+  });
 }
 
 function colorInputEventHandler(ev) {
