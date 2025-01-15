@@ -74,18 +74,9 @@ body {
 .divVisu[edit-mode] {
   cursor: crosshair;
 }
-/*
-.divVisu[mode="select"] path {
-  cursor: pointer;
-}
-*/
+
 .visuTabs {
   width: var(--visuWidth);
-  /*
-  background-color: var(--darkGrey);
-  height: calc(var(--iconSize)/2);
-  border-bottom-left-radius: var(--controlsWidthOffset);
-  */
 }
 .visuTab {
   cursor: pointer;
@@ -95,9 +86,6 @@ body {
   border-bottom-left-radius: calc(var(--iconSize)/4);
   border-bottom-right-radius: calc(var(--iconSize)/4);
   padding: 0 calc(var(--iconSize)/4);
-  /*
-  height: calc(var(--iconSize)/2);
-  */
 }
 .visuTab.active {
   background-color: var(--darkestGrey);
@@ -125,96 +113,25 @@ body {
   display: none;
 }
 
-.visuItem {
-  /*
-  background-color: green;
-  */
-  cursor: pointer;
-  display: grid;
-}
-.visuItem[icon = "aggregat"],
-.visuItem[icon = "kessel"],
-.visuItem[icon = "puffer"] {
-  width: calc(2 * var(--iconSize));
-  aspect-ratio: 2/3;
-  border: 1px solid white;
-  background-color: var(--darkestGrey);
-  box-sizing: border-box;
-  grid-template-areas: 
-	'Error        .       .       Freigabe  '
-  '.            .       .       .         '
-  '.            .       .       .         '
-  '.            .       .       signalsEnd'
-  '.            icon    icon    .         '
-  'Betriebsart  icon    icon    Absenkung ';
-  grid-auto-columns: 1fr;
-  grid-auto-rows: 1fr;
-}
-.visuItem[icon = "puffer"] {
-  border-radius: calc(var(--iconSize)/2);
-}
-.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"], [icon = "text"]) {
-  grid-template-areas: 
-	'icon signals';
-	grid-auto-columns: min-content;
-  width: fit-content;
-  /*
-  min-width: 2ch;
-  min-height: 2ch;
-  background-color: var(--grey);
-  padding: 2ch;
-  */
-}
-.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"], [icon = "text"])[iconPosition = "right"] {
-	grid-template-areas:
-	'signals icon';
-}
-.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"], [icon = "text"])[iconPosition = "right"] input {
-  text-align: end;
-}
-.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"], [icon = "text"])[iconPosition = "top"] {
-	grid-template-areas: 
-	'icon'
-	'signals';
-}
-.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"], [icon = "button"], [icon = "text"])[iconPosition = "bottom"] {
-	grid-template-areas: 
-	'signals'
-	'icon';
-}
-
 .divIcon {
-  /*
-  background-color: yellow;
-  */
-  grid-area: icon;
+  position: absolute;
   box-sizing: border-box;
   display: grid;
-  grid-template-areas: 
-  'Error        .       Freigabe '
-  '.            .       .        '
-  'Betriebsart  .       Absenkung';
   grid-auto-rows: 1fr;
   /*
   grid-auto-columns: 1fr;
-  */
-}
-.visuItem:not([icon = "temperatur"]) .divIcon {
   min-height: var(--iconSize);
   min-width: var(--iconSize);
-}
-
-.visuItem:not([icon = "button"]):not([icon = "temperatur"]) .divIcon {
+  */
   width: var(--iconSize);
-}
-.visuItem[icon = "temperatur"] .divIcon {
-  width: calc(var(--iconSize)/2);
-  aspect-ratio: 1;
+  height: var(--iconSize);
 }
 
-.icon {
-  grid-area: Error-start / Error-start / Absenkung-end / Absenkung-end;
+.divIcon[icon = "temperatur"] {
+  width: calc(var(--iconSize)/2);
+  height: calc(var(--iconSize)/2);
 }
+
 [rotation = "90"] {
   rotate: 90deg;
 }
@@ -231,70 +148,10 @@ body {
   writing-mode: sideways-lr;
 }
 
-.divIconSignal {
-  display: grid;
-  justify-items: center;
-  align-items: center;
-  font-size: var(--fontSizeIconSignals);
-  line-height: 1;
-  z-index: 1;
-}
-.divIconSignal:not([na]) {
-  cursor: pointer;
-}
-
-.divError {
-  grid-area: Error;
-  color: var(--magenta);
-}
-
-.divFreigabe {
-  grid-area: Freigabe;
-  color: var(--cyan);
-}
-
-.divBetriebsart {
-  grid-area: Betriebsart;
-}
-
-.divAbsenkung {
-  grid-area: Absenkung;
-}
-
-.divBetrieb {
-  grid-area: Error-start / Error-start / Absenkung-end / Absenkung-end;
-}
-
-.divSignals {
-  display: grid;
-  align-items: center;
-  justify-items: center;
-  background-color: var(--grey);
-  min-width: var(--controlsWidthOffset);
-  min-height: var(--controlsWidthOffset);
-  /*
-  */
-}
-.visuItem:not([icon = "aggregat"], [icon = "kessel"], [icon = "puffer"]) .divSignals {
-  grid-area: signals;
-}
-.visuItem[icon = "aggregat"] .divSignals,
-.visuItem[icon = "kessel"] .divSignals,
-.visuItem[icon = "puffer"] .divSignals {
-  grid-area: Error-start / Error-start / signalsEnd-end / signalsEnd-end;
-  grid-auto-rows: min-content;
-  padding-top: calc(var(--iconSize)/2);
-}
-.visuItem[icon = "aggregat"] [type = "text"],
-.visuItem[icon = "kessel"] [type = "text"],
-.visuItem[icon = "puffer"] [type = "text"] {
-  width: 100%;
-  text-align: center;
-}
-
 [type = "text"] {
   box-sizing: border-box;
   width: var(--inputTextWidth);
+  height: calc(var(--iconSize)/2);
 }
 /*********************EditorTools*********************/
 .divEditSignal {

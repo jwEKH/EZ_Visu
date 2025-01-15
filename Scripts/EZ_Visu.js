@@ -101,40 +101,46 @@ function createBackgroundSVG(idx=1) {
   return svg;
 }
 
-function createIcon(symbol) {
+function createDivIcon(symbol) {
+  const divIcon = document.createElement(`div`);
+  divIcon.classList.add(`divIcon`);
+  divIcon.setAttribute(`icon`, symbol);
+  const svg = document.createElementNS(SVG_NS, `svg`);
+  const viewBoxHeight = (symbol === `waermetauscher`) ? 25 : 13;
+  svg.setAttributeNS(null, `viewBox`, `-0.5 -0.5 13 ${viewBoxHeight}`);
+  divIcon.appendChild(svg);
 
-  const icon = (symbol === `flamme`) ? document.createElement(`div`) : document.createElementNS(SVG_NS, `svg`);
-  icon.classList.add(`icon`);
-  if (icon.tagName === `svg`) {
-    const viewBoxHeight = (symbol === `waermetauscher`) ? 25 : 13;
-    icon.setAttributeNS(null, `viewBox`, `-0.5 -0.5 13 ${viewBoxHeight}`);
-    const path = document.createElementNS(SVG_NS, `path`)
-    
-    icon.appendChild(path);
-    const strokeColor = (symbol === `aggregat`) ? CYAN_HEX : STROKE_COLOR;
-    path.setAttributeNS(null,`stroke`, strokeColor);
-    const strokeWidth = (symbol.match(/(temperatur)|(aggregat)/)) ? 2 * STROKE_WIDTH : STROKE_WIDTH;
-    path.setAttributeNS(null, `stroke-width`, strokeWidth);
-    const fillColor = (symbol.match(/(temperatur)|(aggregat)|(schalter)/)) ? `none` : FILL_COLOR;
-    path.setAttributeNS(null,`fill`, fillColor);
-    
-    const d = (symbol === `temperatur`) ? `M0 12 8 4M5 1 11 7` :
-              (symbol === `heizkreis`) ? `M0 6a1 1 0 0112 0A1 1 0 010 6M1 6A1 1 0 0011 6 1 1 0 001 6 1 1 0 0011 6 1 1 0 001 6` :
-              (symbol === `pumpe`) ? `M2 6 6 2l4 4A1 1 0 012 6a1 1 0 018 0` : //`M2 6 6 2 10 6A1 1 0 012 6 1 1 0 0110 6M4 6A1 1 0 008 6 1 1 0 004 6L6 6 6 4` :
-              (symbol === `mischer`) ? `M8 6a1 1 0 014 0A1 1 0 018 6H6L1 9V3L6 6l3 5H3L9 1H3L6 6` : //`M8 6a1 1 0 013 0A1 1 0 018 6H6L2 8V4L6 6l2 4H4L8 2H4L6 6` : //`M6 6 3 0 9 0 3 12 9 12 6 6 0 3 0 9 6 6 9 6A1 1 0 0012 6 1 1 0 009 6` :
-              (symbol === `ventil`) ? `M8 6a1 1 0 014 0A1 1 0 018 6H6l3 5H3L9 1H3L6 6` : //`M9 6a1 1 0 013 0A1 1 0 019 6H6l3 6H3L9 0H3L6 6` :
-              (symbol === `aggregat`) ? `m2 9Q1 8 1 6T2 3m8 6q1-1 1-3T10 3M1 6H11` :
-              (symbol === `puffer`) ? `` : //`M 0 12 C 0 5.4 5.4 0 12 0` :
-              (symbol === `waermetauscher`) ? `M 0 24 L 12 0 L 12 24 L 0 24 L 0 0 L 12 0` :
-              (symbol === `heizpatrone`) ? `M0 3V9H6V3H0M6 8h5c1 0 1-1 0-1 1 0 1-1 0-1 1 0 1-1 0-1 1 0 1-1 0-1H6M6 5h5M6 6h5M6 7h5` :
-              (symbol === `luefter`) ? `m2 9a1 1 0 008-6A1 1 0 002 9L3 2M9 2l1 7` : //M2 9A1 1 0 0010 3 1 1 0 002 9L3 2M9 2 10 9M6 6C6 4 5 2 3 2 3 4 4 6 6 6 8 6 9 8 9 10 7 10 6 8 6 6
-              (symbol === `lueftungsklappe`) ? `M5 6A1 1 0 007 6 1 1 0 005 6M6 1 6 5M6 7 6 11` :
-              (symbol === `gassensor`) ? `M 1 3 L 11 3 L 11 9 L 1 9 L 1 3 M 3 3 L 3 4 M 5 3 L 5 4 M 7 3 L 7 4 M 9 3 L 9 4 M 3 9 L 3 8 M 5 9 L 5 8 M 7 9 L 7 8 M 9 9 L 9 8` :
-              (symbol === `schalter`) ? `M0 6 2 6 11 4M10 4 10 6 12 6` : //M0 6 2 6 9 0M10 4 10 6 12 6M2 6 11 4
-              (symbol === `zaehler`) ? `M1 3v7H11V3H1M2 4V7h8V4H2` :
-              ``;
-
-    path.setAttributeNS(null, `d`, d);
+  const path = document.createElementNS(SVG_NS, `path`)
+  svg.appendChild(path);
+  const strokeColor = (symbol === `aggregat`) ? CYAN_HEX : STROKE_COLOR;
+  path.setAttributeNS(null,`stroke`, strokeColor);
+  const strokeWidth = (symbol.match(/(temperatur)|(aggregat)/)) ? 2 * STROKE_WIDTH : STROKE_WIDTH;
+  path.setAttributeNS(null, `stroke-width`, strokeWidth);
+  const fillColor = (symbol.match(/(temperatur)|(aggregat)|(schalter)/)) ? `none` : FILL_COLOR;
+  path.setAttributeNS(null,`fill`, fillColor);
+  
+  const d = (symbol === `temperatur`) ? `M0 12 8 4M5 1 11 7` :
+            (symbol === `heizkreis`) ? `M0 6a1 1 0 0112 0A1 1 0 010 6M1 6A1 1 0 0011 6 1 1 0 001 6 1 1 0 0011 6 1 1 0 001 6` :
+            (symbol === `pumpe`) ? `M2 6 6 2l4 4A1 1 0 012 6a1 1 0 018 0` : //`M2 6 6 2 10 6A1 1 0 012 6 1 1 0 0110 6M4 6A1 1 0 008 6 1 1 0 004 6L6 6 6 4` :
+            (symbol === `mischer`) ? `M8 6a1 1 0 014 0A1 1 0 018 6H6L1 9V3L6 6l3 5H3L9 1H3L6 6` : //`M8 6a1 1 0 013 0A1 1 0 018 6H6L2 8V4L6 6l2 4H4L8 2H4L6 6` : //`M6 6 3 0 9 0 3 12 9 12 6 6 0 3 0 9 6 6 9 6A1 1 0 0012 6 1 1 0 009 6` :
+            (symbol === `ventil`) ? `M8 6a1 1 0 014 0A1 1 0 018 6H6l3 5H3L9 1H3L6 6` : //`M9 6a1 1 0 013 0A1 1 0 019 6H6l3 6H3L9 0H3L6 6` :
+            (symbol === `aggregat`) ? `m2 9Q1 8 1 6T2 3m8 6q1-1 1-3T10 3M1 6H11` :
+            (symbol === `flamme`) ? `` : //`M 0 12 C 0 5.4 5.4 0 12 0` :
+            (symbol === `puffer`) ? `` : //`M 0 12 C 0 5.4 5.4 0 12 0` :
+            (symbol === `waermetauscher`) ? `M 0 24 L 12 0 L 12 24 L 0 24 L 0 0 L 12 0` :
+            (symbol === `heizpatrone`) ? `M0 3V9H6V3H0M6 8h5c1 0 1-1 0-1 1 0 1-1 0-1 1 0 1-1 0-1 1 0 1-1 0-1H6M6 5h5M6 6h5M6 7h5` :
+            (symbol === `luefter`) ? `m2 9a1 1 0 008-6A1 1 0 002 9L3 2M9 2l1 7` : //M2 9A1 1 0 0010 3 1 1 0 002 9L3 2M9 2 10 9M6 6C6 4 5 2 3 2 3 4 4 6 6 6 8 6 9 8 9 10 7 10 6 8 6 6
+            (symbol === `lueftungsklappe`) ? `M5 6A1 1 0 007 6 1 1 0 005 6M6 1 6 5M6 7 6 11` :
+            (symbol === `gassensor`) ? `M 1 3 L 11 3 L 11 9 L 1 9 L 1 3 M 3 3 L 3 4 M 5 3 L 5 4 M 7 3 L 7 4 M 9 3 L 9 4 M 3 9 L 3 8 M 5 9 L 5 8 M 7 9 L 7 8 M 9 9 L 9 8` :
+            (symbol === `schalter`) ? `M0 6 2 6 11 4M10 4 10 6 12 6` : //M0 6 2 6 9 0M10 4 10 6 12 6M2 6 11 4
+            (symbol === `zaehler`) ? `M1 3v7H11V3H1M2 4V7h8V4H2` :
+            ``;            
+  path.setAttributeNS(null, `d`, d);
+  
+  /*
+  const divBetrieb = (symbol === `flamme`) ? document.createElement(`div`) : document.createElementNS(SVG_NS, `svg`);
+  divBetrieb.classList.add(`divBetrieb`);
+  if (divBetrieb.tagName === `svg`) {
   }
   else if (symbol === `kessel`) {
     icon.classList.add(`flame`);
@@ -144,8 +150,9 @@ function createIcon(symbol) {
       icon.appendChild(div);
     });
   }
-  
-  return icon;
+  */
+
+  return divIcon;
 }
 
 function createVisuItem(...attributes) {
@@ -172,7 +179,7 @@ function createVisuItem(...attributes) {
       
       if (key.toLowerCase() === `icon`) {
         const target = (value === `button` || value === `text`) ? divSignals : divIcon ;
-        target.appendChild(createIcon(value));       
+        target.appendChild(createDivIcon(value));       
         icon = value;
       }
       
@@ -620,7 +627,7 @@ function createSelectElement(type, excludedOptions = []) {
                   (type === `dec-place`) ? [``, 0, 1, 2, 3, 4] :
                   (type === `stil`) ? [``, `sollwert`, `grenzwert`] :
                   (type === `icon`) ? [``, `temperatur`, `heizkreis`, `pumpe`, `mischer`, `ventil`, `aggregat`, `puffer`, `waermetauscher`, `heizpatrone`, `luefter`, `lueftungsklappe`, `gassensor`, `schalter`, `zaehler`] :
-                  (type === `addAttribute`) ? [`addAttribute...`, `signal-id`, `rtos-id`, `unit`, `title`, `stil`, `toggle`, `dec-place`, `icon`, `true-txt`, `false-txt`, `range-max`, `range-min`] :
+                  (type === `addAttribute`) ? [`addAttribute...`, `msr`, `signal-id`, `rtos-id`, `unit`, `title`, `stil`, `toggle`, `dec-place`, `icon`, `true-txt`, `false-txt`, `range-max`, `range-min`] :
                   [];
   
   const select = document.createElement(`select`);
@@ -1181,41 +1188,58 @@ function dragEndEventHandler(ev) {
   removeAllDraggingAttributes();
 }
 
-function createDropItem(draggingItem) {
-  let dropItem = draggingItem;
-  const icon = dropItem.getAttribute(`icon`);
-  if (icon) {
-    dropItem = document.createElement(`div`);
-    getAttributesAsMap(draggingItem).forEach((value, key) => dropItem.setAttribute(key, value));
-    dropItem.appendChild(createIcon(dropItem.getAttribute(`icon`)));
+function snapToGrid(xRel, yRel) {
+  const gridSnapActive = document.querySelector(`#cbGridSnap`).checked;
+  const x = (gridSnapActive) ? Math.round(GRIDSIZE_AS_PARTS_FROM_WIDTH * xRel) / GRIDSIZE_AS_PARTS_FROM_WIDTH : xRel;
+  const y = (gridSnapActive) ? Math.round((GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * yRel) / (GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) : yRel;
+  return {xRel: x, yRel: y};
+}
 
+function handleItemAppearance(_item) {
+  if (_item.matches(`.signalEl[icon]`)) {
+    //convert to icon
   }
+  else if (_item.matches(`.divIcon:not([icon])`)) {
+    //convert to signalEl
+  }
+  
 
-  return dropItem;
+  return item;
 }
 
 function divVisuDropEventHandler(ev) {
   const draggingItems = document.querySelectorAll(`[dragging]`);
   const offsets = JSON.parse(ev.dataTransfer.getData(`offsets`));
-  const target = document.querySelector(`.divVisu`);
+  const divVisu = document.querySelector(`.divVisu`);
   draggingItems.forEach((draggingItem, idx) => {
-    const dropItem = createDropItem((ev.dataTransfer.dropEffect === `copy`) ? draggingItem.cloneNode(true) : draggingItem);
+    const dropItem = (ev.dataTransfer.dropEffect === `copy`) ? handleItemAppearance(draggingItem.cloneNode(true)) : handleItemAppearance(draggingItem);
     draggingItem.toggleAttribute(`selected`, (ev.dataTransfer.dropEffect !== `copy`));
     
-    const divVisuBox = target.getBoundingClientRect();
-    
+    const divVisuBox = divVisu.getBoundingClientRect();
     dropItem.style.position = `absolute`;
     const xRel = (ev.x - divVisuBox.x - offsets[idx].x)/divVisuBox.width;
     const yRel = (ev.y - divVisuBox.y - offsets[idx].y)/divVisuBox.height;
+    const position = snapToGrid(xRel, yRel);   
+    dropItem.style.left = `${100* position.xRel}%`;
+    dropItem.style.top = `${100* position.yRel}%`;
     
-    const gridSnapActive = document.querySelector(`#cbGridSnap`).checked;
-    const left = (gridSnapActive) ? `${Math.round(GRIDSIZE_AS_PARTS_FROM_WIDTH * xRel) / GRIDSIZE_AS_PARTS_FROM_WIDTH * 100}%` : `${xRel*100}%`;
-    const top = (gridSnapActive) ? `${Math.round((GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * yRel) / (GRIDSIZE_AS_PARTS_FROM_WIDTH/ASPECT_RATIO) * 100}%` : `${yRel*100}%`;
-   
-    dropItem.style.left = left;
-    dropItem.style.top = top;
-    
-    target.appendChild(dropItem);
+    divVisu.appendChild(dropItem);
+
+    /*
+    if (draggingItem.closest(`.signalTable`)) {
+      const icon = draggingItem.getAttribute(`icon`);
+
+      const symbol = (icon) ? icon : (draggingItem.getAttribute(`unit`) === `°C`) ? `temperatur` : undefined;
+      const divIcon = (symbol) ? createDivIcon(symbol) : undefined;
+
+      if (divIcon) {
+        divIcon.style.left = `${100* position.xRel}%`;
+        divIcon.style.top = `${100* position.yRel}%`;
+        divVisu.appendChild(divIcon);
+      }
+    }
+    */
+
 
       
     updateUnDoReDoStack();
