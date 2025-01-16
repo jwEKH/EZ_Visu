@@ -569,6 +569,7 @@ function updateAttributeTable() {
   attributeTable.toggleAttribute(`cloaked`, !selectedVisuItems.length);
   attributeTable.querySelectorAll(`input, select`).forEach(attributeInput => {
     (attributeInput.type === `checkbox`) ? attributeInput.checked = false : attributeInput.value = ``;
+    attributeInput.removeAttribute(`disabled`); 
   });
 
   selectedVisuItems.forEach((selectedVisuItem, selectedVisuItemIdx) => {
@@ -578,7 +579,6 @@ function updateAttributeTable() {
       const attributeInput = attributeTable.querySelector(`[attribute-name = ${key}]`);
       if (selectedVisuItemIdx === 0) {
         (attributeInput.type === `checkbox`) ? attributeInput.checked = !!value : attributeInput.value = `${value}`;
-        attributeInput.removeAttribute(`disabled`); 
       }
       else {
         if (attributeInput.type === `checkbox`) {
@@ -1286,7 +1286,7 @@ function keyDownEventHandler(ev) {
     else if (ev.ctrlKey) {
       if (key === `a`) {
         ev.preventDefault();
-        document.querySelectorAll(`.visuItem, svg.active *`).forEach(el => el.setAttribute(`selected`, true));
+        document.querySelectorAll(`.divVisu .visuItem, svg.active *:not(.hoverMarker)`).forEach(el => el.setAttribute(`selected`, true));
         updateAttributeTable();
       }
       if (key === `y`)
