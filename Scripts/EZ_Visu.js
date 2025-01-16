@@ -101,58 +101,79 @@ function createBackgroundSVG(idx=1) {
   return svg;
 }
 
-function createDivIcon(symbol) {
-  const divIcon = document.createElement(`div`);
-  divIcon.classList.add(`divIcon`);
-  divIcon.setAttribute(`icon`, symbol);
-  const svg = document.createElementNS(SVG_NS, `svg`);
-  const viewBoxHeight = (symbol === `waermetauscher`) ? 25 : 13;
-  svg.setAttributeNS(null, `viewBox`, `-0.5 -0.5 13 ${viewBoxHeight}`);
-  divIcon.appendChild(svg);
-
-  const path = document.createElementNS(SVG_NS, `path`)
-  svg.appendChild(path);
-  const strokeColor = (symbol === `aggregat`) ? CYAN_HEX : STROKE_COLOR;
-  path.setAttributeNS(null,`stroke`, strokeColor);
-  const strokeWidth = (symbol.match(/(temperatur)|(aggregat)/)) ? 2 * STROKE_WIDTH : STROKE_WIDTH;
-  path.setAttributeNS(null, `stroke-width`, strokeWidth);
-  const fillColor = (symbol.match(/(temperatur)|(aggregat)|(schalter)/)) ? `none` : FILL_COLOR;
-  path.setAttributeNS(null,`fill`, fillColor);
-  
-  const d = (symbol === `temperatur`) ? `M0 12 8 4M5 1 11 7` :
-            (symbol === `heizkreis`) ? `M0 6a1 1 0 0112 0A1 1 0 010 6M1 6A1 1 0 0011 6 1 1 0 001 6 1 1 0 0011 6 1 1 0 001 6` :
-            (symbol === `pumpe`) ? `M2 6 6 2l4 4A1 1 0 012 6a1 1 0 018 0` : //`M2 6 6 2 10 6A1 1 0 012 6 1 1 0 0110 6M4 6A1 1 0 008 6 1 1 0 004 6L6 6 6 4` :
-            (symbol === `mischer`) ? `M8 6a1 1 0 014 0A1 1 0 018 6H6L1 9V3L6 6l3 5H3L9 1H3L6 6` : //`M8 6a1 1 0 013 0A1 1 0 018 6H6L2 8V4L6 6l2 4H4L8 2H4L6 6` : //`M6 6 3 0 9 0 3 12 9 12 6 6 0 3 0 9 6 6 9 6A1 1 0 0012 6 1 1 0 009 6` :
-            (symbol === `ventil`) ? `M8 6a1 1 0 014 0A1 1 0 018 6H6l3 5H3L9 1H3L6 6` : //`M9 6a1 1 0 013 0A1 1 0 019 6H6l3 6H3L9 0H3L6 6` :
-            (symbol === `aggregat`) ? `m2 9Q1 8 1 6T2 3m8 6q1-1 1-3T10 3M1 6H11` :
-            (symbol === `flamme`) ? `` : //`M 0 12 C 0 5.4 5.4 0 12 0` :
-            (symbol === `puffer`) ? `` : //`M 0 12 C 0 5.4 5.4 0 12 0` :
-            (symbol === `waermetauscher`) ? `M 0 24 L 12 0 L 12 24 L 0 24 L 0 0 L 12 0` :
-            (symbol === `heizpatrone`) ? `M0 3V9H6V3H0M6 8h5c1 0 1-1 0-1 1 0 1-1 0-1 1 0 1-1 0-1 1 0 1-1 0-1H6M6 5h5M6 6h5M6 7h5` :
-            (symbol === `luefter`) ? `m2 9a1 1 0 008-6A1 1 0 002 9L3 2M9 2l1 7` : //M2 9A1 1 0 0010 3 1 1 0 002 9L3 2M9 2 10 9M6 6C6 4 5 2 3 2 3 4 4 6 6 6 8 6 9 8 9 10 7 10 6 8 6 6
-            (symbol === `lueftungsklappe`) ? `M5 6A1 1 0 007 6 1 1 0 005 6M6 1 6 5M6 7 6 11` :
-            (symbol === `gassensor`) ? `M 1 3 L 11 3 L 11 9 L 1 9 L 1 3 M 3 3 L 3 4 M 5 3 L 5 4 M 7 3 L 7 4 M 9 3 L 9 4 M 3 9 L 3 8 M 5 9 L 5 8 M 7 9 L 7 8 M 9 9 L 9 8` :
-            (symbol === `schalter`) ? `M0 6 2 6 11 4M10 4 10 6 12 6` : //M0 6 2 6 9 0M10 4 10 6 12 6M2 6 11 4
-            (symbol === `zaehler`) ? `M1 3v7H11V3H1M2 4V7h8V4H2` :
-            ``;            
-  path.setAttributeNS(null, `d`, d);
-  
-  /*
-  const divBetrieb = (symbol === `flamme`) ? document.createElement(`div`) : document.createElementNS(SVG_NS, `svg`);
-  divBetrieb.classList.add(`divBetrieb`);
-  if (divBetrieb.tagName === `svg`) {
-  }
-  else if (symbol === `kessel`) {
-    icon.classList.add(`flame`);
+function createBetriebSymbol(symbol) {
+  const betrieb = (symbol === `flamme`) ? document.createElement(`div`) : document.createElementNS(SVG_NS, `svg`);
+  betrieb.classList.add(`betrieb`);
+  if (symbol === `flamme`) {
     [`red`, `orange`, `yellow`, `white`, `blue`].forEach(color => {        
       const div = document.createElement(`div`);
       div.classList.add(`flameLayer`, color);
-      icon.appendChild(div);
+      betrieb.appendChild(div);
     });
   }
-  */
+  else {
+    betrieb.setAttributeNS(null, `viewBox`, `-0.5 -0.5 13 13`);
+    
+    const path = document.createElementNS(SVG_NS, `path`)
+    betrieb.appendChild(path);
+    const strokeColor = (symbol.match(/(mischer)|(ventil)/)) ? `none` :
+                        (symbol === `aggregat`) ? CYAN_HEX :
+                        STROKE_COLOR;
+    path.setAttributeNS(null,`stroke`, strokeColor);
+    const strokeWidth = (symbol.match(/(temperatur)|(aggregat)/)) ? 2 * STROKE_WIDTH : STROKE_WIDTH;
+    path.setAttributeNS(null, `stroke-width`, strokeWidth);
+    const fillColor = (symbol.match(/(temperatur)|(aggregat)|(schalter)/)) ? `none` : STROKE_COLOR;
+    path.setAttributeNS(null,`fill`, fillColor);
+    
+    const d = (symbol === `pumpe`) ? `M4 6a2 2 0 102-2V6H4a2 2 0 012-2` :
+              (symbol === `mischer`) ? `M6 6 1 9V3L6 6l3 5H3L9 1H3L6 6` : //`M6 6 3 0 9 0 3 12 9 12 6 6 0 3 0 9 6 6 9 6A1 1 0 0012 6 1 1 0 009 6` :
+              (symbol === `ventil`) ? `M8 6a1 1 0 014 0A1 1 0 018 6H6l3 5H3L9 1H3L6 6` : //`M9 6a1 1 0 013 0A1 1 0 019 6H6l3 6H3L9 0H3L6 6` :
+              (symbol === `aggregat`) ? `m2 9Q1 8 1 6T2 3m8 6q1-1 1-3T10 3M1 6H11` :
+              //(symbol === `heizpatrone`) ? `M0 3V9H6V3H0M6 8h5c1 0 1-1 0-1 1 0 1-1 0-1 1 0 1-1 0-1 1 0 1-1 0-1H6M6 5h5M6 6h5M6 7h5` :
+              (symbol === `luefter`) ? `M2 9A1 1 0 0010 3 1 1 0 002 9L3 2M9 2 10 9M6 6C6 4 5 2 3 2 3 4 4 6 6 6 8 6 9 8 9 10 7 10 6 8 6 6` :
+              (symbol === `lueftungsklappe`) ? `M5 6A1 1 0 007 6 1 1 0 005 6M6 1 6 5M6 7 6 11` :
+              (symbol === `schalter`) ? `M0 6 2 6 11 4M10 4 10 6 12 6` : //M0 6 2 6 9 0M10 4 10 6 12 6M2 6 11 4
+              ``;            
+    path.setAttributeNS(null, `d`, d);
+  }
 
-  return divIcon;
+
+  return betrieb;
+}
+
+function createIconSVG(symbol) {
+  if (symbol.match(/(temperatur)|(heizkreis)|(pumpe)|(mischer)|(ventil)|(waermetauscher)|(heizpatrone)|(luefter)|(gassensor)|(zaehler)/)) {    
+    const svg = document.createElementNS(SVG_NS, `svg`);
+    const viewBoxHeight = (symbol === `waermetauscher`) ? 25 : 13;
+    svg.setAttributeNS(null, `viewBox`, `-0.5 -0.5 13 ${viewBoxHeight}`);
+    
+    const path = document.createElementNS(SVG_NS, `path`)
+    svg.appendChild(path);
+    path.setAttributeNS(null,`stroke`, STROKE_COLOR);
+    const strokeWidth = (symbol.match(/(temperatur)|(aggregat)/)) ? 2 * STROKE_WIDTH : STROKE_WIDTH;
+    path.setAttributeNS(null, `stroke-width`, strokeWidth);
+    const fillColor = (symbol.match(/(temperatur)|(aggregat)|(schalter)/)) ? `none` : FILL_COLOR;
+    path.setAttributeNS(null,`fill`, fillColor);
+    
+    const d = (symbol === `temperatur`) ? `M0 12 8 4M5 1 11 7` :
+              (symbol === `heizkreis`) ? `M0 6a1 1 0 0112 0A1 1 0 010 6M1 6A1 1 0 0011 6 1 1 0 001 6 1 1 0 0011 6 1 1 0 001 6` :
+              (symbol === `pumpe`) ? `M2 6 6 2l4 4A1 1 0 012 6a1 1 0 018 0` : //`M2 6 6 2 10 6A1 1 0 012 6 1 1 0 0110 6M4 6A1 1 0 008 6 1 1 0 004 6L6 6 6 4` :
+              (symbol === `mischer`) ? `M8 6a1 1 0 014 0A1 1 0 018 6H6L1 9V3L6 6l3 5H3L9 1H3L6 6` : //`M8 6a1 1 0 013 0A1 1 0 018 6H6L2 8V4L6 6l2 4H4L8 2H4L6 6` : //`M6 6 3 0 9 0 3 12 9 12 6 6 0 3 0 9 6 6 9 6A1 1 0 0012 6 1 1 0 009 6` :
+              (symbol === `ventil`) ? `M8 6a1 1 0 014 0A1 1 0 018 6H6l3 5H3L9 1H3L6 6` : //`M9 6a1 1 0 013 0A1 1 0 019 6H6l3 6H3L9 0H3L6 6` :
+              //(symbol === `aggregat`) ? `m2 9Q1 8 1 6T2 3m8 6q1-1 1-3T10 3M1 6H11` :
+              //(symbol === `flamme`) ? `` : //`M 0 12 C 0 5.4 5.4 0 12 0` :
+              //(symbol === `puffer`) ? `` : //`M 0 12 C 0 5.4 5.4 0 12 0` :
+              (symbol === `waermetauscher`) ? `M 0 24 L 12 0 L 12 24 L 0 24 L 0 0 L 12 0` :
+              (symbol === `heizpatrone`) ? `M0 3V9H6V3H0M6 8h5c1 0 1-1 0-1 1 0 1-1 0-1 1 0 1-1 0-1 1 0 1-1 0-1H6M6 5h5M6 6h5M6 7h5` :
+              (symbol === `luefter`) ? `m2 9a1 1 0 008-6A1 1 0 002 9L3 2M9 2l1 7` : //M2 9A1 1 0 0010 3 1 1 0 002 9L3 2M9 2 10 9M6 6C6 4 5 2 3 2 3 4 4 6 6 6 8 6 9 8 9 10 7 10 6 8 6 6
+              //(symbol === `lueftungsklappe`) ? `M5 6A1 1 0 007 6 1 1 0 005 6M6 1 6 5M6 7 6 11` :
+              (symbol === `gassensor`) ? `M 1 3 L 11 3 L 11 9 L 1 9 L 1 3 M 3 3 L 3 4 M 5 3 L 5 4 M 7 3 L 7 4 M 9 3 L 9 4 M 3 9 L 3 8 M 5 9 L 5 8 M 7 9 L 7 8 M 9 9 L 9 8` :
+              //(symbol === `schalter`) ? `M0 6 2 6 11 4M10 4 10 6 12 6` : //M0 6 2 6 9 0M10 4 10 6 12 6M2 6 11 4
+              (symbol === `zaehler`) ? `M1 3v7H11V3H1M2 4V7h8V4H2` :
+              ``;            
+    path.setAttributeNS(null, `d`, d);
+    return svg;
+  }
 }
 
 function createVisuItem(...attributes) {
@@ -239,13 +260,14 @@ function addEditorEventHandler() {
   
   document.body.addEventListener(`keydown`, keyDownEventHandler);
   document.body.addEventListener(`dblclick`, dblClickEventHandler);
+  document.body.addEventListener(`contextmenu`, contextMenuEventHandler);
   
   const divVisu = document.querySelector(`.divVisu`);
   divVisu.addEventListener(`mousemove`, divVisuMouseMoveEventHandler);
   divVisu.addEventListener(`dragover`, divVisuDragOverEventHandler);
   divVisu.addEventListener(`drop`, divVisuDropEventHandler);
   divVisu.addEventListener(`click`, divVisuClickEventHandler);
-  divVisu.addEventListener(`contextmenu`, divVisuContextMenuEventHandler);
+  //divVisu.addEventListener(`contextmenu`, divVisuContextMenuEventHandler);
 
   document.querySelector(`.visuTabs`).addEventListener(`click`, visuTabsClickEventHandler);
   
@@ -266,13 +288,14 @@ function removeEditorEventHandler() {
   
   document.body.removeEventListener(`keydown`, keyDownEventHandler);
   document.body.removeEventListener(`dblclick`, dblClickEventHandler);
+  document.body.removeEventListener(`contextmenu`, contextMenuEventHandler);
 
   const divVisu = document.querySelector(`.divVisu`);
   divVisu.removeEventListener(`mousemove`, divVisuMouseMoveEventHandler);
   divVisu.removeEventListener(`dragover`, divVisuDragOverEventHandler);
   divVisu.removeEventListener(`drop`, divVisuDropEventHandler);
   divVisu.removeEventListener(`click`, divVisuClickEventHandler);
-  divVisu.removeEventListener(`contextmenu`, divVisuContextMenuEventHandler);
+  //divVisu.removeEventListener(`contextmenu`, divVisuContextMenuEventHandler);
 
   document.querySelector(`.visuTabs`).removeEventListener(`click`, visuTabsClickEventHandler);
 }
@@ -308,9 +331,9 @@ function selectionAreaHandler() {
 
   const selectDrawnElements = document.querySelector(`#cbSelectDrawnElements`).checked;
   const selectVisuItems = document.querySelector(`#cbSelectVisuItems`).checked;
-  const elSelector = (selectDrawnElements & selectVisuItems) ? `svg *, div , input` :
-                     (selectDrawnElements) ? `svg *` :
-                     (selectVisuItems) ? `div , input` :
+  const elSelector = (selectDrawnElements & selectVisuItems) ? `.bgSVG line, .visuItem` :
+                     (selectDrawnElements) ? `.bgSVG line` :
+                     (selectVisuItems) ? `.visuItem` :
                      undefined;
   divVisu.querySelectorAll(elSelector).forEach(el => {
     elBox = el.getBoundingClientRect();
@@ -527,19 +550,21 @@ function editSignalAttributesEventHandler(ev) {
   }
   removeExistingNode(document.querySelector(`.divEditSignal`));
 
+  const visuItem = ev.target.closest(`.visuItem`);
+
   const divEditSignal = document.createElement(`div`);
   document.body.appendChild(divEditSignal);
-  divEditSignal.signalEl = ev.target;
+  divEditSignal.visuItem = visuItem;
   divEditSignal.classList.add(`divEditSignal`);
   divEditSignal.style.left = `${ev.pageX}px`;
   divEditSignal.style.top = `${ev.pageY}px`;
 
-  const forbiddenAttributeNames = [`class`, `readonly`, `draggable`, `type`];
-  getAttributesAsMap(ev.target, forbiddenAttributeNames).forEach((value, key) => {
+  const forbiddenAttributeNames = [`class`, `readonly`, `draggable`, `type`, `style`, `selected`, `highlighted`];
+  getAttributesAsMap(visuItem, forbiddenAttributeNames).forEach((value, key) => {
     createEditSignalRow(key, value).forEach(el => divEditSignal.appendChild(el));
   });
 
-  const selectAddAttribute = createSelectAddAttribute(ev.target.getAttributeNames());
+  const selectAddAttribute = createSelectAddAttribute(visuItem.getAttributeNames());
   divEditSignal.appendChild(selectAddAttribute);
 
   const btnConfirm = document.createElement(`input`);
@@ -551,29 +576,38 @@ function editSignalAttributesEventHandler(ev) {
 
 function confirmSignalAttributeEditEventHandler(ev) {
   const divEditSignal = ev.target.closest(`.divEditSignal`);
-  const {signalEl} = divEditSignal;
   divEditSignal.querySelectorAll(`input:not([type=button]), select:not(.selectAddAttribute)`).forEach(attributeInput => {
     const key = attributeInput.getAttribute(`attribute-name`);
     //console.log(key);
     if (attributeInput.type === `checkbox`) {
-      signalEl.toggleAttribute(key, attributeInput.checked);
+      divEditSignal.visuItem.toggleAttribute(key, attributeInput.checked);
     }
     else if (attributeInput.value) {
-      signalEl.setAttribute(key, attributeInput.value);
+      //console.log(key, attributeInput.value, divEditSignal.visuItem);
+      divEditSignal.visuItem.setAttribute(key, attributeInput.value);
     }
     else {
-      signalEl.removeAttribute(key);
+      divEditSignal.visuItem.removeAttribute(key);
     }
-    signalEl.value = signalEl.getAttribute(`signal-id`);
   });
-  
+  const input = divEditSignal.visuItem.querySelector(`input`);
+  if (input) {
+    input.setAttribute(`value`, divEditSignal.visuItem.getAttribute(`signal-id`));
+  }
+
   removeExistingNode(document.querySelector(`.divEditSignal`));
+  
+  if (divEditSignal.visuItem.closest(`.divVisu`)) {
+    divEditSignal.visuItem = handleItemAppearance(divEditSignal.visuItem);
+  }
+
+  updateUsedCount();  
 }
 
 function createEditSignalRow(key, value) {
   const lbl = document.createElement(`label`);
   lbl.innerText = `${key}:`;
-  const input = (key.match(/(unit)|(dec-place)|(stil)|(icon)/)) ? createSelectElement(key) : document.createElement(`input`);
+  const input = (key.match(/(signal-id)|(unit)|(dec-place)|(stil)|(icon)|(text-align)|(rotation)|(animation)/)) ? createSelectElement(key) : document.createElement(`input`);
   input.setAttribute(`attribute-name`, key);
   if (key.match(/(toggle)/)) {
     input.type = `checkbox`
@@ -614,8 +648,12 @@ function createSelectElement(type, excludedOptions = []) {
   const options = (type === `unit`) ? [``, `°C`, `bar`, `V`, `kW`, `m³/h`, `mWS`, `%`, `kWh`, `Bh`, `m³`, `°Cø`, `mV`, `UPM`, `s`, `mbar`, `A`, `Hz`, `l/h`, `l`] :
                   (type === `dec-place`) ? [``, 0, 1, 2, 3, 4] :
                   (type === `stil`) ? [``, `sollwert`, `grenzwert`] :
-                  (type === `icon`) ? [``, `temperatur`, `heizkreis`, `pumpe`, `mischer`, `ventil`, `aggregat`, `puffer`, `waermetauscher`, `heizpatrone`, `luefter`, `lueftungsklappe`, `gassensor`, `schalter`, `zaehler`] :
-                  (type === `addAttribute`) ? [`addAttribute...`, `msr`, `signal-id`, `rtos-id`, `unit`, `title`, `stil`, `toggle`, `dec-place`, `icon`, `true-txt`, `false-txt`, `range-max`, `range-min`] :
+                  (type === `icon`) ? [``, `temperatur`, `heizkreis`, `pumpe`, `mischer`, `ventil`, `aggregat`, `flamme`, `puffer`, `waermetauscher`, `heizpatrone`, `luefter`, `lueftungsklappe`, `gassensor`, `schalter`, `zaehler`] :
+                  (type === `rotation`) ? [``, `90`, `180`, `270`] :
+                  (type === `animation`) ? [``, `flicker`, `spin`, `hide`, `show`, `blink`] :
+                  (type === `text-align`) ? [``, `center`, `end`] :
+                  (type === `addAttribute`) ? [`addAttribute...`, `msr`, `strang`, `signal-id`, `rtos-id`, `unit`, `title`, `stil`, `toggle`, `dec-place`, `icon`, `rotation`, `animation`, `true-txt`, `false-txt`, `text-align`, `range-max`, `range-min`] :
+                  (type === `signal-id`) ? Array.from(document.querySelectorAll(`.signalTable [signal-id]`), (el) => el.getAttribute(`signal-id`)) :
                   [];
   
   const select = document.createElement(`select`);
@@ -628,174 +666,17 @@ function createSelectElement(type, excludedOptions = []) {
     }
   });
 
+  if (type === `signal-id`) {
+    select.addEventListener(`change`, changeSignalIdEventHandler);
+  }
+
   return select;                
 }
 
-function addSignalTableRow(attributes) {
-  const signalTableBody = document.querySelector(`.signalTable tbody`);
-  const tr = document.createElement(`tr`);
-  signalTableBody.appendChild(tr);
-  [`UsageCount`, `RtosTerm`, `SignalId`, `Tooltip`, `DecPlace`, `Unit`, `Style`, `TrueTxt`, `FalseTxt`].forEach(col => {
-    const td = document.createElement(`td`);
-    tr.appendChild(td);
-    if (col === `UsageCount`) {
-      td.innerText = 0;
-      td.classList.add(`${attributes[`signal-id`]}count`);
-    }
-    else if (col.match(/(Rtos)|(SignalId)|(Tooltip)|(Txt)/)) {
-      const input = document.createElement(`input`);
-      td.appendChild(input);
-      input.classList.add(`txt${col}`);
-      input.type = `text`;
-      input.value = (col === `SignalId` && attributes[`signal-id`]) ? `${attributes[`signal-id`]}` :
-                    (col === `RtosTerm` && attributes[`rtos-id`]) ? `${attributes[`rtos-id`]}` :
-                    (col === `Tooltip` && attributes.title) ? `${attributes.title}` :
-                    ``;
-      if (col === `SignalId`) {
-        input.readOnly = true;
-        input.draggable = true;
-        Object.entries(attributes).forEach(([key, value]) => {
-          input.setAttribute(key, value);
-        });
-        //input.addEventListener(`focus`, highlightSignalsHandler);
-      }
-      else if (col.match(/(Txt)/)) {
-        input.setAttribute(`list`, `favBoolTxtList`);
-        if (attributes[`true-txt`] && col.match(/(TrueTxt)/)) {
-          input.value = attributes[`true-txt`].trim();
-        }
-      }
-    }
-    else {
-      const select = document.createElement(`select`);
-      td.appendChild(select);
-      select.classList.add(`sel${col}`);
-
-      if (col === `DecPlace`) {
-        [0, 1, 2, 3, 4].forEach(decPlace => {
-          const option = document.createElement(`option`);
-          select.appendChild(option);
-          option.innerText = decPlace;
-          option.value = decPlace;
-          option.selected = (decPlace == attributes[`dec-place`]);
-        });
-      }
-
-      if (col === `Unit`) {
-        [``, `°C`, `bar`, `V`, `kW`, `m³/h`, `mWS`, `%`, `kWh`, `Bh`, `m³`, `°Cø`, `mV`, `UPM`, `s`, `mbar`, `A`, `Hz`, `l/h`, `l`].forEach(unit => {
-          const option = document.createElement(`option`);
-          select.appendChild(option);
-          option.innerText = unit;
-          option.value = unit;
-          option.selected = (unit === attributes.unit);
-        });
-      }
-
-      if (col === `Style`) {
-        [``, `sollwert`, `grenzwert`].forEach(style => {
-          const option = document.createElement(`option`);
-          select.appendChild(option);
-          //select.setAttribute(`stil`, style);
-          option.innerText = style;
-          option.value = style;
-          option.setAttribute(`stil`, style);
-          option.selected = (style === attributes.stil);
-        });
-      }
-    }
-  });
-}
-
-function initSignalTable(visuLiveData) {
-  const signalTableBody = document.querySelector(`.signalTable tbody`);
-  if (visuLiveData) {
-    //create table according to liveSignals
-    //console.log(visuLiveData);
-    visuLiveData.filter(signal => signal.Bezeichnung.trim() !== `HK` && signal.Bezeichnung.trim() !== `BHK` && signal.Bezeichnung.trim() !== `KES` && signal.Bezeichnung.trim() !== `WWL`).forEach(signal => {
-      const {Bezeichnung, Kanal, Nachkommastellen, iEinheit, sWert} = signal;
-      const tr = document.createElement(`tr`);
-      signalTableBody.appendChild(tr);
-      [`UsageCount`, `RtosTerm`, `SignalId`, `Tooltip`, `DecPlace`, `Unit`, `Style`, `TrueTxt`, `FalseTxt`].forEach(col => {
-        const td = document.createElement(`td`);
-        tr.appendChild(td);
-        if (col === `UsageCount`) {
-          td.innerText = 0;
-          td.classList.add(`${Bezeichnung.trim()}${Kanal}count`);
-        }
-        else if (col.match(/(Rtos)|(SignalId)|(Tooltip)|(Txt)/)) {
-          const input = document.createElement(`input`);
-          td.appendChild(input);
-          input.classList.add(`txt${col}`);
-          input.type = `text`;
-          if (col === `SignalId`) {
-            input.value = `${Bezeichnung.trim()}${Kanal}`;
-            input.setAttribute(`signal-id`, `${Bezeichnung.trim()}${Kanal}`);
-            input.readOnly = true;
-            input.draggable = true;
-            //input.addEventListener(`focus`, highlightSignalsHandler);
-          }
-          else if (col.match(/(Txt)/)) {
-            input.setAttribute(`list`, `favBoolTxtList`);
-            if (sWert && col.match(/(TrueTxt)/)) {
-              input.value = sWert.trim();
-            }
-          }
-        }
-        else {
-          const select = document.createElement(`select`);
-          td.appendChild(select);
-          select.classList.add(`sel${col}`);
-
-          if (col === `DecPlace`) {
-            [0, 1, 2, 3, 4].forEach(decPlace => {
-              const option = document.createElement(`option`);
-              select.appendChild(option);
-              option.innerText = decPlace;
-              option.value = decPlace;
-              option.selected = (decPlace === Nachkommastellen);
-            });
-          }
-
-          if (col === `Unit`) {
-            [``, `°C`, `bar`, `V`, `kW`, `m³/h`, `mWS`, `%`, `kWh`, `Bh`, `m³`, `°Cø`, `mV`, `UPM`, `s`, `mbar`, `A`, `Hz`, `l/h`, `l`].forEach((unit, idx) => {
-              const option = document.createElement(`option`);
-              select.appendChild(option);
-              option.innerText = unit;
-              option.value = unit;
-              option.selected = (idx === iEinheit);
-            });
-          }
-
-          if (col === `Style`) {
-            [``, `sollwert`, `grenzwert`].forEach(style => {
-              const option = document.createElement(`option`);
-              select.appendChild(option);
-              //select.setAttribute(`stil`, style);
-              option.innerText = style;
-              option.value = style;
-              option.setAttribute(`stil`, style);
-              option.selected = (Bezeichnung.trim() === `HKT` && style === `sollwert` || Bezeichnung.trim() === `GR` && style === `grenzwert`);
-            });
-          }
-        }
-      });
-    });
-  }
-  else {
-    if (confirm(`no LiveData found. Create generic signalTable?`)) {
-      createGenericSignalTable();
-    }
-  }
-
-  signalTableTxtSignalIdsAddAttributes();
-
-  //signalTableAddRow();
-
-  [`RtosTerm`, `SignalParameters`].forEach(colName => {
-    const cb = document.querySelector(`#cbShow${colName}`);
-    const col = document.querySelector(`.col${colName}`);
-    col.style.visibility = (cb.checked) ? `` : `collapse`;
-  });
+function changeSignalIdEventHandler(ev) {
+  //console.log(ev);
+  console.log(getRelevantAttributesAsMap(document.querySelector(`.signalTable [signal-id = ${ev.target.value}]`)));
+  //editSignalAttributesEventHandler(ev);
 }
 
 function createGenericSignalTable() {
@@ -910,20 +791,6 @@ function signalTableTxtSignalIdsAddAttributes() {
   });
 }
 
-function createVisuItemPool() {
-  const visuItemPool = document.createElement(`details`);
-  visuItemPool.classList.add(`visuItemPool`, `visuEditElement`);
-  //visuItemPool.setAttribute(`open`, `true`);
-  const summary = document.createElement(`summary`);
-  summary.innerText = `visuItems`;
-  visuItemPool.appendChild(summary);
-  [`temperatur`, `heizkreis`, `pumpe`, `mischer`, `ventil`, `aggregat`, `kessel`, `puffer`, `waermetauscher`, `heizpatrone`, `luefter`, `lueftungsklappe`, `button`, `gassensor`, `schalter`, `zaehler`, `text`].forEach(el => {
-    visuItemPool.appendChild(createVisuItem({icon: el}));
-  });
-  
-  return visuItemPool;
-}
-
 function editModeSwitchHandler() {
   const editModeActive = document.querySelector(`#cbEditMode`).checked;
   
@@ -939,10 +806,7 @@ function editModeSwitchHandler() {
   }
 
   if (editModeActive && !document.querySelector(`.visuItemPool`)) {
-    //document.body.appendChild(createSignalTable());
     //console.log(window.visuLiveData);
-    //initSignalTable(window.visuLiveData);
-    document.body.appendChild(createVisuItemPool());
     //document.body.appendChild(createEditorTools());
     document.querySelector(`#selStrokeDasharray`).style.color = document.querySelector(`.colorPicker`).value;
     updateUnDoReDoStack(`reset`);
@@ -1012,13 +876,25 @@ function switchVisuTab(tabIdx) {
   updateUnDoReDoStack();
 }
 
+function contextMenuEventHandler(ev) {
+  ev.preventDefault();
+
+  if (ev.target.closest(`.visuItem`)) {
+    cancelCurrentSelection();
+    editSignalAttributesEventHandler(ev);
+  }
+  else if (ev.target.closest(`.divVisu`)) {
+    divVisuContextMenuEventHandler(ev);
+  }
+}
+
 function divVisuContextMenuEventHandler(ev) {
   ev.preventDefault();
 
-  const msSinceLastBlurEvent = ev.timeStamp - window.lastBlurEventTimeStamp;
-  let actionExecuted = (msSinceLastBlurEvent < 700) ? true : false; //block contexmenuEvent for 700ms after blurEvent
+  //const msSinceLastBlurEvent = ev.timeStamp - window.lastBlurEventTimeStamp;
+  //let actionExecuted = (msSinceLastBlurEvent < 700) ? true : false; //block contexmenuEvent for 700ms after blurEvent
 
-  actionExecuted |= cancelCurrentSelection();
+  let actionExecuted = cancelCurrentSelection();
 
   actionExecuted |= cancelCurrentAttributeEdit();
 
@@ -1034,7 +910,11 @@ function divVisuMouseMoveEventHandler(ev) {
 
 function mouseDownEventHandler(ev) {
   if (ev.buttons === 1) {
-    const visuItem = ev.target.closest(`.divVisu input, .divVisu div`);
+    if (!ev.target.closest(`.divEditSignal`)) {
+      cancelCurrentAttributeEdit();
+    }
+
+    const visuItem = ev.target.closest(`.visuItem`);
     //console.log(visuItem);
     if (visuItem) {
       if (!visuItem.matches(`[selected]`)) {
@@ -1077,19 +957,6 @@ function divVisuClickEventHandler(ev) {
       selectModeClickEventHandler(ev);  //selection only starts when no other action was executed
     }  
   }  
-}
-
-function linkBtnBlurHandler(ev) {
-  window.lastBlurEventTimeStamp = ev.timeStamp; //save timeStamp to avoid click- contextmenuEvent (selection/drawing) afterwards
-  ev.target.type = `button`;
-  ev.target.removeEventListener(`blur`, linkBtnBlurHandler);
-  
-  if (ev.type === `keydown`) {
-    if(ev.key === `Escape`) {
-      ev.target.value = ev.target.fallbackVal; //cancelAction => fallbackVal
-    }
-    document.activeElement.blur();
-  }
 }
 
 function txtElBlurHandler(ev) {
@@ -1142,7 +1009,7 @@ function dragStartEventHandler(ev) {
   //const target = (ev.target.matches(`[draggable]`)) ? ev.target : ev.target.closest(`.visuItem[draggable]`);
   const {target} = ev;
   if (target) {
-    if (target.matches(`.divVisu *`)) {
+    if (target.closest(`.divVisu`)) {
       target.setAttribute(`selected`, `true`);
     }
   }
@@ -1183,7 +1050,30 @@ function snapToGrid(xRel, yRel) {
   return {xRel: x, yRel: y};
 }
 
-function handleItemAppearance(_item) {
+function handleItemAppearance(visuItem) {
+  
+  if (visuItem.matches(`[icon]`)) {
+    removeExistingNode(visuItem.querySelector(`.betrieb`));
+    removeExistingNode(visuItem.querySelector(`svg`));
+    removeExistingNode(visuItem.querySelector(`input`));
+    const iconSVG = createIconSVG(visuItem.getAttribute(`icon`));
+    if (iconSVG) {
+      visuItem.appendChild(iconSVG);
+    }
+    const betriebSymbol = createBetriebSymbol(visuItem.getAttribute(`icon`));
+    if (betriebSymbol) {
+      visuItem.appendChild(betriebSymbol);
+    }
+  }
+  else if (!visuItem.querySelector(`input`)) {
+    visuItem.appendChild(createSignalIdInput(visuItem.getAttribute(`signal-id`)));
+    removeExistingNode(visuItem.querySelector(`.betrieb`));
+    removeExistingNode(visuItem.querySelector(`svg`));
+  }
+
+  return visuItem;
+   
+  /*
   let item = _item;
   if (_item.matches(`.signalEl[icon]`)) {
     //convert to icon
@@ -1199,8 +1089,8 @@ function handleItemAppearance(_item) {
     item.value = item.getAttribute(`signal-id`);
   }
   
-
   return item;
+  */
 }
 
 function divVisuDropEventHandler(ev) {
@@ -1227,16 +1117,12 @@ function divVisuDropEventHandler(ev) {
       icon.setAttribute(`icon`, `temperatur`);
       const dropIcon = handleItemAppearance(icon);
 
-      GRIDSIZE_AS_PARTS_FROM_WIDTH
       const iconPosition = snapToGrid(xRel-1/GRIDSIZE_AS_PARTS_FROM_WIDTH, yRel);
       dropIcon.style.left = `${100* iconPosition.xRel}%`;
 
       divVisu.appendChild(dropIcon);
     }
-    
-
-
-      
+          
     updateUnDoReDoStack();
   });
 
@@ -1256,11 +1142,6 @@ function dblClickEventHandler(ev) {
     inputEl.focus();
     inputEl.style.left = `${ev.x}px`;
     inputEl.style.top = `${ev.y}px`;
-    /*
-    ev.target.type = `text`; //convert button to text element
-    ev.target.fallbackVal = ev.target.value; //perceive current Text for cancelAction 
-    ev.target.addEventListener(`blur`, linkBtnBlurHandler);
-    */
   }
   else {
     const divIcon = ev.target.closest(`.divIcon`);
@@ -1316,11 +1197,6 @@ function keyDownEventHandler(ev) {
         }
       }
       activeElement.blur();
-    }
-  }
-  else if (activeElement.matches(`.visuItem[icon=button] input`)) {
-    if (key.match((/(escape)|(enter)/))) {
-      linkBtnBlurHandler(ev);
     }
   }
   else if (activeElement.matches(`.visuItem[icon=text] input`)) {
@@ -1384,16 +1260,6 @@ function keyDownEventHandler(ev) {
         if (ev.altKey) {          
           //resize Puffer
           resizePufferEventHandler(ev);
-
-          //set IconPosition
-          const iconPosition = (key.includes(`left`)) ? `right` :
-                               (key.includes(`right`)) ? `left` :
-                               (key.includes(`up`)) ? `bottom` :
-                               (key.includes(`down`)) ? `top` :
-                               ``;
-          document.querySelectorAll(`[selected]`).forEach(el => {
-            setIconPosition(el, iconPosition);
-          });
         }
         else {
           const stepWidthSvg = (document.querySelector(`#cbGridSnap`).checked) ? activeSvg.viewBox.baseVal.width / GRIDSIZE_AS_PARTS_FROM_WIDTH : 10; //todo...
@@ -1457,7 +1323,7 @@ function unDoReDoEventHandler(ev) {
     }
     el.innerHTML = unDoReDoStack.stack.at(unDoReDoStack.idx); //todo...
     console.log(`${unDoReDoStack.idx} of ${unDoReDoStack.stack.length - 1}`);
-    el.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.value = txtEl.getAttribute(`signal-id`));
+    el.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.setAttribute(`value`, txtEl.closest(`.visuItem`).getAttribute(`signal-id`)));
   });
   cancelCurrentDrawing();
   updateUsedCount();
@@ -1482,20 +1348,29 @@ function openLocalFileEventHandler(ev) {
   }
 }
 
+function createSignalIdInput(signalId) {
+  const signalIdInput = document.createElement(`input`);
+  signalIdInput.type = `text`;
+  signalIdInput.readOnly = true;
+  if (signalId) {
+    signalIdInput.setAttribute(`value`, signalId);
+  }
+  return signalIdInput;
+}
+
 function createSignalTableRowElements(attributesObject) {
   const lbl = document.createElement(`label`);
+  lbl.classList.add(`${attributesObject[`signal-id`]}counter`);
   lbl.innerText = `0`;
   
-  const signalEl = document.createElement(`input`);
-  Object.entries(attributesObject).forEach(([key, value]) => signalEl.setAttribute(key, value));
-  signalEl.type = `text`;
-  signalEl.value = signalEl.getAttribute(`signal-id`);
-  signalEl.readOnly = true;
-  signalEl.draggable = true;
-  signalEl.classList.add(`signalEl`);
-  signalEl.addEventListener(`contextmenu`, editSignalAttributesEventHandler);
-
-  return [lbl, signalEl];
+  const visuItem = document.createElement(`div`);
+  Object.entries(attributesObject).forEach(([key, value]) => visuItem.setAttribute(key, value));
+  visuItem.draggable = true;
+  visuItem.classList.add(`visuItem`);
+  const signalIdInput = createSignalIdInput(visuItem.getAttribute(`signal-id`));
+  visuItem.appendChild(signalIdInput);
+  
+  return [lbl, visuItem];
 }
 
 function buildSignalTable(visuDataJson, liveData) {
@@ -1524,26 +1399,9 @@ function buildVisu(visuDataJson) {
   if (visuDataJson) {
     const visuData = JSON.parse(visuDataJson);
     
-    
     //divVisuData
     const divVisu = document.querySelector(`.divVisu`);
     divVisu.innerHTML = visuData.divVisuHTML;
-    divVisu.querySelectorAll(`[type=text]`).forEach(visuSignal => {
-      const signalId = visuSignal.getAttribute(`signal-id`);
-      visuSignal.value = signalId;
-      //add information from visu to signalTable
-      /*
-      const txtSignalId = signalTable.querySelector(`[signal-id = ${signalId}]`);
-      if (txtSignalId) {
-        getRelevantAttributesAsMap(visuSignal).forEach((val, key) => {
-          txtSignalId.setAttribute(key, val);
-        });
-      }
-      else {
-        console.warn(`signal-id ${signalId} not in signalTable included needs to be added! todo...`);
-      }
-      */
-    });
     
     if (isAdmin()) {
       updateUnDoReDoStack();
@@ -1568,14 +1426,14 @@ function parseVisuSkript(txt) {
     const {name, idx, nk, unitAsInt, rtos, title} = result.groups;
     
     //update attributes
-    const signalElements = document.querySelectorAll(`[signal-id=${name}${idx}]`);
-    signalElements.forEach(signalEl => {
-      signalEl.setAttribute(`rtos-id`, rtos.trim());
-      signalEl.setAttribute(`title`, title.replace(`<<<`, ``).trim());
-      signalEl.setAttribute(`dec-place`, parseInt(nk));
+    const visuItems = document.querySelectorAll(`[signal-id=${name}${idx}]`);
+    visuItems.forEach(visuItem => {
+      visuItem.setAttribute(`rtos-id`, rtos.trim());
+      visuItem.setAttribute(`title`, title.replace(`<<<`, ``).trim());
+      visuItem.setAttribute(`dec-place`, parseInt(nk));
       const unit = unitFromInt(unitAsInt);
       if (unit) {
-        signalEl.setAttribute(`unit`, unit);
+        visuItem.setAttribute(`unit`, unit);
       }
       
       const icon = (name.match(/(PH)|(KPU)|(BPU)/)) ? `pumpe` :
@@ -1583,21 +1441,28 @@ function parseVisuSkript(txt) {
                    (name.match(/(BL)/)) ? `aggregat` :
                    undefined;
       if (icon) {
-        signalEl.setAttribute(`icon`, icon);
+        visuItem.setAttribute(`icon`, icon);
+      }
+
+      const animation = (name.match(/(PH)|(KPU)|(BPU)|(BL)/)) ? `spin` :
+                        (name.match(/(KL)/)) ? `flicker` :
+                        undefined;
+      if (animation) {
+        visuItem.setAttribute(`animation`, animation);
       }
 
       const trueTxt = (idx > 110 && name.match(/(BI)/)) ? `🌜` :
                       (name.match(/(BI)|(SG)/)) ? `⚠` :
                       undefined;
       if (trueTxt) {
-        signalEl.setAttribute(`true-txt`, trueTxt);
+        visuItem.setAttribute(`true-txt`, trueTxt);
       }
       
       const stil = (name.match(/(HKT)/)) ? `sollwert` :
                    (name.match(/(GR)/)) ? `grenzwert` :
                    undefined;
       if (stil) {
-        signalEl.setAttribute(`stil`, stil);
+        visuItem.setAttribute(`stil`, stil);
       }
 
       const msr = (unit.match(/(°C)/)) ? `TI${idx}` :
@@ -1606,7 +1471,15 @@ function parseVisuSkript(txt) {
                   (name.match(/(HKT)/)) ? `HK${idx}` : (idx > 110 && name.match(/(BI)/)) ? `HK${idx - 110}` :
                   undefined;
       if (msr) {
-        signalEl.setAttribute(`msr`, msr);
+        visuItem.setAttribute(`msr`, msr);
+      }
+
+      const strang = (name.match(/(PMK)|(PKT)|(KL)|(KPU)/)) ? `KES${idx}` :
+                     (name.match(/(PMB)|(PBH)|(BL)|(BPU)/)) ? `BHKW${idx}` :
+                     (name.match(/(HKT)/)) ? `HK${idx}` : (idx > 110 && name.match(/(BI)/)) ? `HK${idx - 110}` :
+                     undefined;
+      if (strang) {
+        visuItem.setAttribute(`strang`, strang);
       }
 
     });
@@ -1666,154 +1539,12 @@ function saveSvg(svgEl, name) {
   document.body.removeChild(downloadLink);
 }
 
-function signalTableAddRow() {
-  const signalGroup = `dummy`;
-  const idx = 0;
-
-  const signalTableBody = document.querySelector(`.signalPool tbody`);
-  const tr = document.createElement(`tr`);
-  signalTableBody.appendChild(tr);
-  [`UsageCount`, `RtosTerm`, `SignalId`, `Tooltip`, `DecPlace`, `Unit`, `Style`, `TrueTxt`, `FalseTxt`].forEach(col => {
-    const td = document.createElement(`td`);
-    tr.appendChild(td);
-    if (col === `UsageCount`) {
-      td.innerText = 0;
-      td.classList.add(`${signalGroup}${idx}count`);
-    }
-    else if (col.match(/(Rtos)|(SignalId)|(Tooltip)|(Txt)/)) {
-      const input = document.createElement(`input`);
-      td.appendChild(input);
-      input.classList.add(`txt${col}`);
-      input.type = `text`;
-      if (col === `SignalId`) {
-        input.value = `${signalGroup}${idx}`;
-        input.setAttribute(`signal-id`, `${signalGroup}${idx}`);
-        input.readOnly = true;
-        input.draggable = true;
-        if (!signalGroup.match(/(DI)|(DO)|(dummy)/)) {
-          input.setAttribute(`dec-place`, 1);
-          input.setAttribute(`unit`, `°C`);
-        }
-      }
-      else if (col.match(/(Txt)/)) {
-        input.setAttribute(`list`, `favBoolTxtList`);
-      }
-    }
-    else {
-      const select = document.createElement(`select`);
-      td.appendChild(select);
-      select.classList.add(`sel${col}`);
-
-      if (col === `DecPlace`) {
-        [0, 1, 2, 3, 4].forEach(decPlace => {
-          const option = document.createElement(`option`);
-          select.appendChild(option);
-          option.innerText = decPlace;
-          option.value = decPlace;
-          option.selected = (decPlace === 1 && !signalGroup.match(/(DI)|(DO)|(dummy)/));
-        });
-      }
-
-      if (col === `Unit`) {
-        [``, `°C`, `bar`, `V`, `kW`, `m³/h`, `mWS`, `%`, `kWh`, `Bh`, `m³`, `°Cø`, `mV`, `UPM`, `s`, `mbar`, `A`, `Hz`, `l/h`, `l`].forEach(unit => {
-          const option = document.createElement(`option`);
-          select.appendChild(option);
-          option.innerText = unit;
-          option.value = unit;
-          option.selected = (unit === `°C` && !signalGroup.match(/(DI)|(DO)|(dummy)/));
-        });
-      }
-
-      if (col === `Style`) {
-        [``, `sollwert`, `grenzwert`].forEach(style => {
-          const option = document.createElement(`option`);
-          select.appendChild(option);
-          option.innerText = style;
-          option.value = style;
-          option.setAttribute(`stil`, style);
-        });
-      }
-    }
-  });
-}
-
-function signalTableInputEventHandler(ev) {
-  const {target} = ev;
-  const tr = target.closest(`tr`);
-  const txtSignalId = tr.querySelector(`.txtSignalId`);
-  document.querySelectorAll(`[signal-id = ${txtSignalId.value}]`).forEach(el => {
-    if (!el.matches(`.divIconSignal`)) {
-      if (target.matches(`.txtTooltip`)) {
-        if (target.value.trim().length) {
-          el.setAttribute(`title`, target.value);
-        }
-        else {
-          el.removeAttribute(`title`);
-        }
-      }
-      if (target.matches(`.selDecPlace`)) {
-        if (target.value.trim().length) {
-          el.setAttribute(`dec-place`, target.value);
-        }
-        else {
-          el.removeAttribute(`dec-place`);
-        }
-      }
-      if (target.matches(`.selUnit`)) {
-        if (target.value.trim().length) {
-          el.setAttribute(`unit`, target.value);
-        }
-        else {
-          el.removeAttribute(`unit`);
-        }
-      }
-      if (target.matches(`.selStyle`)) {
-        if (target.value.trim().length) {
-          target.setAttribute(`stil`, target.value);
-          el.setAttribute(`stil`, target.value);
-        }
-        else {
-          target.removeAttribute(`stil`);
-          el.removeAttribute(`stil`);
-        }
-      }
-    }
-    if (target.matches(`.txtTrueTxt`)) {
-      if (target.value.trim().length) {
-        el.setAttribute(`true-txt`, target.value);
-      }
-      else {
-        el.removeAttribute(`true-txt`);
-      }
-    }
-    if (target.matches(`.txtFalseTxt`)) {
-      if (target.value.trim().length) {
-        el.setAttribute(`false-txt`, target.value);
-      }
-      else {
-        el.removeAttribute(`false-txt`);
-      }
-    }
-  });
-  //console.log(ev);
-}
-
-function signalTableColumnVisibilityHandler(ev) {
-  const col = document.querySelector(`.col${ev.target.id.match(/(RtosTerm)|(SignalParameters)/).at(0)}`);
-  col.style.visibility = (ev.target.checked) ? `` : `collapse`;
-
-  const signalTableWidth = document.querySelector(`.signalTable`).getBoundingClientRect().width;
-  const signalPool = document.querySelector(`.signalPool`);
-  signalPool.style.width = `${signalTableWidth}px`;
-}
-
-
 function updateUsedCount() {
   const divVisu = document.querySelector(`.divVisu`)
-  document.querySelectorAll(`[signal-id]`).forEach(signalEl => {
-    //console.log(signalEl);
-    const signalId = signalEl.getAttribute(`signal-id`);
-    const signalCounter = document.querySelector(`.${signalId}count`)
+  document.querySelectorAll(`[signal-id]`).forEach(visuItem => {
+    //console.log(visuItem);
+    const signalId = visuItem.getAttribute(`signal-id`);
+    const signalCounter = document.querySelector(`.${signalId}counter`)
     if (signalCounter) {
       signalCounter.innerText = divVisu.querySelectorAll(`[signal-id=${signalId}]`).length;
     }
@@ -1836,30 +1567,6 @@ function resizePufferEventHandler(ev) {
   }
 }
 
-function setIconPosition(visuItem, iconPosition) {
-  if (visuItem.getAttribute(`iconPosition`) !== iconPosition.toLowerCase()) {
-    //console.log(visuItem.getAttribute(`iconPosition`));
-    const divIcon = visuItem.querySelector(`.divIcon`);
-    if (visuItem.matches(`:not([icon = kessel], [icon = aggregat])`) && divIcon) {
-      const divIconBox = divIcon.getBoundingClientRect();
-      const divVisuBox = document.querySelector(`.divVisu`).getBoundingClientRect();
-
-      const top = (iconPosition === `bottom`) ? undefined : `${100 * (divIconBox.y - divVisuBox.y) / divVisuBox.height}%`;
-      const left = (iconPosition === `right`) ? undefined : `${100 * (divIconBox.x - divVisuBox.x) / divVisuBox.width}%`;
-      const bottom = (iconPosition === `bottom`) ? `${100 - 100 * ((divIconBox.y - divVisuBox.y) + divIconBox.height) / divVisuBox.height}%` : undefined;
-      const right = (iconPosition === `right`) ? `${100 - 100 * ((divIconBox.x - divVisuBox.x) + divIconBox.width) / divVisuBox.width}%` : undefined;
-      
-      visuItem.setAttribute(`iconPosition`, iconPosition);
-      visuItem.removeAttribute(`style`);
-      visuItem.style.position = `absolute`;
-      visuItem.style.top = top;
-      visuItem.style.left = left;
-      visuItem.style.bottom = bottom;
-      visuItem.style.right = right;
-    }
-  }
-}
-
 function resizeSignalTableTxtInputs() {
   const signalTable = document.querySelector(`.signalTable`);
   [`txtRtosTerm`, `txtSignalId`, `txtTooltip`, `txtTrueTxt`, `txtFalseTxt`].forEach(col => {
@@ -1871,12 +1578,6 @@ function resizeSignalTableTxtInputs() {
       });
     }
   });
-}
-
-function highlightSignalsHandler(ev) {
-  //console.log(document.querySelectorAll(`.txtSignalId[signal-id = ${ev.target.getAttribute(`signal-id`)}]`));
-  document.querySelectorAll(`[highlighted]`).forEach(el => el.removeAttribute(`highlighted`));
-  document.querySelectorAll(`[signal-id = ${ev.target.getAttribute(`signal-id`)}]`).forEach(el => el.setAttribute(`highlighted`, true));
 }
 
 /*********************ComFunctions*********************/

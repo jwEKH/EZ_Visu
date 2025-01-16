@@ -7,7 +7,7 @@
   --GRIDSIZE_AS_PARTS_FROM_WIDTH: 32;
   --iconSize: calc(var(--visuWidth) / var(--GRIDSIZE_AS_PARTS_FROM_WIDTH));
   --fontSizeIconSignals: calc(var(--iconSize) / 3);
-  --inputTextWidth: calc(1.5 * var(--iconSize));
+  --inputTextWidth: calc(2 * var(--iconSize));
 
   --controlsWidthOffset: 18px; /*such as scrollbar or input[type=number] controls*/
 
@@ -56,11 +56,11 @@ body {
 }
 
 
-[stil = "sollwert"] {
+[stil = "sollwert"] input {
   color: white;
   background-color: var(--cyan);
 }
-[stil = "grenzwert"] {
+[stil = "grenzwert"] input {
   color: white;
   background-color: var(--magenta);
 }
@@ -126,19 +126,25 @@ body {
   width: var(--iconSize);
   height: var(--iconSize);
 }
-
-.divIcon[icon = "temperatur"] {
+.divVisu .visuItem[icon] {
+  width: var(--iconSize);
+  height: var(--iconSize);
+  display: grid;
+  grid-template-rows: 1fr;
+}
+.divVisu .visuItem[icon = "temperatur"] {
   width: calc(var(--iconSize)/2);
   height: calc(var(--iconSize)/2);
 }
 
-[rotation = "90"] {
+
+.divVisu [rotation = "90"] {
   rotate: 90deg;
 }
-[rotation = "180"] {
+.divVisu [rotation = "180"] {
   rotate: 180deg;
 }
-[rotation = "270"] {
+.divVisu [rotation = "270"] {
   rotate: 270deg;
 }
 [writing = "downward"] {
@@ -183,6 +189,13 @@ body {
   width: calc(3ch + var(--controlsWidthOffset));
 }
 /*********************GenericAttributes*********************/
+[text-align = "center"] * {
+  text-align: center;
+}
+[text-align = "end"] * {
+  text-align: end;
+}
+
 [cloaked] {
   display: none;
 }
@@ -196,7 +209,7 @@ body {
   outline: 1px solid var(--yellow);
 }
 /*********************CursorStylez*********************/
-[draggable = "true"] {
+[draggable = "true"] * {
   cursor: grab;
 }
 [dragging] {
@@ -218,10 +231,6 @@ select {
 }
 */
 /*********************FlameStyle*********************/
-.flame {
-  position:relative;
-  opacity: 0.2;
-}
 .flameLayer {
   aspect-ratio: 1;
   bottom: 15%;
@@ -265,7 +274,7 @@ select {
   box-shadow: 0 0 calc(.13*var(--iconSize)) calc(.06*var(--iconSize)) SlateBlue;   /*box-shadow akzeptiert keine [%] => umständliche berechnung!*/
 }
 /*********************Animations*********************/
-.flicker {
+.divVisu:not([edit-mode]) [animation = "flicker"] .betrieb {
   animation: flicker 3ms ease-in 200ms infinite alternate;
 }
 @keyframes flicker {
@@ -275,4 +284,30 @@ select {
   60%  {transform: rotate(1deg) scale(.8,.95);}
   80%  {transform: rotate(-2deg) scale(.75,.75);}
   100% {transform: rotate(1deg) scale(.8,.8);}
+}
+
+.divVisu:not([edit-mode]) [animation = "spin"] .betrieb {
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  to {transform: rotate(1turn);}
+}
+
+.divVisu:not([edit-mode]) [animation = "blink"] .betrieb {
+  animation: blink 2s steps(4, start) infinite;
+}
+@keyframes blink {
+  to {visibility: hidden;}
+}
+
+@keyframes btnBlink {
+  from {
+      color: var(--lightgray);
+      background: var(--magenta);
+  }
+  to {
+      color: var(--magenta);
+      background: var(--lightgray);
+  }
 }
