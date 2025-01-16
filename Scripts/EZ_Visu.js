@@ -60,8 +60,11 @@ async function initVisu() {
   //getLiveData
   window.liveData = (window.DEBUG) ? VISU_LIVE_DATA_OLD : await fetchLiveData(projectNo); 
   
+  //ADMIN
   buildVisu(visuData);
   buildSignalTable(visuData, window.liveData);
+  buildAttributeTable();
+  
 
   addGenericEventHandler();
 
@@ -439,6 +442,7 @@ function selectModeClickEventHandler(ev) {
       el.toggleAttribute(`selected`);
       el.removeAttribute(`highlighted`);
     });
+    updateAttributeTable();
   }
   else {
     const selectionArea = document.createElementNS(SVG_NS, `polygon`);
@@ -544,6 +548,54 @@ function createEditorTools() {
   return fsEditorTools;
 }
 
+function buildAttributeTable() {
+  removeExistingNode(document.querySelector(`.attributeTable`));
+  const attributeTable = document.createElement(`div`);
+  attributeTable.classList.add(`attributeTable`);
+  document.body.appendChild(attributeTable);
+  [`msr`, `strang`, `signal-id`, `rtos-id`, `unit`, `title`, `stil`, `toggle`, `dec-place`, `icon`, `rotation`, `animation`, `true-txt`, `false-txt`, `text-align`, `range-max`, `range-min`].forEach(attributeName => {
+    attributeTable.appendChild(createEditSignalRowEl(attributeName));
+  });
+  attributeTable.addEventListener(`input`, (ev) => {
+    console.log(ev);
+  });
+  
+  return attributeTable;
+}
+
+function updateAttributeTable() {
+  const selectedVisuItems = Array.from(document.querySelectorAll(`.visuItem[selected]`));
+  const attributeTable = document.querySelector(`.attributeTable`);
+  attributeTable.toggleAttribute(`cloaked`, !selectedVisuItems.length);
+  attributeTable.querySelectorAll(`input, select`).forEach(attributeInput => {
+    (attributeInput.type === `checkbox`) ? attributeInput.checked = false : attributeInput.value = ``;
+  });
+
+  selectedVisuItems.forEach((selectedVisuItem, selectedVisuItemIdx) => {
+    const forbiddenAttributeNames = [`class`, `readonly`, `draggable`, `type`, `style`, `selected`, `highlighted`];
+    getAttributesAsMap(selectedVisuItem, forbiddenAttributeNames).forEach((value, key) => {
+      console.log(key);
+      const attributeInput = attributeTable.querySelector(`[attribute-name = ${key}]`);
+      if (selectedVisuItemIdx === 0) {
+        (attributeInput.type === `checkbox`) ? attributeInput.checked = !!value : attributeInput.value = `${value}`;
+        attributeInput.removeAttribute(`disabled`); 
+      }
+      else {
+        if (attributeInput.type === `checkbox`) {
+          attributeInput.toggleAttribute(`disabled`, (attributeInput.checked !== (!!value))); 
+        }
+        else {
+          attributeInput.toggleAttribute(`disabled`, (attributeInput.value !== `${value}`));
+        }
+      }
+    });
+  });
+
+
+  
+
+}
+
 function editSignalAttributesEventHandler(ev) {
   if (ev.type === `contextmenu`) {
     ev.preventDefault();
@@ -561,7 +613,7 @@ function editSignalAttributesEventHandler(ev) {
 
   const forbiddenAttributeNames = [`class`, `readonly`, `draggable`, `type`, `style`, `selected`, `highlighted`];
   getAttributesAsMap(visuItem, forbiddenAttributeNames).forEach((value, key) => {
-    createEditSignalRow(key, value).forEach(el => divEditSignal.appendChild(el));
+    divEditSignal.appendChild(createEditSignalRowEl(key, value));
   });
 
   const selectAddAttribute = createSelectAddAttribute(visuItem.getAttributeNames());
@@ -604,10 +656,17 @@ function confirmSignalAttributeEditEventHandler(ev) {
   updateUsedCount();  
 }
 
-function createEditSignalRow(key, value) {
-  const lbl = document.createElement(`label`);
-  lbl.innerText = `${key}:`;
+function createEditSignalRowEl(key, value) {
+  const fieldset = document.createElement(`fieldset`);
+  const legend = document.createElement(`legend`);
+  legend.innerText = key;
+  fieldset.appendChild(legend);
   const input = (key.match(/(signal-id)|(unit)|(dec-place)|(stil)|(icon)|(text-align)|(rotation)|(animation)/)) ? createSelectElement(key) : document.createElement(`input`);
+  fieldset.appendChild(input);
+  if (input.tagName === `INPUT`) {
+    input.type = `text`;
+  }
+
   input.setAttribute(`attribute-name`, key);
   if (key.match(/(toggle)/)) {
     input.type = `checkbox`
@@ -626,12 +685,12 @@ function createEditSignalRow(key, value) {
     input.placeholder = key;
   }
 
-  return [lbl, input];
+  return fieldset;
 }
 
 function selectAddAttributeInputEventHandler(ev) {
   const divEditSignal = ev.target.closest(`.divEditSignal`);
-  createEditSignalRow(ev.target.value).forEach(el => divEditSignal.insertBefore(el, ev.target));
+  divEditSignal.insertBefore(createEditSignalRowEl(ev.target.value), ev.target);
   const selectedOption = ev.target.querySelector(`option[value=${ev.target.value}]`);
   ev.target.removeChild(selectedOption);
   ev.target.disabled = (ev.target.childElementCount <= 1);
@@ -653,7 +712,7 @@ function createSelectElement(type, excludedOptions = []) {
                   (type === `animation`) ? [``, `flicker`, `spin`, `hide`, `show`, `blink`] :
                   (type === `text-align`) ? [``, `center`, `end`] :
                   (type === `addAttribute`) ? [`addAttribute...`, `msr`, `strang`, `signal-id`, `rtos-id`, `unit`, `title`, `stil`, `toggle`, `dec-place`, `icon`, `rotation`, `animation`, `true-txt`, `false-txt`, `text-align`, `range-max`, `range-min`] :
-                  (type === `signal-id`) ? Array.from(document.querySelectorAll(`.signalTable [signal-id]`), (el) => el.getAttribute(`signal-id`)) :
+                  (type === `signal-id`) ? [``].concat(Array.from(document.querySelectorAll(`.signalTable [signal-id]`), (el) => el.getAttribute(`signal-id`))) :
                   [];
   
   const select = document.createElement(`select`);
@@ -812,7 +871,8 @@ function editModeSwitchHandler() {
     updateUnDoReDoStack(`reset`);
   }
   
-  document.querySelectorAll(`.visuEditElement, .visuTabs, .editorTools`).forEach(el => el.toggleAttribute(`cloaked`, !editModeActive));
+  document.querySelector(`.attributeTable`).toggleAttribute(`cloaked`, true);
+  document.querySelectorAll(`.visuEditElement, .visuTabs, .editorTools, .signalTable`).forEach(el => el.toggleAttribute(`cloaked`, !editModeActive));
   document.querySelectorAll(`[draggable]`).forEach(el => el.setAttribute(`draggable`, (editModeActive) ? `true` : `false`));
   (editModeActive) ? addEditorEventHandler() : removeEditorEventHandler();
   cancelCurrentDrawing();
@@ -910,30 +970,31 @@ function divVisuMouseMoveEventHandler(ev) {
 
 function mouseDownEventHandler(ev) {
   if (ev.buttons === 1) {
-    if (!ev.target.closest(`.divEditSignal`)) {
-      cancelCurrentAttributeEdit();
-    }
-
-    const visuItem = ev.target.closest(`.visuItem`);
-    //console.log(visuItem);
-    if (visuItem) {
-      if (!visuItem.matches(`[selected]`)) {
-        if (!ev.shiftKey && !ev.ctrlKey) {
-          document.querySelectorAll(`[selected]`).forEach(el => {
-            if (el !== visuItem) {
-              el.removeAttribute(`selected`);
-            }
-          });
+    
+    if (!ev.target.closest(`.attributeTable`)) {
+      //selectionHandling
+      const visuItem = ev.target.closest(`.visuItem`);
+      if (visuItem) {
+        if (!visuItem.matches(`[selected]`)) {
+          if (!ev.shiftKey && !ev.ctrlKey) {
+            document.querySelectorAll(`[selected]`).forEach(el => {
+              if (el !== visuItem) {
+                el.removeAttribute(`selected`);
+              }
+            });
+          }
         }
+        visuItem.toggleAttribute(`selected`);
       }
-      visuItem.toggleAttribute(`selected`);
-    }
-    else if (!ev.shiftKey && !ev.ctrlKey) {
-      document.querySelectorAll(`[selected]`).forEach(el => el.removeAttribute(`selected`));
-    }
+      else if (!ev.shiftKey && !ev.ctrlKey) {
+        document.querySelectorAll(`[selected]`).forEach(el => el.removeAttribute(`selected`));
+      }
 
-    if (ev.target.matches(`[draggable]`)) {
-      ev.target.setAttribute(`dragging`, `true`);
+      if (ev.target.matches(`[draggable]`)) {
+        ev.target.setAttribute(`dragging`, `true`);
+      }
+      
+      updateAttributeTable();
     }
   }
 }
@@ -978,6 +1039,7 @@ function cancelCurrentDrawing() {
 function cancelCurrentSelection() {
   document.querySelectorAll(`[selected]`).forEach(el => el.removeAttribute(`selected`));
   document.querySelectorAll(`[highlighted]`).forEach(el => el.removeAttribute(`highlighted`));
+  updateAttributeTable();
   return removeExistingNode(selectionArea = document.querySelector(`.selectionArea`)); //feedback whether selection was active or not
 }
 
@@ -1009,9 +1071,7 @@ function dragStartEventHandler(ev) {
   //const target = (ev.target.matches(`[draggable]`)) ? ev.target : ev.target.closest(`.visuItem[draggable]`);
   const {target} = ev;
   if (target) {
-    if (target.closest(`.divVisu`)) {
-      target.setAttribute(`selected`, `true`);
-    }
+    target.setAttribute(`selected`, `true`);
   }
 
   const selectedElements = document.querySelectorAll(`[dragging], [selected][draggable]`);
@@ -1051,7 +1111,6 @@ function snapToGrid(xRel, yRel) {
 }
 
 function handleItemAppearance(visuItem) {
-  
   if (visuItem.matches(`[icon]`)) {
     removeExistingNode(visuItem.querySelector(`.betrieb`));
     removeExistingNode(visuItem.querySelector(`svg`));
@@ -1072,25 +1131,6 @@ function handleItemAppearance(visuItem) {
   }
 
   return visuItem;
-   
-  /*
-  let item = _item;
-  if (_item.matches(`.signalEl[icon]`)) {
-    //convert to icon
-    item = createDivIcon(item.getAttribute(`icon`));
-    getAttributesAsMap(_item, [`class`, `type`]).forEach((value, key) => item.setAttribute(key, value));
-  }
-  else if (_item.matches(`.divIcon:not([icon])`)) {
-    //convert to signalEl    
-    item = document.createElement(`input`)
-    item.type = `text`;
-    item.classList.add(`signalEl`);
-    getAttributesAsMap(_item, [`class`]).forEach((value, key) => item.setAttribute(key, value));
-    item.value = item.getAttribute(`signal-id`);
-  }
-  
-  return item;
-  */
 }
 
 function divVisuDropEventHandler(ev) {
@@ -1232,6 +1272,7 @@ function keyDownEventHandler(ev) {
           activeElement.remove();
         }
         document.querySelectorAll(`[selected]`).forEach(el => el.remove());
+        updateAttributeTable();
         
         updateUnDoReDoStack();
       }
@@ -1246,6 +1287,7 @@ function keyDownEventHandler(ev) {
       if (key === `a`) {
         ev.preventDefault();
         document.querySelectorAll(`.visuItem, svg.active *`).forEach(el => el.setAttribute(`selected`, true));
+        updateAttributeTable();
       }
       if (key === `y`)
       document.querySelector(`.btnReDo`).click();
@@ -1393,6 +1435,7 @@ function buildSignalTable(visuDataJson, liveData) {
       }
     });
   }
+  return signalTable;
 }
 
 function buildVisu(visuDataJson) {
@@ -1408,6 +1451,7 @@ function buildVisu(visuDataJson) {
     }
   }
   else {
+    console.warn(`no visuData found, created empty Tab`);
     document.querySelector(`.divVisu`).appendChild(createBackgroundSVG());
   }
 }
@@ -1481,11 +1525,7 @@ function parseVisuSkript(txt) {
       if (strang) {
         visuItem.setAttribute(`strang`, strang);
       }
-
     });
-
-
-
   });
 }
 

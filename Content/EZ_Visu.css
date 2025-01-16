@@ -1,7 +1,7 @@
 :root {
   --visuAspectRatio: 16/9;
   --visuMaxWidth: 100vw;
-  --visuMaxHeight: 85vh;
+  --visuMaxHeight: 80vh;
   --visuWidth: min(var(--visuMaxWidth), calc(var(--visuMaxHeight) * var(--visuAspectRatio)));
 
   --GRIDSIZE_AS_PARTS_FROM_WIDTH: 32;
@@ -37,21 +37,39 @@ body {
   background-color: var(--darkerGrey);
   color: white;
   display: grid;
-  justify-items: end;
+  grid-template-areas: 'signalTable visuContainer attributeTable'
+                       'signalTable editorTools   attributeTable';
+  grid-template-columns: max-content auto max-content;
+  grid-template-rows: auto max-content;
   /*
+  justify-items: center;
   align-items: center;
   */
 }
 
+.visuContainer {
+  grid-area: visuContainer;
+  justify-self: center;
+}
+
 .signalTable {
-  position: fixed;
+  grid-area: signalTable;
   display: grid;
   grid-template-columns: max-content max-content;
   background-color: var(--grey);
   max-height: 100vh;
   overflow-y: auto;
   padding-right: var(--controlsWidthOffset);
-  left: 0;
+  overflow-x: hidden;
+}
+
+.attributeTable {
+  grid-area: attributeTable;
+  display: grid;
+  grid-template-columns: max-content;
+  background-color: var(--grey);
+  max-height: 100vh;
+  overflow-y: auto;
   overflow-x: hidden;
 }
 
@@ -176,6 +194,7 @@ body {
 }
 
 .editorTools {
+  grid-area: editorTools;
   grid-auto-flow: column;
   display: grid;
   align-items: center;
@@ -198,9 +217,6 @@ body {
 
 [cloaked] {
   display: none;
-}
-[na] {
-  opacity: 0;
 }
 [selected] {
   outline: 1px solid var(--green);

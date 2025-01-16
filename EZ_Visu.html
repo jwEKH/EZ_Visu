@@ -8,26 +8,33 @@
     <link rel="stylesheet" href="Content/EZ_Visu.css">
   </head>
   <body>
-    <div class="divVisu"></div>
-    <div class="visuTabs" cloaked="">
-      <div class="visuTab active" tab-idx="1">Tab1</div>
-      <div class="visuTab addTab">+</div>
-    </div>
-    <div class="divReloadLiveData">
-      <div class="cbEditModeContainer">
-        <input type="checkbox" id="cbEditMode" title="[e?]" checked>
-        <label for="cbEditMode" title="[e?]">Edit Mode</label>
+    <div class="visuContainer">
+      <div class="divVisu"></div>
+      <div class="visuTabs" cloaked="">
+        <div class="visuTab active" tab-idx="1">Tab1</div>
+        <div class="visuTab addTab">+</div>
       </div>
-      <div class="cbReloadLiveDataContainer">
-        <input type="checkbox" id="cbReloadLiveData" title="[r?]" checked>
-        <label for="cbReloadLiveData" title="[r?]">Reload LiveData</label>
+      <div class="divReloadLiveData">
+        <div class="cbEditModeContainer">
+          <input type="checkbox" id="cbEditMode" title="[e?]" checked>
+          <label for="cbEditMode" title="[e?]">Edit Mode</label>
+        </div>
+        <div class="cbReloadLiveDataContainer">
+          <input type="checkbox" id="cbReloadLiveData" title="[r?]" checked>
+          <label for="cbReloadLiveData" title="[r?]">Reload LiveData</label>
+        </div>
+        <label class="liveDataTimeStamp" title="MPC Zeitstempel"></label>  
       </div>
-      <label class="liveDataTimeStamp" title="MPC Zeitstempel"></label>
-      
     </div>
 
     <fieldset class="editorTools" cloaked="">
       <legend>Editor Tools</legend>
+      <datalist id="favBoolTxtList">
+        <option value="⚠"></option>
+        <option value="⏺"></option>
+        <option value="✋"></option>
+        <option value="🌜"></option>
+      </datalist>
       
       <fieldset class="genericTools">
         <legend>Generic</legend>
@@ -79,47 +86,9 @@
       </fieldset>
     </fieldset>
 
-  <!--
-    <details class="signalPool visuEditElement" cloaked="">
-      <summary>Signale</summary>
-      <input type="checkbox" id="cbShowSignalParameters" class="cbSignalTableColumnVisibility" checked>
-      <label for="cbShowSignalParameters">showSignalParameters</label>
-      <input type="checkbox" id="cbShowRtosTerm" class="cbSignalTableColumnVisibility" checked>
-      <label for="cbShowRtosTerm">showRtosTerm</label>
-      <table class="signalTable">
-        <colgroup>
-        <col>
-        <col span="1" class="colRtosTerm">
-        <col span="1" class="colSignal">
-        <col span="7" class="colSignalParameters">
-        </colgroup>
-        
-        <thead>
-          <tr>
-            <th scope="col">#</th>
-            <th scope="col">RTOS Term</th>
-            <th scope="col">Signal</th>
-            <th scope="col">ToolTip</th>
-            <th scope="col">Nk</th>
-            <th scope="col">Unit</th>
-            <th scope="col">Style</th>
-            <th scope="col">TrueTxt</th>
-            <th scope="col">FalseTxt</th>
-            
-          </tr>
-        </thead>
-        <tbody>
-        </tbody>
-      </table>
-    </details>
-  -->
+  
 
-    <datalist id="favBoolTxtList">
-      <option value="⚠"></option>
-      <option value="⏺"></option>
-      <option value="✋"></option>
-      <option value="🌜"></option>
-    </datalist>
+    
 
     <script src="Scripts/EZ_Visu.js"></script>
     <script src="Scripts/EZ_Visu-Webservices.js"></script>
