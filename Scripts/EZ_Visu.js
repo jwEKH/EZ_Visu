@@ -1396,11 +1396,27 @@ function createSignalTableRowElements(attributesObject) {
   return [lbl, visuItem];
 }
 
+function addSignalInputEventHandler(ev) {
+  const existingSignal = Array.from(document.querySelectorAll(`.signalTable .visuItem input`)).find(input => input.value === ev.target.value);
+  if (existingSignal) {
+    ev.target.setCustomValidity(`${ev.target.value} already exists!`)
+  }
+  ev.target.reportValidity();
+}
+
 function buildSignalTable(visuDataJson, liveData) {
   removeExistingNode(document.querySelector(`.signalTable`));
   const signalTable = document.createElement(`div`);
   document.body.appendChild(signalTable);
   signalTable.classList.add(`signalTable`);
+
+  const inputAddSignal = document.createElement(`input`);
+  signalTable.appendChild(inputAddSignal);
+  inputAddSignal.classList.add(`inputAddSignal`);
+  inputAddSignal.type = `text`;
+  inputAddSignal.placeholder = `add Signal...`;
+  inputAddSignal.addEventListener(`input`, addSignalInputEventHandler);
+
   if (!visuDataJson && !liveData) {
     console.warn(`no signalData found: built empty signalTable!`);
   }
@@ -1409,16 +1425,17 @@ function buildSignalTable(visuDataJson, liveData) {
     const visuData = JSON.parse(visuDataJson);   
     visuData.signalTableData.forEach(entry => {
       //console.log(entry);
-      createSignalTableRowElements(entry).forEach(el => signalTable.appendChild(el));
+      createSignalTableRowElements(entry).forEach(el => signalTable.insertBefore(el, inputAddSignal));
     });  
   }
   if (liveData) {
     Object.keys(reformatLiveData(liveData).liveData).forEach((signalId) => {
       if (!signalTable.querySelector(`[signal-id = ${signalId}]`)) {
-        createSignalTableRowElements({"signal-id": signalId}).forEach(el => signalTable.appendChild(el));
+        createSignalTableRowElements({"signal-id": signalId}).forEach(el => signalTable.insertBefore(el, inputAddSignal));
       }
     });
   }
+
   return signalTable;
 }
 
@@ -1451,6 +1468,7 @@ function parseVisuSkript(txt) {
   //console.log(data);
   
   if (data && signalTable) {
+    const inputAddSignal = signalTable.querySelector(`.inputAddSignal`);
     data.forEach(dataset => {
       const result = dataset.match(/(?<name>[A-Z]+)\s*(?<idx>\d+),(?<nk>\d),\s*(?<unitAsInt>\d+)',(?<rtos>.+)(?:TO\s*TEMP\s*BY).*\/\*\s*(?<title>.+)\*\//);
       const {name, idx, nk, unitAsInt, rtos, title} = result.groups;
@@ -1465,7 +1483,7 @@ function parseVisuSkript(txt) {
       //createSignalTableRow if not exists
       if (!visuItems.length) {
         const signalTableRowElements = createSignalTableRowElements(attributesObject);
-        signalTableRowElements.forEach(el => signalTable.appendChild(el));
+        signalTableRowElements.forEach(el => signalTable.insertBefore(el, inputAddSignal));
         //push to visuItems for following update
         const visuItem = signalTableRowElements.find(el => el.matches(`.visuItem`));
         visuItems.push(visuItem);

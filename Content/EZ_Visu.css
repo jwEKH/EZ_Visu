@@ -57,10 +57,15 @@ body {
   display: grid;
   grid-template-columns: max-content max-content;
   background-color: var(--grey);
+  height: min-content;
   max-height: 100vh;
   overflow-y: auto;
   padding-right: var(--controlsWidthOffset);
   overflow-x: hidden;
+}
+.inputAddSignal {
+  grid-column: span 2;
+  width: calc(var(--inputTextWidth) + 2ch);
 }
 
 .attributeTable {
@@ -68,6 +73,7 @@ body {
   display: grid;
   grid-template-columns: max-content;
   background-color: var(--grey);
+  height: min-content;
   max-height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
@@ -172,7 +178,7 @@ body {
   writing-mode: sideways-lr;
 }
 
-[type = "text"] {
+.visuItem [type = "text"] {
   box-sizing: border-box;
   width: var(--inputTextWidth);
   height: calc(var(--iconSize)/2);
