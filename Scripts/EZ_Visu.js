@@ -4,6 +4,8 @@ const VISU_LIVE_DATA_OLD = `{"Projektnummer":"P2033","Stoerungen":[],"Items":[{"
 const VISU_LIVE_DATA_NEW = `{"header":{"prjNo":2033,"prjName":" Biogasanlage Dralle  Hohne                       ","date":" 9. 1.2025","time":"17:03:01"},"liveData":{"AI0":   0.61,"TH1": 156.20,"TH2":  65.20,"MS4":   0.00,"PH  1":1,"PH  2":1,"PH  3":1,"PH 11":0,"PH 12":0,"KPU 1":1,"KPU 2":1,"KPU 3":0,"KL  1":1,"KL  2":1,"KL  3":0,"BPU 1":1,"BL  1":1,"SG  1":1,"BI 35":0,"BI 36":0,"BI 37":0,"BI 111":0,"BI 112":0,"BI 113":0,"HKT 1":  63.15,"HKT 2":  63.15,"HKT 3":  63.15,"HKT 4":   0.00,"GR  1":   1.50,"HKNA 1":" HK1 Nordtrasse     ","MS 1":   0.00,"HKNA 2":" HK2 Westtrasse     ","MS 2":   0.00,"HKNA 3":" HK3 Suedtrasse     ","MS 3":   0.00,"PMK 1": 300.00,"PKT 1":   0.00,"MS11":  25.83,"PMK 2": 300.00,"PKT 2":   0.00,"MS12":  25.83,"PMK 3": 300.00,"PKT 3":   0.00,"MS13":  25.83,"PMB 1": 300.00,"PBH 1": 300.00,"AI 1": 156.19,"AI 2": 156.19,"AI 3": 156.19,"AI 4": 156.19,"AI 5": 156.19,"AI 6": 156.19,"AI 7": 156.20,"AI 8": 156.19,"AI 9": 156.20,"AI10": 156.19,"AI11": 156.19,"AI12": 156.19,"AI13": 156.20,"AI14": 156.19,"AI15": 156.19,"AI16": 156.19,"AI17": 156.15,"AI18": 156.17,"AI19": 156.17,"AI20": 156.17,"AI21": 156.17,"AI22": 156.17,"AI23": 156.17,"AI24": 156.17,"AI25": 156.17,"AI26": 156.17,"AI27": 156.17,"AI28": 156.17,"AI29": 156.18,"AI30":   0.00,"AI31":   0.00,"AI32":  -1.00,"AA 1":   0.00,"AA 2": 100.00,"AA 3":   0.00,"AA 4": 100.00,"AA 5":   0.00,"AA 6":  54.67,"AA 7":  54.67,"AA 8":  54.67,"PT 1":   0.00,"DF 1":   0.00,"PT 2":   0.00,"DF 2":   0.00,"PT 3":   0.00,"DF 3":   0.00,"PT 4":   0.00,"DF 4":   0.00,"PT 5":   0.00,"DF 5":   0.00,"PT 6":   0.00,"DF 6":   0.00,"PT 7":   0.00,"DF 7":   0.00}}`;
 
 /*********************Konstanten*********************/
+const RELEVANT_ATTRIBUTE_NAMES = [`title`, `msr`, `strang`, `faceplate`, `icon`, `rotation`, `animation`, `unit`, `dec-place`, `stil`, `true-txt`, `false-txt`, `text-align`, `signal-id`, `rtos-id`, `toggle`, `range-max`, `range-min`];
+
 //Colors here in rgb, because style.color will return rgb-format
 const MAGENTA_HSL = `hsl(334, 74%, 44%)`;
 const MAGENTA_HEX = `#c31d65`;
@@ -58,12 +60,20 @@ async function initVisu() {
   //fetchVisuServerFile
   const visuData = (window.DEBUG) ? false : await fetchVisuServerFile(projectNo);
   //getLiveData
-  window.liveData = (window.DEBUG) ? VISU_LIVE_DATA_OLD : await fetchLiveData(projectNo); 
+  window.liveData = (window.DEBUG) ? undefined : await fetchLiveData(projectNo); 
   
   //ADMIN
   buildVisu(visuData);
   buildSignalTable(visuData, window.liveData);
   buildAttributeTable();
+  window.mutationObserver = new MutationObserver((mutationList, observer) => {
+    for (const mutation of mutationList) {
+      if (mutation.attributeName === `selected` || (mutation.type === `childList` && mutation.target.matches(`.signalTable`))) {
+        updateAttributeTable();
+        //console.log(mutation);
+      }
+    }
+  });
   
 
   addGenericEventHandler();
@@ -442,7 +452,6 @@ function selectModeClickEventHandler(ev) {
       el.toggleAttribute(`selected`);
       el.removeAttribute(`highlighted`);
     });
-    updateAttributeTable();
   }
   else {
     const selectionArea = document.createElementNS(SVG_NS, `polygon`);
@@ -553,29 +562,57 @@ function buildAttributeTable() {
   const attributeTable = document.createElement(`div`);
   attributeTable.classList.add(`attributeTable`);
   document.body.appendChild(attributeTable);
-  [`msr`, `strang`, `signal-id`, `rtos-id`, `unit`, `title`, `stil`, `toggle`, `dec-place`, `icon`, `rotation`, `animation`, `true-txt`, `false-txt`, `text-align`, `range-max`, `range-min`].forEach(attributeName => {
-    attributeTable.appendChild(createEditSignalRowEl(attributeName));
+  RELEVANT_ATTRIBUTE_NAMES.forEach(attributeName => {
+    attributeTable.appendChild(createEditAttributeInput(attributeName));
   });
-  attributeTable.addEventListener(`input`, (ev) => {
-    console.log(ev);
-  });
+  attributeTable.addEventListener(`input`, attributeInputEventHandler);
   
   return attributeTable;
+}
+
+function attributeInputEventHandler(ev) {
+  //console.log(ev);
+  const attributeName = ev.target.getAttribute(`attribute-name`);
+  const selectedVisuItems = document.querySelectorAll(`.visuItem[selected]`);
+  selectedVisuItems.forEach(selectedVisuItem => {
+    selectedVisuItem.setAttribute(attributeName, ev.target.value);
+    //sync all Attributes of selectedVisuItem with signalTableVisuItem
+    if (attributeName === `signal-id`) {
+      //remove all Attributes
+      getRelevantAttributesAsMap(selectedVisuItem).forEach((value, key) => selectedVisuItem.removeAttribute(key));
+      const signalTableVisuItem = document.querySelector(`.signalTable .visuItem[signal-id = ${ev.target.value}]`);
+      //sync existing Attributes
+      getRelevantAttributesAsMap(signalTableVisuItem).forEach((value, key) => {
+        selectedVisuItem.setAttribute(key, value);
+      });
+      //handle visuItemAppearance due to eventually change of [icon]
+      handleItemAppearance(selectedVisuItem);
+
+      //sync .visuItem input[value] with .visuItem[signal-id]
+      const inputEl = selectedVisuItem.querySelector(`input`);
+      if (inputEl) {
+        inputEl.setAttribute(`value`, ev.target.value);
+      }
+
+      updateAttributeTable();
+    }
+  });
 }
 
 function updateAttributeTable() {
   const selectedVisuItems = Array.from(document.querySelectorAll(`.visuItem[selected]`));
   const attributeTable = document.querySelector(`.attributeTable`);
-  attributeTable.toggleAttribute(`cloaked`, !selectedVisuItems.length);
+  attributeTable.toggleAttribute(`hidden`, !selectedVisuItems.length);
+  attributeTable.querySelector(`[attribute-name = signal-id]`).closest(`fieldset`).remove();
+  attributeTable.insertBefore(createEditAttributeInput(`signal-id`), attributeTable.querySelector(`[attribute-name = rtos-id]`).closest(`fieldset`));
   attributeTable.querySelectorAll(`input, select`).forEach(attributeInput => {
     (attributeInput.type === `checkbox`) ? attributeInput.checked = false : attributeInput.value = ``;
     attributeInput.removeAttribute(`disabled`); 
   });
 
   selectedVisuItems.forEach((selectedVisuItem, selectedVisuItemIdx) => {
-    const forbiddenAttributeNames = [`class`, `readonly`, `draggable`, `type`, `style`, `selected`, `highlighted`];
-    getAttributesAsMap(selectedVisuItem, forbiddenAttributeNames).forEach((value, key) => {
-      console.log(key);
+    getRelevantAttributesAsMap(selectedVisuItem).forEach((value, key) => {
+      //console.log(key);
       const attributeInput = attributeTable.querySelector(`[attribute-name = ${key}]`);
       if (selectedVisuItemIdx === 0) {
         (attributeInput.type === `checkbox`) ? attributeInput.checked = !!value : attributeInput.value = `${value}`;
@@ -591,72 +628,13 @@ function updateAttributeTable() {
     });
   });
 
-
-  
-
+  //disable signal-id attribute for signalTable visuItems
+  const signalIdInput = document.querySelector(`.attributeTable [attribute-name = signal-id]`);
+  const selectedSignalTableVisuItem = selectedVisuItems.find(selectedVisuItem => selectedVisuItem.closest(`.signalTable`));
+  signalIdInput.toggleAttribute(`disabled`, !!selectedSignalTableVisuItem);
 }
 
-function editSignalAttributesEventHandler(ev) {
-  if (ev.type === `contextmenu`) {
-    ev.preventDefault();
-  }
-  removeExistingNode(document.querySelector(`.divEditSignal`));
-
-  const visuItem = ev.target.closest(`.visuItem`);
-
-  const divEditSignal = document.createElement(`div`);
-  document.body.appendChild(divEditSignal);
-  divEditSignal.visuItem = visuItem;
-  divEditSignal.classList.add(`divEditSignal`);
-  divEditSignal.style.left = `${ev.pageX}px`;
-  divEditSignal.style.top = `${ev.pageY}px`;
-
-  const forbiddenAttributeNames = [`class`, `readonly`, `draggable`, `type`, `style`, `selected`, `highlighted`];
-  getAttributesAsMap(visuItem, forbiddenAttributeNames).forEach((value, key) => {
-    divEditSignal.appendChild(createEditSignalRowEl(key, value));
-  });
-
-  const selectAddAttribute = createSelectAddAttribute(visuItem.getAttributeNames());
-  divEditSignal.appendChild(selectAddAttribute);
-
-  const btnConfirm = document.createElement(`input`);
-  btnConfirm.type = `button`;
-  btnConfirm.value = `Confirm Changes`;
-  btnConfirm.addEventListener(`click`, confirmSignalAttributeEditEventHandler);
-  divEditSignal.appendChild(btnConfirm);
-}
-
-function confirmSignalAttributeEditEventHandler(ev) {
-  const divEditSignal = ev.target.closest(`.divEditSignal`);
-  divEditSignal.querySelectorAll(`input:not([type=button]), select:not(.selectAddAttribute)`).forEach(attributeInput => {
-    const key = attributeInput.getAttribute(`attribute-name`);
-    //console.log(key);
-    if (attributeInput.type === `checkbox`) {
-      divEditSignal.visuItem.toggleAttribute(key, attributeInput.checked);
-    }
-    else if (attributeInput.value) {
-      //console.log(key, attributeInput.value, divEditSignal.visuItem);
-      divEditSignal.visuItem.setAttribute(key, attributeInput.value);
-    }
-    else {
-      divEditSignal.visuItem.removeAttribute(key);
-    }
-  });
-  const input = divEditSignal.visuItem.querySelector(`input`);
-  if (input) {
-    input.setAttribute(`value`, divEditSignal.visuItem.getAttribute(`signal-id`));
-  }
-
-  removeExistingNode(document.querySelector(`.divEditSignal`));
-  
-  if (divEditSignal.visuItem.closest(`.divVisu`)) {
-    divEditSignal.visuItem = handleItemAppearance(divEditSignal.visuItem);
-  }
-
-  updateUsedCount();  
-}
-
-function createEditSignalRowEl(key, value) {
+function createEditAttributeInput(key, value) {
   const fieldset = document.createElement(`fieldset`);
   const legend = document.createElement(`legend`);
   legend.innerText = key;
@@ -690,7 +668,7 @@ function createEditSignalRowEl(key, value) {
 
 function selectAddAttributeInputEventHandler(ev) {
   const divEditSignal = ev.target.closest(`.divEditSignal`);
-  divEditSignal.insertBefore(createEditSignalRowEl(ev.target.value), ev.target);
+  divEditSignal.insertBefore(createEditAttributeInput(ev.target.value), ev.target);
   const selectedOption = ev.target.querySelector(`option[value=${ev.target.value}]`);
   ev.target.removeChild(selectedOption);
   ev.target.disabled = (ev.target.childElementCount <= 1);
@@ -703,6 +681,10 @@ function createSelectAddAttribute(existingAttributeNames) {
   return selectAddAttribute;
 }
 
+function updateSelectSignalIdOptions() {
+  return [``].concat(Array.from(document.querySelectorAll(`.signalTable [signal-id]`), (el) => el.getAttribute(`signal-id`)));
+}
+
 function createSelectElement(type, excludedOptions = []) {
   const options = (type === `unit`) ? [``, `°C`, `bar`, `V`, `kW`, `m³/h`, `mWS`, `%`, `kWh`, `Bh`, `m³`, `°Cø`, `mV`, `UPM`, `s`, `mbar`, `A`, `Hz`, `l/h`, `l`] :
                   (type === `dec-place`) ? [``, 0, 1, 2, 3, 4] :
@@ -712,7 +694,7 @@ function createSelectElement(type, excludedOptions = []) {
                   (type === `animation`) ? [``, `flicker`, `spin`, `hide`, `show`, `blink`] :
                   (type === `text-align`) ? [``, `center`, `end`] :
                   (type === `addAttribute`) ? [`addAttribute...`, `msr`, `strang`, `signal-id`, `rtos-id`, `unit`, `title`, `stil`, `toggle`, `dec-place`, `icon`, `rotation`, `animation`, `true-txt`, `false-txt`, `text-align`, `range-max`, `range-min`] :
-                  (type === `signal-id`) ? [``].concat(Array.from(document.querySelectorAll(`.signalTable [signal-id]`), (el) => el.getAttribute(`signal-id`))) :
+                  (type === `signal-id`) ? updateSelectSignalIdOptions() :
                   [];
   
   const select = document.createElement(`select`);
@@ -725,15 +707,11 @@ function createSelectElement(type, excludedOptions = []) {
     }
   });
 
-  if (type === `signal-id`) {
-    select.addEventListener(`change`, changeSignalIdEventHandler);
-  }
-
   return select;                
 }
 
 function changeSignalIdEventHandler(ev) {
-  //console.log(ev);
+  console.log(ev);
   console.log(getRelevantAttributesAsMap(document.querySelector(`.signalTable [signal-id = ${ev.target.value}]`)));
   //editSignalAttributesEventHandler(ev);
 }
@@ -852,6 +830,14 @@ function signalTableTxtSignalIdsAddAttributes() {
 
 function editModeSwitchHandler() {
   const editModeActive = document.querySelector(`#cbEditMode`).checked;
+
+  if (editModeActive) {
+    const mutationObserverConfig = { subtree: true, childList: true, attributeFilter: RELEVANT_ATTRIBUTE_NAMES.concat([`selected`]) };
+    window.mutationObserver.observe(document.body, mutationObserverConfig);
+  }
+  else {
+    window.mutationObserver.disconnect();
+  }
   
   const divVisu = document.querySelector(`.divVisu`);
   divVisu.toggleAttribute(`edit-mode`, editModeActive);
@@ -860,8 +846,8 @@ function editModeSwitchHandler() {
     clearInterval(window.reloadLiveDataIntervalId);
     document.querySelector(`#cbReloadLiveData`).checked = false;
 
-    divVisu.querySelectorAll(`.txtSignalId[signal-id]`).forEach(txtSignalId => txtSignalId.value = txtSignalId.getAttribute(`signal-id`));
-    divVisu.querySelectorAll(`.divIconSignal[signal-id]`).forEach(divIconSignal => divIconSignal.removeAttribute(`cloaked`));
+    //divVisu.querySelectorAll(`.txtSignalId[signal-id]`).forEach(txtSignalId => txtSignalId.value = txtSignalId.getAttribute(`signal-id`));
+    //divVisu.querySelectorAll(`.divIconSignal[signal-id]`).forEach(divIconSignal => divIconSignal.removeAttribute(`cloaked`));
   }
 
   if (editModeActive && !document.querySelector(`.visuItemPool`)) {
@@ -871,8 +857,8 @@ function editModeSwitchHandler() {
     updateUnDoReDoStack(`reset`);
   }
   
-  document.querySelector(`.attributeTable`).toggleAttribute(`cloaked`, true);
-  document.querySelectorAll(`.visuEditElement, .visuTabs, .editorTools, .signalTable`).forEach(el => el.toggleAttribute(`cloaked`, !editModeActive));
+  document.querySelector(`.attributeTable`).toggleAttribute(`hidden`, true);
+  document.querySelectorAll(`.visuEditElement, .visuTabs, .editorTools, .signalTable, .attributeTable`).forEach(el => el.toggleAttribute(`cloaked`, !editModeActive));
   document.querySelectorAll(`[draggable]`).forEach(el => el.setAttribute(`draggable`, (editModeActive) ? `true` : `false`));
   (editModeActive) ? addEditorEventHandler() : removeEditorEventHandler();
   cancelCurrentDrawing();
@@ -941,7 +927,7 @@ function contextMenuEventHandler(ev) {
 
   if (ev.target.closest(`.visuItem`)) {
     cancelCurrentSelection();
-    editSignalAttributesEventHandler(ev);
+    //editSignalAttributesEventHandler(ev);
   }
   else if (ev.target.closest(`.divVisu`)) {
     divVisuContextMenuEventHandler(ev);
@@ -993,8 +979,6 @@ function mouseDownEventHandler(ev) {
       if (ev.target.matches(`[draggable]`)) {
         ev.target.setAttribute(`dragging`, `true`);
       }
-      
-      updateAttributeTable();
     }
   }
 }
@@ -1039,7 +1023,6 @@ function cancelCurrentDrawing() {
 function cancelCurrentSelection() {
   document.querySelectorAll(`[selected]`).forEach(el => el.removeAttribute(`selected`));
   document.querySelectorAll(`[highlighted]`).forEach(el => el.removeAttribute(`highlighted`));
-  updateAttributeTable();
   return removeExistingNode(selectionArea = document.querySelector(`.selectionArea`)); //feedback whether selection was active or not
 }
 
@@ -1272,7 +1255,6 @@ function keyDownEventHandler(ev) {
           activeElement.remove();
         }
         document.querySelectorAll(`[selected]`).forEach(el => el.remove());
-        updateAttributeTable();
         
         updateUnDoReDoStack();
       }
@@ -1287,7 +1269,6 @@ function keyDownEventHandler(ev) {
       if (key === `a`) {
         ev.preventDefault();
         document.querySelectorAll(`.divVisu .visuItem, svg.active *:not(.hoverMarker)`).forEach(el => el.setAttribute(`selected`, true));
-        updateAttributeTable();
       }
       if (key === `y`)
       document.querySelector(`.btnReDo`).click();
@@ -1420,6 +1401,9 @@ function buildSignalTable(visuDataJson, liveData) {
   const signalTable = document.createElement(`div`);
   document.body.appendChild(signalTable);
   signalTable.classList.add(`signalTable`);
+  if (!visuDataJson && !liveData) {
+    console.warn(`no signalData found: built empty signalTable!`);
+  }
   
   if (visuDataJson) {
     const visuData = JSON.parse(visuDataJson);   
@@ -1462,71 +1446,106 @@ function unitFromInt(int) {
 }
 
 function parseVisuSkript(txt) {
+  const signalTable = document.querySelector(`.signalTable`);
   const data = txt.match(/([A-Z]+\s*\d+),\d,\s*\d+',.+\*\//g);
   //console.log(data);
   
-  data.forEach(dataset => {
-    const result = dataset.match(/(?<name>[A-Z]+)\s*(?<idx>\d+),(?<nk>\d),\s*(?<unitAsInt>\d+)',(?<rtos>.+)(?:TO\s*TEMP\s*BY).*\/\*\s*(?<title>.+)\*\//);
-    const {name, idx, nk, unitAsInt, rtos, title} = result.groups;
-    
-    //update attributes
-    const visuItems = document.querySelectorAll(`[signal-id=${name}${idx}]`);
-    visuItems.forEach(visuItem => {
-      visuItem.setAttribute(`rtos-id`, rtos.trim());
-      visuItem.setAttribute(`title`, title.replace(`<<<`, ``).trim());
-      visuItem.setAttribute(`dec-place`, parseInt(nk));
-      const unit = unitFromInt(unitAsInt);
-      if (unit) {
-        visuItem.setAttribute(`unit`, unit);
+  if (data && signalTable) {
+    data.forEach(dataset => {
+      const result = dataset.match(/(?<name>[A-Z]+)\s*(?<idx>\d+),(?<nk>\d),\s*(?<unitAsInt>\d+)',(?<rtos>.+)(?:TO\s*TEMP\s*BY).*\/\*\s*(?<title>.+)\*\//);
+      const {name, idx, nk, unitAsInt, rtos, title} = result.groups;
+      const attributesObject = { "signal-id": `${name}${idx}`,
+                                "unit": unitFromInt(unitAsInt),
+                                "dec-place": (unitFromInt(unitAsInt)) ? parseInt(nk) : ``,
+                                "rtos-id": rtos.trim(),
+                                "title": title.replace(`<<<`, ``).trim() };
+      //console.log(attributesObject);
+      
+      const visuItems = Array.from(document.querySelectorAll(`.visuItem[signal-id=${name}${idx}]`));
+      //createSignalTableRow if not exists
+      if (!visuItems.length) {
+        const signalTableRowElements = createSignalTableRowElements(attributesObject);
+        signalTableRowElements.forEach(el => signalTable.appendChild(el));
+        //push to visuItems for following update
+        const visuItem = signalTableRowElements.find(el => el.matches(`.visuItem`));
+        visuItems.push(visuItem);
       }
       
-      const icon = (name.match(/(PH)|(KPU)|(BPU)/)) ? `pumpe` :
-                   (name.match(/(KL)/)) ? `flamme` :
-                   (name.match(/(BL)/)) ? `aggregat` :
-                   undefined;
-      if (icon) {
-        visuItem.setAttribute(`icon`, icon);
-      }
+      //update attributes
+      visuItems.forEach(visuItem => {
+        visuItem.setAttribute(`rtos-id`, rtos.trim());
+        visuItem.setAttribute(`title`, title.replace(`<<<`, ``).trim());
+        const unit = unitFromInt(unitAsInt);
+        if (unit) {
+          visuItem.setAttribute(`unit`, unit);
+          visuItem.setAttribute(`dec-place`, parseInt(nk));
+        }
+        
+        const icon = (name.match(/(PH)|(KPU)|(BPU)/)) ? `pumpe` :
+                    (name.match(/(KL)/)) ? `flamme` :
+                    (name.match(/(BL)/)) ? `aggregat` :
+                    undefined;
+        if (icon) {
+          visuItem.setAttribute(`icon`, icon);
+        }
 
-      const animation = (name.match(/(PH)|(KPU)|(BPU)|(BL)/)) ? `spin` :
-                        (name.match(/(KL)/)) ? `flicker` :
+        const animation = (name.match(/(PH)|(KPU)|(BPU)|(BL)/)) ? `spin` :
+                          (name.match(/(KL)/)) ? `flicker` :
+                          undefined;
+        if (animation) {
+          visuItem.setAttribute(`animation`, animation);
+        }
+
+        const trueTxt = (idx > 110 && name.match(/(BI)/)) ? `🌜` :
+                        (name.match(/(BI)|(SG)/)) ? `⚠` :
                         undefined;
-      if (animation) {
-        visuItem.setAttribute(`animation`, animation);
-      }
+        if (trueTxt) {
+          visuItem.setAttribute(`true-txt`, trueTxt);
+        }
+        
+        const stil = (name.match(/(HKT)/)) ? `sollwert` :
+                    (name.match(/(GR)/)) ? `grenzwert` :
+                    undefined;
+        if (stil) {
+          visuItem.setAttribute(`stil`, stil);
+        }
 
-      const trueTxt = (idx > 110 && name.match(/(BI)/)) ? `🌜` :
-                      (name.match(/(BI)|(SG)/)) ? `⚠` :
-                      undefined;
-      if (trueTxt) {
-        visuItem.setAttribute(`true-txt`, trueTxt);
-      }
-      
-      const stil = (name.match(/(HKT)/)) ? `sollwert` :
-                   (name.match(/(GR)/)) ? `grenzwert` :
-                   undefined;
-      if (stil) {
-        visuItem.setAttribute(`stil`, stil);
-      }
+        const msr = (unit.match(/(°C)/)) ? `TI${idx}` :
+                    (name.match(/(DF)|(PT)/)) ? `WMZ${idx}` :
+                    (name.match(/(PMK)|(PKT)|(KL)/)) ? `KES${idx}` :
+                    (name.match(/(PMB)|(PBH)|(BL)/)) ? `BHKW${idx}` :
+                    (name.match(/(HKT)/)) ? `HK${idx}` : (idx > 110 && name.match(/(BI)/)) ? `HK${idx - 110}` :
+                    undefined;
+        if (msr) {
+          visuItem.setAttribute(`msr`, msr);
+        }
 
-      const msr = (unit.match(/(°C)/)) ? `TI${idx}` :
-                  (name.match(/(PMK)|(PKT)|(KL)/)) ? `KES${idx}` :
-                  (name.match(/(PMB)|(PBH)|(BL)/)) ? `BHKW${idx}` :
-                  (name.match(/(HKT)/)) ? `HK${idx}` : (idx > 110 && name.match(/(BI)/)) ? `HK${idx - 110}` :
-                  undefined;
-      if (msr) {
-        visuItem.setAttribute(`msr`, msr);
-      }
-
-      const strang = (name.match(/(PMK)|(PKT)|(KL)|(KPU)/)) ? `KES${idx}` :
-                     (name.match(/(PMB)|(PBH)|(BL)|(BPU)/)) ? `BHKW${idx}` :
-                     (name.match(/(HKT)/)) ? `HK${idx}` : (idx > 110 && name.match(/(BI)/)) ? `HK${idx - 110}` :
-                     undefined;
-      if (strang) {
-        visuItem.setAttribute(`strang`, strang);
-      }
+        const strang = (name.match(/(PMK)|(PKT)|(KL)|(KPU)/)) ? `KES${idx}` :
+                       (name.match(/(PMB)|(PBH)|(BL)|(BPU)/)) ? `BHKW${idx}` :
+                       (name.match(/(HKT)/)) ? `HK${idx}` : (idx > 110 && name.match(/(BI)/)) ? `HK${idx - 110}` :
+                       //(title.match(/(BHKW\d*)/)) ? title.match(/(?<name>BHKW)(?<idx>\d*)/).at(0) :
+                       //(title.match(/(BHKW\d*)/)) ? title.match(/(BHKW\d*)/).at(0) :
+                       //(title.match(/(BHKW\d*)/)) ? title.match(/(BHKW\d*)/).at(0) :
+                       undefined;
+        if (strang) {
+          visuItem.setAttribute(`strang`, strang);
+          visuItem.setAttribute(`faceplate`, strang);
+        }
+        else {
+          const strangInfoFromTitle = title.match(/(?<name>(bhkw)|(kessel)|(hk)|(puffer))(?<idx>\d*)/i);
+          if (strangInfoFromTitle) {
+            //console.log(strangInfoFromTitle);
+            const strang = `${strangInfoFromTitle.groups.name.replace(`kessel`, `KES`).toUpperCase()}${strangInfoFromTitle.groups.idx}`;
+            visuItem.setAttribute(`strang`, strang);
+            visuItem.setAttribute(`faceplate`, strang);
+          }
+        }
+      });
     });
-  });
+  }
+  else {
+    console.warn(`parsing visuSkript failed: data = ${data}; signalTable = ${signalTable}`);
+  }
 }
 
 function colorInputEventHandler(ev) {
@@ -1637,12 +1656,7 @@ async function refreshLiveData() {
         });
       }
 
-      const divIconSignals = divVisu.querySelectorAll(`.divIconSignal[signal-id = ${key}]`);
-      if (divIconSignals) {
-        divIconSignals.forEach(el => {
-          el.toggleAttribute(`cloaked`, !value);
-        });
-      }
+      
     });
 
     if (visuLiveData.header.date) {
@@ -1692,7 +1706,7 @@ function getUniqueAttributeNames(el) {
   return [...new Set(el.getAttributeNames())];
 }
 
-function getRelevantAttributesAsMap(el, relevantAttributeNames = [`signal-id`, `rtos-id`, `title`, `tooltip`, `dec-place`, `unit`, `stil`, `true-txt`, `false-txt`]) {
+function getRelevantAttributesAsMap(el, relevantAttributeNames = RELEVANT_ATTRIBUTE_NAMES) {
   const map = new Map();
   getUniqueAttributeNames(el).forEach(name => {
     if (relevantAttributeNames.includes(name)) {
@@ -1702,7 +1716,7 @@ function getRelevantAttributesAsMap(el, relevantAttributeNames = [`signal-id`, `
   return map;
 }
 
-function getRelevantAttributesAsObject(el, relevantAttributeNames = [`signal-id`, `rtos-id`, `title`, `tooltip`, `dec-place`, `unit`, `stil`, `true-txt`, `false-txt`]) {
+function getRelevantAttributesAsObject(el, relevantAttributeNames = RELEVANT_ATTRIBUTE_NAMES) {
   const obj = {};
   getUniqueAttributeNames(el).forEach(name => {
     if (relevantAttributeNames.includes(name)) {

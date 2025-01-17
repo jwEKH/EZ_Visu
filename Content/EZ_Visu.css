@@ -215,6 +215,9 @@ body {
   text-align: end;
 }
 
+[hidden] {
+  visibility: hidden;
+}
 [cloaked] {
   display: none;
 }
