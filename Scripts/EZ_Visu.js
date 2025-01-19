@@ -67,12 +67,19 @@ async function initVisu() {
   buildSignalTable(visuData, window.liveData);
   buildAttributeTable();
   window.mutationObserver = new MutationObserver((mutationList, observer) => {
-    for (const mutation of mutationList) {
-      if (mutation.attributeName === `selected` || (mutation.type === `childList` && mutation.target.matches(`.signalTable`))) {
+    mutationList.forEach(mutation => {
+      const {type, attributeName, target, addedNodes, removedNodes} = mutation;
+      const nodes = Array.from(addedNodes).concat(Array.from(removedNodes));
+
+      if (attributeName === `selected` || (type === `childList` && target.matches(`.signalTable`))) {
         updateAttributeTable();
         //console.log(mutation);
       }
-    }
+      else if (target.closest(`.visuContainer`) && !nodes.find(node => node.matches(`.hoverMarker`))) {
+        console.log(`updateUnDoReDoStack`);
+        updateUnDoReDoStack();
+      }
+    });
   });
   
 
@@ -273,14 +280,14 @@ function addEditorEventHandler() {
   
   document.body.addEventListener(`keydown`, keyDownEventHandler);
   document.body.addEventListener(`dblclick`, dblClickEventHandler);
-  document.body.addEventListener(`contextmenu`, contextMenuEventHandler);
+  //document.body.addEventListener(`contextmenu`, contextMenuEventHandler);
   
   const divVisu = document.querySelector(`.divVisu`);
   divVisu.addEventListener(`mousemove`, divVisuMouseMoveEventHandler);
   divVisu.addEventListener(`dragover`, divVisuDragOverEventHandler);
   divVisu.addEventListener(`drop`, divVisuDropEventHandler);
   divVisu.addEventListener(`click`, divVisuClickEventHandler);
-  //divVisu.addEventListener(`contextmenu`, divVisuContextMenuEventHandler);
+  divVisu.addEventListener(`contextmenu`, divVisuContextMenuEventHandler);
 
   document.querySelector(`.visuTabs`).addEventListener(`click`, visuTabsClickEventHandler);
   
@@ -301,14 +308,14 @@ function removeEditorEventHandler() {
   
   document.body.removeEventListener(`keydown`, keyDownEventHandler);
   document.body.removeEventListener(`dblclick`, dblClickEventHandler);
-  document.body.removeEventListener(`contextmenu`, contextMenuEventHandler);
+  //document.body.removeEventListener(`contextmenu`, contextMenuEventHandler);
 
   const divVisu = document.querySelector(`.divVisu`);
   divVisu.removeEventListener(`mousemove`, divVisuMouseMoveEventHandler);
   divVisu.removeEventListener(`dragover`, divVisuDragOverEventHandler);
   divVisu.removeEventListener(`drop`, divVisuDropEventHandler);
   divVisu.removeEventListener(`click`, divVisuClickEventHandler);
-  //divVisu.removeEventListener(`contextmenu`, divVisuContextMenuEventHandler);
+  divVisu.removeEventListener(`contextmenu`, divVisuContextMenuEventHandler);
 
   document.querySelector(`.visuTabs`).removeEventListener(`click`, visuTabsClickEventHandler);
 }
@@ -424,8 +431,6 @@ function drawModeClickEventHandler(ev) {
       
       hoverLine.setAttributeNS(null,`x1`, x2);
       hoverLine.setAttributeNS(null,`y1`, y2);
-
-      updateUnDoReDoStack();
     }
   }
   else {
@@ -495,7 +500,6 @@ function createEditorTools() {
     btn.title = (el === `UnDo`) ? `[Strg + z]` : `[Strg + y]`;
     btn.addEventListener(`click`, unDoReDoEventHandler);
   });
-  updateUnDoReDoStack(`reset`);
 
   const colorPicker = document.createElement(`input`);
   fsEditorTools.appendChild(colorPicker);
@@ -710,12 +714,6 @@ function createSelectElement(type, excludedOptions = []) {
   return select;                
 }
 
-function changeSignalIdEventHandler(ev) {
-  console.log(ev);
-  console.log(getRelevantAttributesAsMap(document.querySelector(`.signalTable [signal-id = ${ev.target.value}]`)));
-  //editSignalAttributesEventHandler(ev);
-}
-
 function createGenericSignalTable() {
   const signalTableBody = document.querySelector(`.signalTable tbody`);
   //create basic table (32 DI, 32 AI, 32 DO, 8 AO, CAN?)
@@ -854,7 +852,6 @@ function editModeSwitchHandler() {
     //console.log(window.visuLiveData);
     //document.body.appendChild(createEditorTools());
     document.querySelector(`#selStrokeDasharray`).style.color = document.querySelector(`.colorPicker`).value;
-    updateUnDoReDoStack(`reset`);
   }
   
   document.querySelector(`.attributeTable`).toggleAttribute(`hidden`, true);
@@ -908,8 +905,6 @@ function addVisuTab() {
   newTab.setAttribute(`tab-idx`, visuTabs.childElementCount);
   newTab.innerText = `Tab${visuTabs.childElementCount}`;
   visuTabs.insertBefore(newTab, visuTabs.querySelector(`.addTab`));
-
-  updateUnDoReDoStack();
 }
 
 function switchVisuTab(tabIdx) {
@@ -917,20 +912,6 @@ function switchVisuTab(tabIdx) {
   if (targetElements.length) {
     document.querySelectorAll(`.active`).forEach(el => el.classList.remove(`active`));
     targetElements.forEach(el => el.classList.add(`active`));
-  }
-
-  updateUnDoReDoStack();
-}
-
-function contextMenuEventHandler(ev) {
-  ev.preventDefault();
-
-  if (ev.target.closest(`.visuItem`)) {
-    cancelCurrentSelection();
-    //editSignalAttributesEventHandler(ev);
-  }
-  else if (ev.target.closest(`.divVisu`)) {
-    divVisuContextMenuEventHandler(ev);
   }
 }
 
@@ -955,8 +936,7 @@ function divVisuMouseMoveEventHandler(ev) {
 }
 
 function mouseDownEventHandler(ev) {
-  if (ev.buttons === 1) {
-    
+  if (ev.buttons === 1) {   
     if (!ev.target.closest(`.attributeTable`)) {
       //selectionHandling
       const visuItem = ev.target.closest(`.visuItem`);
@@ -1060,11 +1040,12 @@ function dragStartEventHandler(ev) {
   const selectedElements = document.querySelectorAll(`[dragging], [selected][draggable]`);
   //console.log(selectedElements);
   const offsets = [];
-  selectedElements.forEach(selectedEl => {
+  selectedElements.forEach((selectedEl, idx) => {
+    const signalTable = selectedEl.closest(`.signalTable`)
     const targetBox = selectedEl.getBoundingClientRect();
     const offset = {};
     offset.x = ev.x - targetBox.x;
-    offset.y = ev.y - targetBox.y;
+    offset.y = (signalTable) ? idx * targetBox.height : ev.y - targetBox.y;
     offsets.push(offset);    
     selectedEl.setAttribute(`dragging`, `true`);
   });
@@ -1134,25 +1115,41 @@ function divVisuDropEventHandler(ev) {
     
     divVisu.appendChild(dropItem);
 
-    //
-    if (draggingItem.closest(`.signalTable`) && dropItem.matches(`[unit=°C]:not([icon])`)) {
-      const icon = dropItem.cloneNode(true);
-      icon.setAttribute(`icon`, `temperatur`);
-      const dropIcon = handleItemAppearance(icon);
+    //origin is signalTable
+    if (draggingItem.closest(`.signalTable`)) {
+      console.log(ev, draggingItem);
 
-      const iconPosition = snapToGrid(xRel-1/GRIDSIZE_AS_PARTS_FROM_WIDTH, yRel);
-      dropIcon.style.left = `${100* iconPosition.xRel}%`;
 
-      divVisu.appendChild(dropIcon);
+      /*
+      if (dropItem.matches(`[unit=°C]:not([icon])`)) {
+        const icon = dropItem.cloneNode(true);
+        icon.setAttribute(`icon`, `temperatur`);
+        const dropIcon = handleItemAppearance(icon);
+
+        const iconPosition = snapToGrid(xRel-1/GRIDSIZE_AS_PARTS_FROM_WIDTH, yRel);
+        dropIcon.style.left = `${100* iconPosition.xRel}%`;
+
+        divVisu.appendChild(dropIcon);
+      }
+      */
     }
-          
-    updateUnDoReDoStack();
   });
 
   removeAllDraggingAttributes();
 }
 
 function dblClickEventHandler(ev) {
+  const visuItem = ev.target.closest(`.visuItem`);
+  const signalTable = visuItem.closest(`.signalTable`)
+  if (visuItem && signalTable) {
+    const groupName = [`strang`, `msr`].find(groupName => visuItem.matches(`[${groupName}]`));
+    if (groupName) {
+      const groupElements = signalTable.querySelectorAll(`[${groupName} = ${visuItem.getAttribute(groupName)}]`);
+      groupElements.forEach(el => el.toggleAttribute(`selected`, true));
+    }
+  }
+
+  /*
   if (ev.target.matches(`.divVisu [type = button], .visuTab[tab-idx]`)) {
     inputEl = document.createElement(`input`);
     document.body.appendChild(inputEl);
@@ -1182,10 +1179,10 @@ function dblClickEventHandler(ev) {
       }
       cancelCurrentDrawing(); //workaround for (drawing)-clickEventTriggers on dblClick as well!
       if (svg.matches(`.divVisu *`)) {
-        updateUnDoReDoStack();
       }
     }
   }
+  */
 }
 
 function rotateLinkBtn(ev) {
@@ -1205,29 +1202,43 @@ function rotateLinkBtn(ev) {
   }
 }
 
+function addSignalHandler() {
+  if (document.activeElement.matches(`.inputAddSignal`)) {
+    const inputAddSignal = document.activeElement;
+    const existingSignal = Array.from(document.querySelectorAll(`.signalTable .visuItem input`)).find(input => input.value === inputAddSignal.value);
+    if (existingSignal) {
+      inputAddSignal.setCustomValidity(`${inputAddSignal.value} already exists!`)
+    }
+    else {
+      inputAddSignal.setCustomValidity(``);
+    }
+    if (inputAddSignal.reportValidity()) {
+      const signalTable = inputAddSignal.closest(`.signalTable`);
+      createSignalTableRowElements({"signal-id": inputAddSignal.value}).forEach(el => signalTable.insertBefore(el, inputAddSignal));
+      inputAddSignal.value = ``;
+    }
+  }
+}
+
 function keyDownEventHandler(ev) {
   //console.log(ev.key);
   const key = ev.key.toLowerCase();
   const {activeElement} = document;
-  if (activeElement.matches(`#tmpInputEl`)) {
-    if (key.match((/(escape)|(enter)/))) {
-      if (key === `enter`) {
-        if (activeElement.callerEl.type) {
-          activeElement.callerEl.value = activeElement.value;
-        }
-        else {
-          activeElement.callerEl.innerText = activeElement.value;
-        }
-      }
+  
+  if (activeElement.matches(`.inputAddSignal`)) {
+    if (key.match(/(enter)/)) {
+      addSignalHandler();
+    }
+    else if (key.match(/(escape)/)) {
       activeElement.blur();
     }
   }
-  else if (activeElement.matches(`.visuItem[icon=text] input`)) {
-    if (key.match((/(escape)|(enter)/))) {
+  else if (activeElement.matches(`[type=text]:not([readonly])`)) {
+    if (key.match(/(escape)|(enter)/)) {
       activeElement.blur();
     }
   }
-  else if (!activeElement.matches(`[type=text]:not([readonly])`)) {
+  else {
     const auxKeys = ev.altKey | ev.ctrlKey | ev.shiftKey;
     if (!auxKeys) {
       if (key === `c`) {
@@ -1255,8 +1266,6 @@ function keyDownEventHandler(ev) {
           activeElement.remove();
         }
         document.querySelectorAll(`[selected]`).forEach(el => el.remove());
-        
-        updateUnDoReDoStack();
       }
       if (key.match(/[1-9]/)) {
         switchVisuTab(key);
@@ -1329,7 +1338,6 @@ function keyDownEventHandler(ev) {
             }
           });
         }
-        updateUnDoReDoStack();
       }
     }
   }
@@ -1396,14 +1404,6 @@ function createSignalTableRowElements(attributesObject) {
   return [lbl, visuItem];
 }
 
-function addSignalInputEventHandler(ev) {
-  const existingSignal = Array.from(document.querySelectorAll(`.signalTable .visuItem input`)).find(input => input.value === ev.target.value);
-  if (existingSignal) {
-    ev.target.setCustomValidity(`${ev.target.value} already exists!`)
-  }
-  ev.target.reportValidity();
-}
-
 function buildSignalTable(visuDataJson, liveData) {
   removeExistingNode(document.querySelector(`.signalTable`));
   const signalTable = document.createElement(`div`);
@@ -1415,7 +1415,8 @@ function buildSignalTable(visuDataJson, liveData) {
   inputAddSignal.classList.add(`inputAddSignal`);
   inputAddSignal.type = `text`;
   inputAddSignal.placeholder = `add Signal...`;
-  inputAddSignal.addEventListener(`input`, addSignalInputEventHandler);
+  inputAddSignal.required = true;
+  //inputAddSignal.addEventListener(`input`, addSignalInputEventHandler);
 
   if (!visuDataJson && !liveData) {
     console.warn(`no signalData found: built empty signalTable!`);
@@ -1446,10 +1447,6 @@ function buildVisu(visuDataJson) {
     //divVisuData
     const divVisu = document.querySelector(`.divVisu`);
     divVisu.innerHTML = visuData.divVisuHTML;
-    
-    if (isAdmin()) {
-      updateUnDoReDoStack();
-    }
   }
   else {
     console.warn(`no visuData found, created empty Tab`);
@@ -1579,10 +1576,10 @@ function saveBtnHandler() {
 }
 
 function saveVisu() {
-  const signalTableSignalIds = document.querySelectorAll(`.signalTable .txtSignalId`);
+  const signalTableVisuItems = document.querySelectorAll(`.signalTable .visuItem`);
   const data = {};
   data.signalTableData = [];
-  signalTableSignalIds.forEach(signalId => {
+  signalTableVisuItems.forEach(signalId => {
     data.signalTableData.push(getRelevantAttributesAsObject(signalId));
   });
 
@@ -1597,7 +1594,8 @@ function saveVisu() {
   const downloadLink = document.createElement("a");
   document.body.appendChild(downloadLink);
   downloadLink.href = url;
-  downloadLink.download = `test.txt`;
+  const fileName = (getProjectNoFromLocation()) ? getProjectNoFromLocation() : `P####`;
+  downloadLink.download = `${fileName}.visu.txt`;
   downloadLink.click();
   document.body.removeChild(downloadLink);
 }

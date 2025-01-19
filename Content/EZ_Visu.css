@@ -233,6 +233,9 @@ body {
 [highlighted] {
   outline: 1px solid var(--yellow);
 }
+[strikethrough] {
+  text-decoration: line-through;
+}
 /*********************CursorStylez*********************/
 [draggable = "true"] * {
   cursor: grab;
