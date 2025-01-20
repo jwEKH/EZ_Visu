@@ -4,7 +4,7 @@ const VISU_LIVE_DATA_OLD = `{"Projektnummer":"P2033","Stoerungen":[],"Items":[{"
 const VISU_LIVE_DATA_NEW = `{"header":{"prjNo":2033,"prjName":" Biogasanlage Dralle  Hohne                       ","date":" 9. 1.2025","time":"17:03:01"},"liveData":{"AI0":   0.61,"TH1": 156.20,"TH2":  65.20,"MS4":   0.00,"PH  1":1,"PH  2":1,"PH  3":1,"PH 11":0,"PH 12":0,"KPU 1":1,"KPU 2":1,"KPU 3":0,"KL  1":1,"KL  2":1,"KL  3":0,"BPU 1":1,"BL  1":1,"SG  1":1,"BI 35":0,"BI 36":0,"BI 37":0,"BI 111":0,"BI 112":0,"BI 113":0,"HKT 1":  63.15,"HKT 2":  63.15,"HKT 3":  63.15,"HKT 4":   0.00,"GR  1":   1.50,"HKNA 1":" HK1 Nordtrasse     ","MS 1":   0.00,"HKNA 2":" HK2 Westtrasse     ","MS 2":   0.00,"HKNA 3":" HK3 Suedtrasse     ","MS 3":   0.00,"PMK 1": 300.00,"PKT 1":   0.00,"MS11":  25.83,"PMK 2": 300.00,"PKT 2":   0.00,"MS12":  25.83,"PMK 3": 300.00,"PKT 3":   0.00,"MS13":  25.83,"PMB 1": 300.00,"PBH 1": 300.00,"AI 1": 156.19,"AI 2": 156.19,"AI 3": 156.19,"AI 4": 156.19,"AI 5": 156.19,"AI 6": 156.19,"AI 7": 156.20,"AI 8": 156.19,"AI 9": 156.20,"AI10": 156.19,"AI11": 156.19,"AI12": 156.19,"AI13": 156.20,"AI14": 156.19,"AI15": 156.19,"AI16": 156.19,"AI17": 156.15,"AI18": 156.17,"AI19": 156.17,"AI20": 156.17,"AI21": 156.17,"AI22": 156.17,"AI23": 156.17,"AI24": 156.17,"AI25": 156.17,"AI26": 156.17,"AI27": 156.17,"AI28": 156.17,"AI29": 156.18,"AI30":   0.00,"AI31":   0.00,"AI32":  -1.00,"AA 1":   0.00,"AA 2": 100.00,"AA 3":   0.00,"AA 4": 100.00,"AA 5":   0.00,"AA 6":  54.67,"AA 7":  54.67,"AA 8":  54.67,"PT 1":   0.00,"DF 1":   0.00,"PT 2":   0.00,"DF 2":   0.00,"PT 3":   0.00,"DF 3":   0.00,"PT 4":   0.00,"DF 4":   0.00,"PT 5":   0.00,"DF 5":   0.00,"PT 6":   0.00,"DF 6":   0.00,"PT 7":   0.00,"DF 7":   0.00}}`;
 
 /*********************Konstanten*********************/
-const RELEVANT_ATTRIBUTE_NAMES = [`title`, `msr`, `strang`, `faceplate`, `icon`, `rotation`, `animation`, `unit`, `dec-place`, `stil`, `true-txt`, `false-txt`, `text-align`, `signal-id`, `rtos-id`, `toggle`, `range-max`, `range-min`];
+const RELEVANT_ATTRIBUTE_NAMES = [`title`, `msr`, `strang`, `link`, `icon`, `rotation`, `animation`, `unit`, `dec-place`, `stil`, `true-txt`, `false-txt`, `text-align`, `signal-id`, `rtos-id`, `toggle`, `range-max`, `range-min`];
 
 //Colors here in rgb, because style.color will return rgb-format
 const MAGENTA_HSL = `hsl(334, 74%, 44%)`;
@@ -66,22 +66,7 @@ async function initVisu() {
   buildVisu(visuData);
   buildSignalTable(visuData, window.liveData);
   buildAttributeTable();
-  window.mutationObserver = new MutationObserver((mutationList, observer) => {
-    mutationList.forEach(mutation => {
-      const {type, attributeName, target, addedNodes, removedNodes} = mutation;
-      const nodes = Array.from(addedNodes).concat(Array.from(removedNodes));
-
-      if (attributeName === `selected` || (type === `childList` && target.matches(`.signalTable`))) {
-        updateAttributeTable();
-        //console.log(mutation);
-      }
-      else if (target.closest(`.visuContainer`) && !nodes.find(node => node.matches(`.hoverMarker`))) {
-        console.log(`updateUnDoReDoStack`);
-        updateUnDoReDoStack();
-      }
-    });
-  });
-  
+  initObserver();  
 
   addGenericEventHandler();
 
@@ -272,6 +257,43 @@ function createVisuItem(...attributes) {
   return visuItem
 }
 /*********************EditorFunctions*********************/
+function initObserver() {
+  window.mutationObserver = new MutationObserver((mutationList, observer) => {
+    mutationList.forEach(mutation => {
+      const {type, attributeName, target, addedNodes, removedNodes} = mutation;
+      const addedAndRemovedNodes = Array.from(addedNodes).concat(Array.from(removedNodes));
+      //console.log(addedAndRemovedNodes);
+
+      if (attributeName === `selected` || (type === `childList` && target.matches(`.signalTable`))) {
+        console.log(`updateAttributeTable`);
+        updateAttributeTable();
+        //console.log(mutation);
+      }
+      else if (target.closest(`.visuContainer`) && addedAndRemovedNodes.find(node => node.matches(`*:not(.hoverMarker)`))) {
+        console.log(`updateUnDoReDoStack`);
+        updateUnDoReDoStack();
+      }
+      else if (attributeName === `icon` && target.closest(`.divVisu`)) {
+        console.log(target, `handleItemAppearance`);
+        handleItemAppearance(target);
+      }
+    });
+  });
+}
+function startObserver(config = { subtree: true, childList: true, attributeFilter: RELEVANT_ATTRIBUTE_NAMES.concat([`selected`]) }) {
+  if (window.mutationObserver) {
+    window.mutationObserver.observe(document.body, config);
+  }
+  else {
+    console.warn(`mutationObserver not initialized!`);
+  }
+}
+function stopObserver() {
+  if (window.mutationObserver) {
+    window.mutationObserver.disconnect();
+  }
+}
+
 function addEditorEventHandler() {
   document.body.addEventListener(`mousedown`, mouseDownEventHandler);
   document.body.addEventListener(`mouseup`, mouseUpEventHandler);
@@ -590,7 +612,7 @@ function attributeInputEventHandler(ev) {
         selectedVisuItem.setAttribute(key, value);
       });
       //handle visuItemAppearance due to eventually change of [icon]
-      handleItemAppearance(selectedVisuItem);
+      //handleItemAppearance(selectedVisuItem);
 
       //sync .visuItem input[value] with .visuItem[signal-id]
       const inputEl = selectedVisuItem.querySelector(`input`);
@@ -664,7 +686,7 @@ function createEditAttributeInput(key, value) {
     input.value = value;
   }
   else {
-    input.placeholder = key;
+    input.placeholder = (key === `link`) ? `faceplateId/tab-idx` : key;
   }
 
   return fieldset;
@@ -693,7 +715,7 @@ function createSelectElement(type, excludedOptions = []) {
   const options = (type === `unit`) ? [``, `°C`, `bar`, `V`, `kW`, `m³/h`, `mWS`, `%`, `kWh`, `Bh`, `m³`, `°Cø`, `mV`, `UPM`, `s`, `mbar`, `A`, `Hz`, `l/h`, `l`] :
                   (type === `dec-place`) ? [``, 0, 1, 2, 3, 4] :
                   (type === `stil`) ? [``, `sollwert`, `grenzwert`] :
-                  (type === `icon`) ? [``, `temperatur`, `heizkreis`, `pumpe`, `mischer`, `ventil`, `aggregat`, `flamme`, `puffer`, `waermetauscher`, `heizpatrone`, `luefter`, `lueftungsklappe`, `gassensor`, `schalter`, `zaehler`] :
+                  (type === `icon`) ? [``, `temperatur`, `heizkreis`, `pumpe`, `mischer`, `ventil`, `aggregat`, `flamme`, `puffer`, `waermetauscher`, `heizpatrone`, `luefter`, `lueftungsklappe`, `gassensor`, `schalter`, `zaehler`, `button`] :
                   (type === `rotation`) ? [``, `90`, `180`, `270`] :
                   (type === `animation`) ? [``, `flicker`, `spin`, `hide`, `show`, `blink`] :
                   (type === `text-align`) ? [``, `center`, `end`] :
@@ -829,13 +851,7 @@ function signalTableTxtSignalIdsAddAttributes() {
 function editModeSwitchHandler() {
   const editModeActive = document.querySelector(`#cbEditMode`).checked;
 
-  if (editModeActive) {
-    const mutationObserverConfig = { subtree: true, childList: true, attributeFilter: RELEVANT_ATTRIBUTE_NAMES.concat([`selected`]) };
-    window.mutationObserver.observe(document.body, mutationObserverConfig);
-  }
-  else {
-    window.mutationObserver.disconnect();
-  }
+  (editModeActive) ? startObserver() : stopObserver();
   
   const divVisu = document.querySelector(`.divVisu`);
   divVisu.toggleAttribute(`edit-mode`, editModeActive);
@@ -963,17 +979,11 @@ function mouseDownEventHandler(ev) {
   }
 }
 
-function divVisuClickEventHandler(ev) {
-  const msSinceLastBlurEvent = ev.timeStamp - window.lastBlurEventTimeStamp;
-  let actionExecuted = (msSinceLastBlurEvent < 700) ? true : false; //block clickEvent for 700ms after blurEvent
-    
+function divVisuClickEventHandler(ev) {    
   const selectionArea = document.querySelector(`.selectionArea`);
-  if (!selectionArea) {
-    actionExecuted |= removeDivIconSignal(ev);
-    
-    if (!actionExecuted) {
-      actionExecuted |= cancelCurrentDrawing();
-    }
+  let actionExecuted = false;
+  if (!selectionArea) {    
+    actionExecuted |= cancelCurrentDrawing();
   }
   
   if (!actionExecuted) {
@@ -1010,17 +1020,6 @@ function cancelCurrentAttributeEdit() {
   return removeExistingNode(document.querySelector(`.divEditSignal`));
 }
 
-function removeDivIconSignal(ev) {
-  if (ev.target.matches(`.divIconSignal[signal-id]`)) {
-    ev.target.removeAttribute(`signal-id`);
-    ev.target.removeAttribute(`title`);
-    ev.target.setAttribute(`na`, true);
-    updateUsedCount();
-    return true; //feedback that removeAction was executed
-  }
-  return false; //feedback that removeAction was NOT executed
-}
-
 function removeAllDraggingAttributes() {
   document.querySelectorAll(`[dragging]`).forEach(el => el.removeAttribute(`dragging`));
 }
@@ -1045,7 +1044,7 @@ function dragStartEventHandler(ev) {
     const targetBox = selectedEl.getBoundingClientRect();
     const offset = {};
     offset.x = ev.x - targetBox.x;
-    offset.y = (signalTable) ? idx * targetBox.height : ev.y - targetBox.y;
+    offset.y = (signalTable) ? (-idx) * targetBox.height : ev.y - targetBox.y;
     offsets.push(offset);    
     selectedEl.setAttribute(`dragging`, `true`);
   });
@@ -1075,7 +1074,13 @@ function snapToGrid(xRel, yRel) {
 }
 
 function handleItemAppearance(visuItem) {
-  if (visuItem.matches(`[icon]`)) {
+  if (visuItem.matches(`[icon = button]`)) {
+    const input = visuItem.querySelector(`input`);
+    (input) ? input.type = `button` : visuItem.appendChild(createSignalIdInput(visuItem.getAttribute(`signal-id`)));
+    removeExistingNode(visuItem.querySelector(`.betrieb`));
+    removeExistingNode(visuItem.querySelector(`svg`));
+  }
+  else if (visuItem.matches(`[icon]`)) {
     removeExistingNode(visuItem.querySelector(`.betrieb`));
     removeExistingNode(visuItem.querySelector(`svg`));
     removeExistingNode(visuItem.querySelector(`input`));
@@ -1140,7 +1145,7 @@ function divVisuDropEventHandler(ev) {
 
 function dblClickEventHandler(ev) {
   const visuItem = ev.target.closest(`.visuItem`);
-  const signalTable = visuItem.closest(`.signalTable`)
+  const signalTable = document.querySelector(`.signalTable`);
   if (visuItem && signalTable) {
     const groupName = [`strang`, `msr`].find(groupName => visuItem.matches(`[${groupName}]`));
     if (groupName) {
@@ -1344,20 +1349,28 @@ function keyDownEventHandler(ev) {
 }
 
 function unDoReDoEventHandler(ev) {
+  stopObserver();
   document.querySelectorAll(`.divVisu, .visuTabs`).forEach(el => {
     const {unDoReDoStack} = el;
-    if (ev.target.matches(`.btnUnDo`)) {
-      unDoReDoStack.idx = Math.max(0, unDoReDoStack.idx - 1);
+    if (unDoReDoStack) {
+
+      if (ev.target.matches(`.btnUnDo`)) {
+        unDoReDoStack.idx = Math.max(0, unDoReDoStack.idx - 1);
+      }
+      else {
+        unDoReDoStack.idx = Math.min(unDoReDoStack.stack.length - 1, unDoReDoStack.idx + 1);
+      }
+      el.innerHTML = unDoReDoStack.stack.at(unDoReDoStack.idx); //todo...
+      console.log(`${unDoReDoStack.idx} of ${unDoReDoStack.stack.length - 1}`);
+      el.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.setAttribute(`value`, txtEl.closest(`.visuItem`).getAttribute(`signal-id`)));
     }
     else {
-      unDoReDoStack.idx = Math.min(unDoReDoStack.stack.length - 1, unDoReDoStack.idx + 1);
+      updateUnDoReDoStack(true);
     }
-    el.innerHTML = unDoReDoStack.stack.at(unDoReDoStack.idx); //todo...
-    console.log(`${unDoReDoStack.idx} of ${unDoReDoStack.stack.length - 1}`);
-    el.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.setAttribute(`value`, txtEl.closest(`.visuItem`).getAttribute(`signal-id`)));
   });
   cancelCurrentDrawing();
   updateUsedCount();
+  startObserver();
 }
 
 function openLocalFileEventHandler(ev) {
@@ -1405,6 +1418,7 @@ function createSignalTableRowElements(attributesObject) {
 }
 
 function buildSignalTable(visuDataJson, liveData) {
+  stopObserver();
   removeExistingNode(document.querySelector(`.signalTable`));
   const signalTable = document.createElement(`div`);
   document.body.appendChild(signalTable);
@@ -1417,10 +1431,6 @@ function buildSignalTable(visuDataJson, liveData) {
   inputAddSignal.placeholder = `add Signal...`;
   inputAddSignal.required = true;
   //inputAddSignal.addEventListener(`input`, addSignalInputEventHandler);
-
-  if (!visuDataJson && !liveData) {
-    console.warn(`no signalData found: built empty signalTable!`);
-  }
   
   if (visuDataJson) {
     const visuData = JSON.parse(visuDataJson);   
@@ -1437,16 +1447,26 @@ function buildSignalTable(visuDataJson, liveData) {
     });
   }
 
+  if (visuDataJson || liveData) {
+    updateUsedCount();
+  }
+  else {
+    console.warn(`no signalData found: built empty signalTable!`);
+  }
+
+  startObserver();
   return signalTable;
 }
 
 function buildVisu(visuDataJson) {
   if (visuDataJson) {
+    stopObserver();
     const visuData = JSON.parse(visuDataJson);
     
     //divVisuData
     const divVisu = document.querySelector(`.divVisu`);
     divVisu.innerHTML = visuData.divVisuHTML;
+    startObserver();
   }
   else {
     console.warn(`no visuData found, created empty Tab`);
@@ -1544,7 +1564,7 @@ function parseVisuSkript(txt) {
                        undefined;
         if (strang) {
           visuItem.setAttribute(`strang`, strang);
-          visuItem.setAttribute(`faceplate`, strang);
+          visuItem.setAttribute(`link`, strang);
         }
         else {
           const strangInfoFromTitle = title.match(/(?<name>(bhkw)|(kessel)|(hk)|(puffer))(?<idx>\d*)/i);
@@ -1552,7 +1572,7 @@ function parseVisuSkript(txt) {
             //console.log(strangInfoFromTitle);
             const strang = `${strangInfoFromTitle.groups.name.replace(`kessel`, `KES`).toUpperCase()}${strangInfoFromTitle.groups.idx}`;
             visuItem.setAttribute(`strang`, strang);
-            visuItem.setAttribute(`faceplate`, strang);
+            visuItem.setAttribute(`link`, strang);
           }
         }
       });

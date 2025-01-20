@@ -150,7 +150,7 @@ body {
   width: var(--iconSize);
   height: var(--iconSize);
 }
-.divVisu .visuItem[icon] {
+.divVisu .visuItem[icon]:not([icon = "button"]):not([icon = "temperatur"]) {
   width: var(--iconSize);
   height: var(--iconSize);
   display: grid;
@@ -160,22 +160,27 @@ body {
   width: calc(var(--iconSize)/2);
   height: calc(var(--iconSize)/2);
 }
+.divVisu .visuItem[icon = "button"]:not([rotation]) input {
+  min-height: var(--iconSize);
+}
 
 
-.divVisu [rotation = "90"] {
+.divVisu [rotation = "90"]:not([icon = "button"]) {
   rotate: 90deg;
 }
 .divVisu [rotation = "180"] {
   rotate: 180deg;
 }
-.divVisu [rotation = "270"] {
+.divVisu [rotation = "270"]:not([icon = "button"]) {
   rotate: 270deg;
 }
-[writing = "downward"] {
+.divVisu [rotation = "90"][icon = "button"] input{
   writing-mode: sideways-rl;
+  min-width: var(--iconSize);
 }
-[writing = "upward"] {
+.divVisu [rotation = "270"][icon = "button"] input{
   writing-mode: sideways-lr;
+  min-width: var(--iconSize);
 }
 
 .visuItem [type = "text"] {
@@ -302,7 +307,7 @@ select {
   box-shadow: 0 0 calc(.13*var(--iconSize)) calc(.06*var(--iconSize)) SlateBlue;   /*box-shadow akzeptiert keine [%] => umständliche berechnung!*/
 }
 /*********************Animations*********************/
-.divVisu:not([edit-mode]) [animation = "flicker"] .betrieb {
+.visuItem[animate][animation = "flicker"] .betrieb {
   animation: flicker 3ms ease-in 200ms infinite alternate;
 }
 @keyframes flicker {
@@ -314,7 +319,7 @@ select {
   100% {transform: rotate(1deg) scale(.8,.8);}
 }
 
-.divVisu:not([edit-mode]) [animation = "spin"] .betrieb {
+.visuItem[animate][animation = "spin"] .betrieb {
   animation: spin 2s linear infinite;
 }
 
@@ -322,7 +327,7 @@ select {
   to {transform: rotate(1turn);}
 }
 
-.divVisu:not([edit-mode]) [animation = "blink"] .betrieb {
+.visuItem[animate][animation = "blink"] .betrieb {
   animation: blink 2s steps(4, start) infinite;
 }
 @keyframes blink {
