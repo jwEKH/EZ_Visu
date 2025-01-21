@@ -181,81 +181,6 @@ function createIconSVG(symbol) {
   }
 }
 
-function createVisuItem(...attributes) {
-  //console.log(attributes);
-  const visuItem = document.createElement(`div`);
-  visuItem.classList.add(`visuItem`);
-  
-  const divIcon = document.createElement(`div`);
-  divIcon.classList.add(`divIcon`);
-  
-  const divSignals = document.createElement(`div`);
-  divSignals.classList.add(`divSignals`);
-  
-  //default attributes:
-  visuItem.setAttribute(`iconPosition`, `left`);
-  
-  let icon;
-  attributes.forEach(attribute => {
-    Object.entries(attribute).forEach(([key, value]) => {
-      //console.log(`${key} ${value}`);
-      
-      //Save everything as attribute for .visu.txt file!
-      visuItem.setAttribute(key, value);
-      
-      if (key.toLowerCase() === `icon`) {
-        const target = (value === `button` || value === `text`) ? divSignals : divIcon ;
-        target.appendChild(createDivIcon(value));       
-        icon = value;
-      }
-      
-      if (key.toLowerCase() === `signals`) {
-        value.split(`,`).forEach(signal => {
-          //console.log(signal);
-          const inpSignal = document.querySelector(`.${signal.trim()}`);
-          const clonedSignal = inpSignal.cloneNode();
-          divSignals.appendChild(clonedSignal);
-          /*
-          const input = document.createElement(`input`);
-          input.classList.add(`signal`, signal.trim());
-          input.type = `text`;
-          input.value = signal.trim();
-          divSignals.appendChild(input);
-          //*/
-        });
-      }
-      
-    });    
-  });
-  
-  if (icon !== `puffer`) {
-    visuItem.appendChild(divIcon);
-    visuItem.appendChild(divSignals);
-  }
-  
-  
-  if (icon !== `temperatur`) {
-    const divIconSignals = [`Error`, `Freigabe`, `Betriebsart`, `Absenkung`];
-    if (icon !== `button` && icon !== `text`) {
-      divIconSignals.push(`Betrieb`);
-      divIconSignals.reverse();
-    }
-    divIconSignals.forEach(signal => {
-      const div = document.createElement(`div`);
-      const parent = (!icon || (signal !== `Betrieb` &&  icon.match(/(aggregat)|(kessel)|(puffer)/))) ? visuItem : divIcon;
-      parent.appendChild(div);
-      div.classList.add(`div${signal}`, `divIconSignal`);
-      div.toggleAttribute(`na`, true);
-      div.innerText = (signal === `Error`)        ? `⚠`  :
-                      (signal === `Freigabe`)     ? `⏺` :
-                      (signal === `Betriebsart`)  ? `✋`  :
-                      (signal === `Absenkung`)    ? `🌜`  :
-                      `0`;
-    });
-  }
-
-  return visuItem
-}
 /*********************EditorFunctions*********************/
 function initObserver() {
   window.mutationObserver = new MutationObserver((mutationList, observer) => {
@@ -387,7 +312,6 @@ function selectionAreaHandler() {
   });
 }
 
-
 function drawModeHoverEventHandler(ev) {
   const selectionArea = document.querySelector(`.selectionArea`);
   if (!selectionArea) {
@@ -468,7 +392,6 @@ function drawModeClickEventHandler(ev) {
   }
 }
 
-
 function selectModeClickEventHandler(ev) {
   const activeSvg = document.querySelector(`svg.active`);
   const svgCoordinates = calcSvgCoordinates(ev);
@@ -487,100 +410,6 @@ function selectModeClickEventHandler(ev) {
     selectionArea.setAttributeNS(null,`opacity`, `0.1`);
     selectionArea.svgCoordinates = svgCoordinates;
   }
-}
-
-function createEditorTools() {
-  const fsEditorTools = document.createElement(`fieldset`);
-  const legendTools = document.createElement(`legend`);
-  fsEditorTools.appendChild(legendTools);
-  legendTools.innerText = `Editor Tools`;
-
-  const inputFile = document.createElement(`input`);
-  fsEditorTools.appendChild(inputFile);
-  inputFile.type = `file`;
-  inputFile.accept = `.txt`;
-  inputFile.classList.add(`inputFile`);
-  inputFile.addEventListener(`input`, openLocalFileEventHandler);
-    
-
-  [`Save`, `Open`].forEach(el => {
-    const btn = document.createElement(`input`);
-    fsEditorTools.appendChild(btn);
-    btn.type = `button`;
-    btn.classList.add(`btn${el}`);
-    btn.value = el;
-    btn.title = (el === `Save`) ? `[Strg + s]` : `[Strg + o]`;
-    btn.addEventListener(`click`, saveBtnHandler);
-  });
-
-  [`UnDo`, `ReDo`].forEach(el => {
-    const btn = document.createElement(`input`);
-    fsEditorTools.appendChild(btn);
-    btn.type = `button`;
-    btn.classList.add(`btn${el}`);
-    btn.value = (el === `UnDo`) ? `↶` : `↷`;
-    btn.title = (el === `UnDo`) ? `[Strg + z]` : `[Strg + y]`;
-    btn.addEventListener(`click`, unDoReDoEventHandler);
-  });
-
-  const colorPicker = document.createElement(`input`);
-  fsEditorTools.appendChild(colorPicker);
-  colorPicker.classList.add(`colorPicker`);
-  colorPicker.type = `color`;
-  colorPicker.value = MAGENTA_HEX;
-  colorPicker.title = `[c]`;
-  colorPicker.addEventListener(`input`, (ev) => {
-    document.querySelector(`#selStrokeDasharray`).style.color = ev.target.value;
-  });
-  colorPicker.setAttribute(`list`, `presetColors`);
-  const presetColors = document.createElement(`datalist`);
-  colorPicker.appendChild(presetColors);
-  presetColors.id = `presetColors`;
-  COLORS_HEX.forEach(color => {
-    const option = document.createElement(`option`);
-    presetColors.appendChild(option);
-    option.value = color;
-  });
-
-  const lblStrokeDasharray = document.createElement(`label`);
-  fsEditorTools.appendChild(lblStrokeDasharray);
-  lblStrokeDasharray.setAttribute(`for`, `selStrokeDasharray`);
-  lblStrokeDasharray.innerText = `strokeDasharray:`;
-  const selStrokeDasharray = document.createElement(`select`);
-  fsEditorTools.appendChild(selStrokeDasharray);
-  selStrokeDasharray.id = `selStrokeDasharray`;
-  selStrokeDasharray.style.color = colorPicker.value;
-  [0, 5].forEach(value => {
-    const option = document.createElement(`option`);
-    selStrokeDasharray.appendChild(option);
-    option.value = value;
-    option.innerText = (value) ? `⚋` : `⚊`;
-  });
-
-  const strokeWidth = document.createElement(`input`);
-  fsEditorTools.appendChild(strokeWidth);
-  strokeWidth.classList.add(`strokeWidth`);
-  strokeWidth.type = `number`;
-  strokeWidth.value = 1;
-  strokeWidth.min = 1;
-
-  [`OrthoMode`, `GridSnap`, `ShowMarker`].forEach(option => {
-    const cb = document.createElement(`input`);
-    fsEditorTools.appendChild(cb);
-    cb.type = `checkbox`;
-    cb.checked = true;
-    cb.id = `cb${option}`;
-    cb.title =  (option === `OrthoMode`) ? `[o]` :
-                (option === `GridSnap`) ? `[g]` :
-                `[m]`;
-    const lbl = document.createElement(`label`);
-    fsEditorTools.appendChild(lbl);
-    lbl.setAttribute(`for`, cb.id);
-    lbl.innerText = option;
-    lbl.title = (option === `OrthoMode`) ? `[o]` : `[g]`;
-  });
-
-  return fsEditorTools;
 }
 
 function buildAttributeTable() {
@@ -692,21 +521,6 @@ function createEditAttributeInput(key, value) {
   return fieldset;
 }
 
-function selectAddAttributeInputEventHandler(ev) {
-  const divEditSignal = ev.target.closest(`.divEditSignal`);
-  divEditSignal.insertBefore(createEditAttributeInput(ev.target.value), ev.target);
-  const selectedOption = ev.target.querySelector(`option[value=${ev.target.value}]`);
-  ev.target.removeChild(selectedOption);
-  ev.target.disabled = (ev.target.childElementCount <= 1);
-}
-
-function createSelectAddAttribute(existingAttributeNames) {
-  const selectAddAttribute = createSelectElement(`addAttribute`, existingAttributeNames);
-  selectAddAttribute.classList.add(`selectAddAttribute`);
-  selectAddAttribute.addEventListener(`input`, selectAddAttributeInputEventHandler);
-  return selectAddAttribute;
-}
-
 function updateSelectSignalIdOptions() {
   return [``].concat(Array.from(document.querySelectorAll(`.signalTable [signal-id]`), (el) => el.getAttribute(`signal-id`)));
 }
@@ -812,42 +626,6 @@ function createGenericSignalTable() {
   });
 }
 
-function signalTableTxtSignalIdsAddAttributes() {
-  document.querySelectorAll(`.signalTable tbody tr`).forEach(tr => {
-    const txtSignalId = tr.querySelector(`.txtSignalId`);
-    
-    const txtRtosTermVal = tr.querySelector(`.txtRtosTerm`).value;
-    const txtTooltipVal = tr.querySelector(`.txtTooltip`).value;
-    const selDecPlaceVal = tr.querySelector(`.selDecPlace`).value;
-    const selUnitVal = tr.querySelector(`.selUnit`).value;
-    const selStyleVal = tr.querySelector(`.selStyle`).value;
-    const txtTrueTxtVal = tr.querySelector(`.txtTrueTxt`).value;
-    const txtFalseTxtVal = tr.querySelector(`.txtFalseTxt`).value;
-    
-    if (txtRtosTermVal !== ``) {
-      txtSignalId.setAttribute(`rtos-id`, txtRtosTermVal);
-    }
-    if (txtTooltipVal !== ``) {
-      txtSignalId.setAttribute(`title`, txtTooltipVal);
-    }
-    if (selDecPlaceVal !== ``) {
-      txtSignalId.setAttribute(`dec-place`, selDecPlaceVal);
-    }
-    if (selUnitVal !== ``) {
-      txtSignalId.setAttribute(`unit`, selUnitVal);
-    }
-    if (selStyleVal !== ``) {
-      txtSignalId.setAttribute(`stil`, selStyleVal);
-    }
-    if (txtTrueTxtVal !== ``) {
-      txtSignalId.setAttribute(`true-txt`, txtTrueTxtVal);
-    }
-    if (txtFalseTxtVal !== ``) {
-      txtSignalId.setAttribute(`false-txt`, txtFalseTxtVal);
-    }
-  });
-}
-
 function editModeSwitchHandler() {
   const editModeActive = document.querySelector(`#cbEditMode`).checked;
 
@@ -866,7 +644,6 @@ function editModeSwitchHandler() {
 
   if (editModeActive && !document.querySelector(`.visuItemPool`)) {
     //console.log(window.visuLiveData);
-    //document.body.appendChild(createEditorTools());
     document.querySelector(`#selStrokeDasharray`).style.color = document.querySelector(`.colorPicker`).value;
   }
   
@@ -876,7 +653,6 @@ function editModeSwitchHandler() {
   (editModeActive) ? addEditorEventHandler() : removeEditorEventHandler();
   cancelCurrentDrawing();
   cancelCurrentSelection();
-  cancelCurrentAttributeEdit();
 }
 
 function updateUnDoReDoStack(reset) {
@@ -939,8 +715,6 @@ function divVisuContextMenuEventHandler(ev) {
 
   let actionExecuted = cancelCurrentSelection();
 
-  actionExecuted |= cancelCurrentAttributeEdit();
-
   if (!actionExecuted) {
     drawModeClickEventHandler(ev); //drawing only starts when no selection was active
   }
@@ -994,17 +768,6 @@ function divVisuClickEventHandler(ev) {
   }  
 }
 
-function txtElBlurHandler(ev) {
-  ev.target.removeEventListener(`blur`, txtElBlurHandler);
-  
-  if (ev.type === `keydown`) {
-    if(ev.key === `Escape`) {
-      ev.target.value = ev.target.fallbackVal; //cancelAction => fallbackVal
-    }
-    document.activeElement.blur();
-  }
-}
-
 function cancelCurrentDrawing() {
   removeExistingNode(document.querySelector(`.hoverMarker`));
   return removeExistingNode(hoverLine = document.querySelector(`.hoverLine`)); //feedback whether drawing was active or not
@@ -1014,10 +777,6 @@ function cancelCurrentSelection() {
   document.querySelectorAll(`[selected]`).forEach(el => el.removeAttribute(`selected`));
   document.querySelectorAll(`[highlighted]`).forEach(el => el.removeAttribute(`highlighted`));
   return removeExistingNode(selectionArea = document.querySelector(`.selectionArea`)); //feedback whether selection was active or not
-}
-
-function cancelCurrentAttributeEdit() {
-  return removeExistingNode(document.querySelector(`.divEditSignal`));
 }
 
 function removeAllDraggingAttributes() {
@@ -1051,8 +810,6 @@ function dragStartEventHandler(ev) {
   ev.dataTransfer.clearData();
   ev.dataTransfer.setData(`offsets`, JSON.stringify(offsets));
 }
-
-
 
 function divVisuDragOverEventHandler(ev) {
   const draggingItems = document.querySelectorAll(`[dragging]`);
@@ -1190,23 +947,6 @@ function dblClickEventHandler(ev) {
   */
 }
 
-function rotateLinkBtn(ev) {
-  const visuItem = ev.target.closest(`.visuItem`);
-  const btn = (visuItem) ? visuItem.querySelector(`[type=button]`) : null;
-  if (btn) {
-    const current = btn.getAttribute(`writing`);
-    if (current === `downward`) {
-      btn.removeAttribute(`writing`);
-    }
-    else if (current === `upward`) {
-      btn.setAttribute(`writing`, `downward`);
-    }
-    else if (!current) {
-      btn.setAttribute(`writing`, `upward`);
-    }
-  }
-}
-
 function addSignalHandler() {
   if (document.activeElement.matches(`.inputAddSignal`)) {
     const inputAddSignal = document.activeElement;
@@ -1264,7 +1004,6 @@ function keyDownEventHandler(ev) {
       if (key === `escape`) {
         cancelCurrentDrawing();
         cancelCurrentSelection();
-        cancelCurrentAttributeEdit();
       }
       if (key.match(/(delete)|(backspace)/)) {
         if (activeElement.matches(`.divVisu [readonly]`)) {
@@ -1590,7 +1329,6 @@ function colorInputEventHandler(ev) {
 function saveBtnHandler() {
   cancelCurrentSelection();
   cancelCurrentDrawing();
-  cancelCurrentAttributeEdit();
   saveVisu();
   //saveSvg(document.querySelector(`svg`), `test.svg`);
 }
@@ -1660,19 +1398,6 @@ function resizePufferEventHandler(ev) {
       puffer.style.aspectRatio = pufferWidthInGridSteps / Math.max(1, currentHeightInGridSteps - resizeGridSteps);      
     });
   }
-}
-
-function resizeSignalTableTxtInputs() {
-  const signalTable = document.querySelector(`.signalTable`);
-  [`txtRtosTerm`, `txtSignalId`, `txtTooltip`, `txtTrueTxt`, `txtFalseTxt`].forEach(col => {
-    const colElements = signalTable.querySelectorAll(`.${col}`);
-    const maxChar = Math.max(...Array.from(colElements, (el) => el.value.length));
-    if (maxChar) {
-      colElements.forEach(el => {
-        el.style.width = `${maxChar+1}ch`;
-      });
-    }
-  });
 }
 
 /*********************ComFunctions*********************/
@@ -1784,19 +1509,4 @@ function getAttributesAsObject(el, exclusiveAttributeNames = []) { //[`class`, `
 
 function constrain(val, min, max) {
   return Math.min(max, Math.max(min, val));
-}
-
-function eventIsWithin(ev, cssSelector) { //necessary bc fn.closest() fails 4 svg ancestors bc they don't have parents...
-  if (ev.isTrusted) { //don't check for untrusted events, like using fn.click(), but return false! 
-    const {x, y, width, height} = document.querySelector(cssSelector).getBoundingClientRect();
-    return ev.x >= x && ev.x <= x+width && ev.y >= y && ev.y <= y+height
-  }
-  else {
-    return false;
-  }
-}
-
-
-function l(...data) {
-  console.log(data);
 }

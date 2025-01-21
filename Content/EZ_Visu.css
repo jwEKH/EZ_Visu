@@ -150,11 +150,17 @@ body {
   width: var(--iconSize);
   height: var(--iconSize);
 }
-.divVisu .visuItem[icon]:not([icon = "button"]):not([icon = "temperatur"]) {
-  width: var(--iconSize);
-  height: var(--iconSize);
+.divVisu .visuItem[icon] {
   display: grid;
   grid-template-rows: 1fr;
+}
+.divVisu .visuItem[icon]:not([icon = "button"]):not([icon = "temperatur"]):not([icon = "waermetauscher"]) {
+  width: var(--iconSize);
+  height: var(--iconSize);
+}
+.divVisu .visuItem[icon = "waermetauscher"] {
+  width: var(--iconSize);
+  height: calc(2 * var(--iconSize));
 }
 .divVisu .visuItem[icon = "temperatur"] {
   width: calc(var(--iconSize)/2);
