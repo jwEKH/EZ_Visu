@@ -90,6 +90,7 @@ body {
 }
 
 .divVisu {
+  display: grid;
   background-color: var(--darkestGrey);
   width: var(--visuWidth);
   aspect-ratio: var(--visuAspectRatio);
@@ -154,7 +155,7 @@ body {
   display: grid;
   grid-template-rows: 1fr;
 }
-.divVisu .visuItem[icon]:not([icon = "button"]):not([icon = "temperatur"]):not([icon = "waermetauscher"]) {
+.divVisu .visuItem[icon]:not([icon = "button"]):not([icon = "puffer"]):not([icon = "temperatur"]):not([icon = "waermetauscher"]) {
   width: var(--iconSize);
   height: var(--iconSize);
 }
@@ -162,6 +163,7 @@ body {
   width: var(--iconSize);
   height: calc(2 * var(--iconSize));
 }
+.divVisu .visuItem[icon = "puffer"],
 .divVisu .visuItem[icon = "temperatur"] {
   width: calc(var(--iconSize)/2);
   height: calc(var(--iconSize)/2);
@@ -273,7 +275,7 @@ select {
 .flameLayer {
   aspect-ratio: 1;
   bottom: 15%;
-  position:absolute;
+  position: absolute;
   border-bottom-right-radius: 50%;
   border-bottom-left-radius: 50%;
   border-top-left-radius: 50%;
@@ -313,6 +315,24 @@ select {
   box-shadow: 0 0 calc(.13*var(--iconSize)) calc(.06*var(--iconSize)) SlateBlue;   /*box-shadow akzeptiert keine [%] => umständliche berechnung!*/
 }
 /*********************Animations*********************/
+.divVisu:not([edit-mode]) input[type="text"] {
+  background: none;
+  border: none;
+  color: white;
+}
+
+.divVisu:not([edit-mode]) .visuItem[false-txt="⏺"] input,
+.divVisu:not([edit-mode]) .visuItem[true-txt="⏺"] input {
+  color: var(--cyan);
+}
+.divVisu:not([edit-mode]) .visuItem[false-txt="⚠"] input,
+.divVisu:not([edit-mode]) .visuItem[true-txt="⚠"] input {
+  color: var(--magenta);
+}
+
+.divVisu:not([edit-mode]) .visuItem:not([animate])[animation = "flicker"] .betrieb {
+  display: none;
+}
 .visuItem[animate][animation = "flicker"] .betrieb {
   animation: flicker 3ms ease-in 200ms infinite alternate;
 }
@@ -333,7 +353,7 @@ select {
   to {transform: rotate(1turn);}
 }
 
-.visuItem[animate][animation = "blink"] .betrieb {
+.visuItem[animate][animation = "blink"] {
   animation: blink 2s steps(4, start) infinite;
 }
 @keyframes blink {

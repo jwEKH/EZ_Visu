@@ -4,7 +4,7 @@ const VISU_LIVE_DATA_OLD = `{"Projektnummer":"P2033","Stoerungen":[],"Items":[{"
 const VISU_LIVE_DATA_NEW = `{"header":{"prjNo":2033,"prjName":" Biogasanlage Dralle  Hohne                       ","date":" 9. 1.2025","time":"17:03:01"},"liveData":{"AI0":   0.61,"TH1": 156.20,"TH2":  65.20,"MS4":   0.00,"PH  1":1,"PH  2":1,"PH  3":1,"PH 11":0,"PH 12":0,"KPU 1":1,"KPU 2":1,"KPU 3":0,"KL  1":1,"KL  2":1,"KL  3":0,"BPU 1":1,"BL  1":1,"SG  1":1,"BI 35":0,"BI 36":0,"BI 37":0,"BI 111":0,"BI 112":0,"BI 113":0,"HKT 1":  63.15,"HKT 2":  63.15,"HKT 3":  63.15,"HKT 4":   0.00,"GR  1":   1.50,"HKNA 1":" HK1 Nordtrasse     ","MS 1":   0.00,"HKNA 2":" HK2 Westtrasse     ","MS 2":   0.00,"HKNA 3":" HK3 Suedtrasse     ","MS 3":   0.00,"PMK 1": 300.00,"PKT 1":   0.00,"MS11":  25.83,"PMK 2": 300.00,"PKT 2":   0.00,"MS12":  25.83,"PMK 3": 300.00,"PKT 3":   0.00,"MS13":  25.83,"PMB 1": 300.00,"PBH 1": 300.00,"AI 1": 156.19,"AI 2": 156.19,"AI 3": 156.19,"AI 4": 156.19,"AI 5": 156.19,"AI 6": 156.19,"AI 7": 156.20,"AI 8": 156.19,"AI 9": 156.20,"AI10": 156.19,"AI11": 156.19,"AI12": 156.19,"AI13": 156.20,"AI14": 156.19,"AI15": 156.19,"AI16": 156.19,"AI17": 156.15,"AI18": 156.17,"AI19": 156.17,"AI20": 156.17,"AI21": 156.17,"AI22": 156.17,"AI23": 156.17,"AI24": 156.17,"AI25": 156.17,"AI26": 156.17,"AI27": 156.17,"AI28": 156.17,"AI29": 156.18,"AI30":   0.00,"AI31":   0.00,"AI32":  -1.00,"AA 1":   0.00,"AA 2": 100.00,"AA 3":   0.00,"AA 4": 100.00,"AA 5":   0.00,"AA 6":  54.67,"AA 7":  54.67,"AA 8":  54.67,"PT 1":   0.00,"DF 1":   0.00,"PT 2":   0.00,"DF 2":   0.00,"PT 3":   0.00,"DF 3":   0.00,"PT 4":   0.00,"DF 4":   0.00,"PT 5":   0.00,"DF 5":   0.00,"PT 6":   0.00,"DF 6":   0.00,"PT 7":   0.00,"DF 7":   0.00}}`;
 
 /*********************Konstanten*********************/
-const RELEVANT_ATTRIBUTE_NAMES = [`title`, `msr`, `strang`, `link`, `icon`, `rotation`, `animation`, `unit`, `dec-place`, `stil`, `true-txt`, `false-txt`, `text-align`, `signal-id`, `rtos-id`, `toggle`, `range-max`, `range-min`];
+const RELEVANT_ATTRIBUTE_NAMES = [`title`, `msr`, `strang`, `link`, `icon`, `rotation`, `animation`, `unit`, `dec-place`, `stil`, `true-txt`, `false-txt`, `text-align`, `signal-id`, `rtos-id`, `toggle-signal`, `range-max`, `range-min`];
 
 //Colors here in rgb, because style.color will return rgb-format
 const MAGENTA_HSL = `hsl(334, 74%, 44%)`;
@@ -70,31 +70,13 @@ async function initVisu() {
 
   addGenericEventHandler();
 
-  const cbReloadLiveData = document.querySelector(`#cbReloadLiveData`);
-  cbReloadLiveData.checked = true;
-  if (!window.DEBUG && cbReloadLiveData.checked) {
-    window.reloadLiveDataIntervalId = setInterval(refreshLiveData, 2000);
-  }
-
-  const cbEditMode = document.querySelector(`#cbEditMode`);
-  if (cbEditMode) {
-    cbEditMode.checked = false;
-    editModeSwitchHandler();
-  }  
+  reloadLiveDataSwitchHandler(true);  
+  editModeSwitchHandler(false);
 }
 
 function addGenericEventHandler() {
-  document.querySelector(`#cbEditMode`).addEventListener(`input`, editModeSwitchHandler);
-  document.querySelector(`#cbReloadLiveData`).addEventListener(`input`, (ev) => {
-    if (ev.target.checked) {
-      const simulatedLiveData = (window.DEBUG) ? VISU_LIVE_DATA_OLD : undefined;
-      refreshLiveData(simulatedLiveData);
-      window.reloadLiveDataIntervalId = setInterval(refreshLiveData, 2000, simulatedLiveData);
-    }
-    else {
-      clearInterval(window.reloadLiveDataIntervalId);
-    }
-  });
+  document.querySelector(`#cbEditMode`).addEventListener(`input`, editModeInputEventHandler);
+  document.querySelector(`#cbReloadLiveData`).addEventListener(`input`, reloadLiveDataInputEventHandler);
 }
 
 function createBackgroundSVG(idx=1) {
@@ -133,7 +115,7 @@ function createBetriebSymbol(symbol) {
     const d = (symbol === `pumpe`) ? `M4 6a2 2 0 102-2V6H4a2 2 0 012-2` :
               (symbol === `mischer`) ? `M6 6 1 9V3L6 6l3 5H3L9 1H3L6 6` : //`M6 6 3 0 9 0 3 12 9 12 6 6 0 3 0 9 6 6 9 6A1 1 0 0012 6 1 1 0 009 6` :
               (symbol === `ventil`) ? `M8 6a1 1 0 014 0A1 1 0 018 6H6l3 5H3L9 1H3L6 6` : //`M9 6a1 1 0 013 0A1 1 0 019 6H6l3 6H3L9 0H3L6 6` :
-              (symbol === `aggregat`) ? `m2 9Q1 8 1 6T2 3m8 6q1-1 1-3T10 3M1 6H11` :
+              (symbol === `aggregat`) ? `M10 3A5 5 0 0110 9M11 6H1M2 3A5 5 0 002 9` :
               //(symbol === `heizpatrone`) ? `M0 3V9H6V3H0M6 8h5c1 0 1-1 0-1 1 0 1-1 0-1 1 0 1-1 0-1 1 0 1-1 0-1H6M6 5h5M6 6h5M6 7h5` :
               (symbol === `luefter`) ? `M2 9A1 1 0 0010 3 1 1 0 002 9L3 2M9 2 10 9M6 6C6 4 5 2 3 2 3 4 4 6 6 6 8 6 9 8 9 10 7 10 6 8 6 6` :
               (symbol === `lueftungsklappe`) ? `M5 6A1 1 0 007 6 1 1 0 005 6M6 1 6 5M6 7 6 11` :
@@ -167,7 +149,7 @@ function createIconSVG(symbol) {
               (symbol === `ventil`) ? `M8 6a1 1 0 014 0A1 1 0 018 6H6l3 5H3L9 1H3L6 6` : //`M9 6a1 1 0 013 0A1 1 0 019 6H6l3 6H3L9 0H3L6 6` :
               //(symbol === `aggregat`) ? `m2 9Q1 8 1 6T2 3m8 6q1-1 1-3T10 3M1 6H11` :
               //(symbol === `flamme`) ? `` : //`M 0 12 C 0 5.4 5.4 0 12 0` :
-              //(symbol === `puffer`) ? `` : //`M 0 12 C 0 5.4 5.4 0 12 0` :
+              //(symbol === `puffer`) ? `` : //`M0 12A12 12 0 0112 0` :
               (symbol === `waermetauscher`) ? `M 0 24 L 12 0 L 12 24 L 0 24 L 0 0 L 12 0` :
               (symbol === `heizpatrone`) ? `M0 3V9H6V3H0M6 8h5c1 0 1-1 0-1 1 0 1-1 0-1 1 0 1-1 0-1 1 0 1-1 0-1H6M6 5h5M6 6h5M6 7h5` :
               (symbol === `luefter`) ? `m2 9a1 1 0 008-6A1 1 0 002 9L3 2M9 2l1 7` : //M2 9A1 1 0 0010 3 1 1 0 002 9L3 2M9 2 10 9M6 6C6 4 5 2 3 2 3 4 4 6 6 6 8 6 9 8 9 10 7 10 6 8 6 6
@@ -187,18 +169,20 @@ function initObserver() {
     mutationList.forEach(mutation => {
       const {type, attributeName, target, addedNodes, removedNodes} = mutation;
       const addedAndRemovedNodes = Array.from(addedNodes).concat(Array.from(removedNodes));
-      //console.log(addedAndRemovedNodes);
+      //console.log(mutation);
 
       if (attributeName === `selected` || (type === `childList` && target.matches(`.signalTable`))) {
         console.log(`updateAttributeTable`);
         updateAttributeTable();
         //console.log(mutation);
       }
+      /*
       else if (target.closest(`.visuContainer`) && addedAndRemovedNodes.find(node => node.matches(`*:not(.hoverMarker)`))) {
-        console.log(`updateUnDoReDoStack`);
+        console.log(`updateUnDoReDoStack`, mutation);
         updateUnDoReDoStack();
       }
-      else if (attributeName === `icon` && target.closest(`.divVisu`)) {
+      */
+      else if (target.closest(`.divVisu`) && attributeName === `icon`) {
         console.log(target, `handleItemAppearance`);
         handleItemAppearance(target);
       }
@@ -377,6 +361,7 @@ function drawModeClickEventHandler(ev) {
       
       hoverLine.setAttributeNS(null,`x1`, x2);
       hoverLine.setAttributeNS(null,`y1`, y2);
+      updateUnDoReDoStack();
     }
   }
   else {
@@ -426,11 +411,11 @@ function buildAttributeTable() {
 }
 
 function attributeInputEventHandler(ev) {
-  //console.log(ev);
+  //console.log(ev.target.type);
   const attributeName = ev.target.getAttribute(`attribute-name`);
   const selectedVisuItems = document.querySelectorAll(`.visuItem[selected]`);
   selectedVisuItems.forEach(selectedVisuItem => {
-    selectedVisuItem.setAttribute(attributeName, ev.target.value);
+    (ev.target.type === `checkbox`) ? selectedVisuItem.toggleAttribute(attributeName, ev.target.checked) : selectedVisuItem.setAttribute(attributeName, ev.target.value);
     //sync all Attributes of selectedVisuItem with signalTableVisuItem
     if (attributeName === `signal-id`) {
       //remove all Attributes
@@ -440,8 +425,6 @@ function attributeInputEventHandler(ev) {
       getRelevantAttributesAsMap(signalTableVisuItem).forEach((value, key) => {
         selectedVisuItem.setAttribute(key, value);
       });
-      //handle visuItemAppearance due to eventually change of [icon]
-      //handleItemAppearance(selectedVisuItem);
 
       //sync .visuItem input[value] with .visuItem[signal-id]
       const inputEl = selectedVisuItem.querySelector(`input`);
@@ -470,7 +453,7 @@ function updateAttributeTable() {
       //console.log(key);
       const attributeInput = attributeTable.querySelector(`[attribute-name = ${key}]`);
       if (selectedVisuItemIdx === 0) {
-        (attributeInput.type === `checkbox`) ? attributeInput.checked = !!value : attributeInput.value = `${value}`;
+        (attributeInput.type === `checkbox`) ? attributeInput.checked = true : attributeInput.value = `${value}`;
       }
       else {
         if (attributeInput.type === `checkbox`) {
@@ -501,7 +484,7 @@ function createEditAttributeInput(key, value) {
   }
 
   input.setAttribute(`attribute-name`, key);
-  if (key.match(/(toggle)/)) {
+  if (key.match(/(toggle-signal)/)) {
     input.type = `checkbox`
   }
   else if (key.match(/(true-txt)|(false-txt)/)) {
@@ -533,7 +516,7 @@ function createSelectElement(type, excludedOptions = []) {
                   (type === `rotation`) ? [``, `90`, `180`, `270`] :
                   (type === `animation`) ? [``, `flicker`, `spin`, `hide`, `show`, `blink`] :
                   (type === `text-align`) ? [``, `center`, `end`] :
-                  (type === `addAttribute`) ? [`addAttribute...`, `msr`, `strang`, `signal-id`, `rtos-id`, `unit`, `title`, `stil`, `toggle`, `dec-place`, `icon`, `rotation`, `animation`, `true-txt`, `false-txt`, `text-align`, `range-max`, `range-min`] :
+                  (type === `addAttribute`) ? [`addAttribute...`, `msr`, `strang`, `signal-id`, `rtos-id`, `unit`, `title`, `stil`, `toggle-signal`, `dec-place`, `icon`, `rotation`, `animation`, `true-txt`, `false-txt`, `text-align`, `range-max`, `range-min`] :
                   (type === `signal-id`) ? updateSelectSignalIdOptions() :
                   [];
   
@@ -626,50 +609,78 @@ function createGenericSignalTable() {
   });
 }
 
-function editModeSwitchHandler() {
-  const editModeActive = document.querySelector(`#cbEditMode`).checked;
+function reloadLiveDataInputEventHandler(ev) {
+  reloadLiveDataSwitchHandler();
+}
 
-  (editModeActive) ? startObserver() : stopObserver();
-  
-  const divVisu = document.querySelector(`.divVisu`);
-  divVisu.toggleAttribute(`edit-mode`, editModeActive);
-  
-  if (editModeActive) {
-    clearInterval(window.reloadLiveDataIntervalId);
-    document.querySelector(`#cbReloadLiveData`).checked = false;
-
-    //divVisu.querySelectorAll(`.txtSignalId[signal-id]`).forEach(txtSignalId => txtSignalId.value = txtSignalId.getAttribute(`signal-id`));
-    //divVisu.querySelectorAll(`.divIconSignal[signal-id]`).forEach(divIconSignal => divIconSignal.removeAttribute(`cloaked`));
+function reloadLiveDataSwitchHandler(forceCheckedState) {
+  const cbReloadLiveData = document.querySelector(`#cbReloadLiveData`);
+  if (forceCheckedState !== undefined) {
+    cbReloadLiveData.checked = forceCheckedState;
   }
 
-  if (editModeActive && !document.querySelector(`.visuItemPool`)) {
-    //console.log(window.visuLiveData);
-    document.querySelector(`#selStrokeDasharray`).style.color = document.querySelector(`.colorPicker`).value;
+  if (cbReloadLiveData.checked) {
+    const simulatedLiveData = (window.DEBUG) ? VISU_LIVE_DATA_OLD : undefined;
+    refreshLiveData(simulatedLiveData);
+    window.reloadLiveDataIntervalId = setInterval(refreshLiveData, 2000, simulatedLiveData);
   }
-  
-  document.querySelector(`.attributeTable`).toggleAttribute(`hidden`, true);
-  document.querySelectorAll(`.visuEditElement, .visuTabs, .editorTools, .signalTable, .attributeTable`).forEach(el => el.toggleAttribute(`cloaked`, !editModeActive));
-  document.querySelectorAll(`[draggable]`).forEach(el => el.setAttribute(`draggable`, (editModeActive) ? `true` : `false`));
-  (editModeActive) ? addEditorEventHandler() : removeEditorEventHandler();
-  cancelCurrentDrawing();
-  cancelCurrentSelection();
+  else {
+    stopRefreshLiveData();
+  }
+}
+
+function editModeInputEventHandler(ev) {
+  editModeSwitchHandler();
+}
+
+function editModeSwitchHandler(forceCheckedState) {
+  const cbEditMode = document.querySelector(`#cbEditMode`);
+  if (cbEditMode) {
+    if (forceCheckedState !== undefined) {
+      cbEditMode.checked = forceCheckedState;
+    }
+    const editModeActive = cbEditMode.checked;
+    
+    const divVisu = document.querySelector(`.divVisu`);
+    divVisu.toggleAttribute(`edit-mode`, editModeActive);
+    
+    document.querySelector(`.attributeTable`).toggleAttribute(`hidden`, true);
+    document.querySelectorAll(`.visuEditElement, .visuTabs, .editorTools, .signalTable, .attributeTable`).forEach(el => el.toggleAttribute(`cloaked`, !editModeActive));
+    document.querySelectorAll(`[draggable]`).forEach(el => el.setAttribute(`draggable`, (editModeActive) ? `true` : `false`));
+    document.querySelectorAll(`.divVisu .visuItem input:not([type = button])`).forEach(el => el.toggleAttribute(`disabled`, !editModeActive));
+    
+    if (editModeActive) {
+      stopRefreshLiveData();
+      document.querySelector(`#cbReloadLiveData`).checked = false;
+      
+      document.querySelector(`#selStrokeDasharray`).style.color = document.querySelector(`.colorPicker`).value;
+      addEditorEventHandler();
+      
+      updateUnDoReDoStack(!document.querySelector(`.visuContainer`).unDoReDoStack);
+      startObserver();
+    }
+    else {
+      stopObserver();
+      removeEditorEventHandler();
+      //reloadLiveDataSwitchHandler(true);
+    }
+    
+    cancelCurrentDrawing();
+    cancelCurrentSelection();
+  }
 }
 
 function updateUnDoReDoStack(reset) {
-  //cancelCurrentDrawing();
-  //cancelCurrentSelection();
-  const elClassNames = [`divVisu`, `visuTabs`];
-  elClassNames.forEach(className => {
-    const el = document.querySelector(`.${className}`);
-    if (reset || !el.unDoReDoStack) {
-      el.unDoReDoStack = {idx: 0, stack: [el.innerHTML]};
-    }
-    else {
-      const {unDoReDoStack} = el;
-      unDoReDoStack.stack.length = ++unDoReDoStack.idx;
-      unDoReDoStack.stack.push(el.innerHTML);
-    }
-  });
+  const visuContainer = document.querySelector(`.visuContainer`);
+  if (reset || !visuContainer.unDoReDoStack) {
+    visuContainer.unDoReDoStack = {idx: 0, stack: [visuContainer.innerHTML]};
+  }
+  else {
+    const {unDoReDoStack} = visuContainer;
+    unDoReDoStack.stack.length = ++unDoReDoStack.idx;
+    unDoReDoStack.stack.push(visuContainer.innerHTML);
+  }
+
   updateUsedCount();
 }
 /*********************EventHandlers*********************/
@@ -682,6 +693,7 @@ function visuTabsClickEventHandler(ev) {
   else {
     addVisuTab();
   }
+  updateUnDoReDoStack();
 }
 
 function addVisuTab() {
@@ -726,7 +738,7 @@ function divVisuMouseMoveEventHandler(ev) {
 }
 
 function mouseDownEventHandler(ev) {
-  if (ev.buttons === 1) {   
+  if (ev.buttons === 1) {
     if (!ev.target.closest(`.attributeTable`)) {
       //selectionHandling
       const visuItem = ev.target.closest(`.visuItem`);
@@ -879,7 +891,7 @@ function divVisuDropEventHandler(ev) {
 
     //origin is signalTable
     if (draggingItem.closest(`.signalTable`)) {
-      console.log(ev, draggingItem);
+      //console.log(ev, draggingItem);
 
 
       /*
@@ -895,6 +907,7 @@ function divVisuDropEventHandler(ev) {
       }
       */
     }
+    updateUnDoReDoStack();
   });
 
   removeAllDraggingAttributes();
@@ -1010,6 +1023,7 @@ function keyDownEventHandler(ev) {
           activeElement.remove();
         }
         document.querySelectorAll(`[selected]`).forEach(el => el.remove());
+        updateUsedCount();
       }
       if (key.match(/[1-9]/)) {
         switchVisuTab(key);
@@ -1088,28 +1102,18 @@ function keyDownEventHandler(ev) {
 }
 
 function unDoReDoEventHandler(ev) {
-  stopObserver();
-  document.querySelectorAll(`.divVisu, .visuTabs`).forEach(el => {
-    const {unDoReDoStack} = el;
-    if (unDoReDoStack) {
-
-      if (ev.target.matches(`.btnUnDo`)) {
-        unDoReDoStack.idx = Math.max(0, unDoReDoStack.idx - 1);
-      }
-      else {
-        unDoReDoStack.idx = Math.min(unDoReDoStack.stack.length - 1, unDoReDoStack.idx + 1);
-      }
-      el.innerHTML = unDoReDoStack.stack.at(unDoReDoStack.idx); //todo...
-      console.log(`${unDoReDoStack.idx} of ${unDoReDoStack.stack.length - 1}`);
-      el.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.setAttribute(`value`, txtEl.closest(`.visuItem`).getAttribute(`signal-id`)));
-    }
-    else {
-      updateUnDoReDoStack(true);
-    }
-  });
+  const visuContainer = document.querySelector(`.visuContainer`);
+  const {unDoReDoStack} = visuContainer;
+  if (unDoReDoStack) {
+    unDoReDoStack.idx = (ev.target.matches(`.btnUnDo`)) ? Math.max(0, unDoReDoStack.idx - 1) : Math.min(unDoReDoStack.stack.length - 1, unDoReDoStack.idx + 1);
+    visuContainer.innerHTML = unDoReDoStack.stack.at(unDoReDoStack.idx); //todo...
+    addEditorEventHandler();
+    console.log(`${unDoReDoStack.idx} of ${unDoReDoStack.stack.length - 1}`);
+    //visuContainer.querySelectorAll(`[type=text]`).forEach(txtEl => txtEl.setAttribute(`value`, txtEl.closest(`.visuItem`).getAttribute(`signal-id`)));
+  }
+  
   cancelCurrentDrawing();
   updateUsedCount();
-  startObserver();
 }
 
 function openLocalFileEventHandler(ev) {
@@ -1199,13 +1203,12 @@ function buildSignalTable(visuDataJson, liveData) {
 
 function buildVisu(visuDataJson) {
   if (visuDataJson) {
-    stopObserver();
     const visuData = JSON.parse(visuDataJson);
     
     //divVisuData
     const divVisu = document.querySelector(`.divVisu`);
     divVisu.innerHTML = visuData.divVisuHTML;
-    startObserver();
+    updateUnDoReDoStack();
   }
   else {
     console.warn(`no visuData found, created empty Tab`);
@@ -1401,19 +1404,52 @@ function resizePufferEventHandler(ev) {
 }
 
 /*********************ComFunctions*********************/
-async function refreshLiveData() {
-  const visuLiveData = reformatLiveData(await fetchLiveData(getProjectNoFromLocation()));
-  //console.log(visuLiveData);
+function stopRefreshLiveData() {
+  clearInterval(window.reloadLiveDataIntervalId);
+  
+  const divVisu = document.querySelector(`.divVisu`);
+  if (divVisu.matches(`[edit-mode]`)) {
+    divVisu.querySelectorAll(`.visuItem`).forEach(visuItem => {
+      visuItem.removeAttribute(`animate`);
+      const inputEl = visuItem.querySelector(`input`);
+      if (inputEl) {
+        inputEl.value = inputEl.getAttribute(`value`);
+      }
+    });
+  }
+}
+
+async function refreshLiveData(simulatedLiveData) {
+  const visuLiveData = (simulatedLiveData) ? reformatLiveData(simulatedLiveData) : reformatLiveData(await fetchLiveData(getProjectNoFromLocation()));
+  console.log(visuLiveData);
   if (visuLiveData) {
     //console.log(visuLiveData);
     const divVisu = document.querySelector(`.divVisu`);
     Object.entries(visuLiveData.liveData).forEach(([key, value]) => {
-      const txtSignalIds = divVisu.querySelectorAll(`.txtSignalId[signal-id = ${key}]`);
-      if (txtSignalIds) {
-        txtSignalIds.forEach(el => {
-          const decPlace = el.getAttribute(`dec-place`);
-          const unit = el.getAttribute(`unit`);
-          el.value = `${value.toFixed(decPlace)} ${unit}`;
+      const visuItems = divVisu.querySelectorAll(`.visuItem[signal-id = ${key}]`);
+      if (visuItems) {
+        visuItems.forEach(visuItem => {
+          const toggleSignal = visuItem.getAttribute(`toggle-signal`);
+          const inputEl = visuItem.querySelector(`input`);
+          if (inputEl) {
+            const trueTxt = visuItem.getAttribute(`true-txt`);
+            const falseTxt = visuItem.getAttribute(`false-txt`);
+            if (trueTxt || falseTxt) {
+              inputEl.value = (!!value ^ !!toggleSignal) ? trueTxt : falseTxt;
+              //visuItem.innerText = (!!value ^ !!toggleSignal) ? trueTxt : falseTxt;
+            }
+            else { 
+              const decPlace = visuItem.getAttribute(`dec-place`);
+              const unit = visuItem.getAttribute(`unit`);
+              inputEl.value = `${value.toFixed(decPlace)} ${unit}`;
+              //visuItem.innerText = `${value.toFixed(decPlace)} ${unit}`;
+            }
+          }
+          
+          if (visuItem.matches(`[animation]`)) {
+            visuItem.toggleAttribute(`animate`, (!!value ^ !!toggleSignal));
+          }
+
         });
       }
 
@@ -1426,7 +1462,7 @@ async function refreshLiveData() {
   }
   else {
     console.log(`stopped reloadLiveDataInterval!`);
-    clearInterval(window.reloadLiveDataIntervalId);
+    stopRefreshLiveData();
   }
 }
 
